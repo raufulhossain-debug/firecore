@@ -1,0 +1,73 @@
+# FireCore-1200 — wildfire-resilient 1,200 sqft ADU
+# This is the certified SKU definition. ANY change requires re-review by the
+# architect-of-record and structural-engineer-of-record (see CODEOWNERS).
+
+id: firecore_1200
+name: "FireCore-1200"
+description: >
+  1,200 sqft detached ADU with CBC Chapter 7A wildfire hardening package.
+  Multiple variants (standard slab, compact 2-story, flood raised-pier,
+  future stepped-pier). Intended for California ADU-friendly municipalities.
+climate_archetype: wildfire
+
+variants:
+  - id: std_1story
+    name: "Standard 1-story"
+    footprint_w_ft: 30
+    footprint_d_ft: 40
+    stories: 1
+    height_ft: 16
+    foundation: slab
+    conditioned_sqft: 1200
+
+  - id: compact_2story
+    name: "Compact 2-story"
+    footprint_w_ft: 24
+    footprint_d_ft: 25
+    stories: 2
+    height_ft: 25
+    foundation: slab
+    conditioned_sqft: 1200
+
+  - id: flood_pier
+    name: "Flood raised-pier"
+    footprint_w_ft: 30
+    footprint_d_ft: 40
+    stories: 1
+    height_ft: 22
+    foundation: raised_pier
+    conditioned_sqft: 1200
+
+  - id: hillside_stepped
+    name: "Hillside stepped-pier (planned cert)"
+    footprint_w_ft: 30
+    footprint_d_ft: 40
+    stories: 1
+    height_ft: 18
+    foundation: stepped_pier
+    conditioned_sqft: 1200
+
+roof_pitches: ["3:12", "4:12", "5:12"]
+rotation_increments_deg: 15
+
+certifications:
+  - name: "CBC Chapter 7A (WUI materials)"
+    authority: "California Building Code"
+    reference: "pending listing"
+    status: in_progress
+  - name: "Title 24 2022 compliance"
+    authority: "CA Energy Commission"
+    reference: "CZ8, CZ9 packages"
+    status: in_progress
+  - name: "LA DBS Standard Plan Program"
+    authority: "City of Los Angeles DBS"
+    reference: "pending filing"
+    status: planned
+
+envelope:
+  glazing_slots: 12
+  entry_options: 4
+  cladding_colors: 6
+  allow_mirror: true
+  min_rotation_deg: 0
+  max_rotation_deg: 360

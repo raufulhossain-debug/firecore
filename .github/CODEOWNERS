@@ -1,0 +1,16 @@
+# Default owners
+*                                          @firecore/eng
+
+# Rules YAML — MUST be reviewed by the code consultant for that jurisdiction
+packages/rules_engine/firecore_rules/jurisdictions/la_*.yaml       @firecore/code-la
+packages/rules_engine/firecore_rules/jurisdictions/sj_*.yaml       @firecore/code-sj
+packages/rules_engine/firecore_rules/jurisdictions/sd_*.yaml       @firecore/code-sd
+
+# SKU YAML — requires architect-of-record + structural engineer-of-record
+packages/sku_library/firecore_sku/skus/*.yaml                      @firecore/aor @firecore/seor
+
+# Docs / ADRs — product + eng review
+/docs/                                                             @firecore/product @firecore/eng
+
+# CI / infra
+/.github/                                                          @firecore/eng

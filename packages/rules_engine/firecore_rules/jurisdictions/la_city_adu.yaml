@@ -1,0 +1,85 @@
+# City of Los Angeles — Detached ADU rules
+# Sources:
+#   - LAMC §12.22 A.33 (ADU)
+#   - California Gov. Code §65852.2 (state preemption)
+#   - CBC Chapter 7A (WUI materials)
+#   - LA DBS Standard Plan Program guidance
+# This file is data, not code. Any change should cite the code section and be
+# reviewed by the LA code consultant (see CODEOWNERS).
+
+id: la_city_adu
+name: "City of Los Angeles — Detached ADU"
+state: CA
+code_version: "LAMC as of 2026-01"
+reviewed_by: "(placeholder — assign LA code consultant)"
+reviewed_on: "2026-04-15"
+
+rules:
+  - id: la_adu_max_size
+    title: "Max detached ADU size"
+    citation: "LAMC §12.22 A.33.c.5"
+    type: max_adu_size
+    severity: blocking
+    params:
+      max_sqft: 1200
+
+  - id: la_adu_setbacks
+    title: "ADU setbacks (state minimum preemption)"
+    citation: "Gov. Code §65852.2(a)(1)(D)(vii)"
+    type: setback
+    severity: blocking
+    params:
+      side: 4
+      rear: 4
+      # Front per underlying zone; LA enforces zone-level front setback separately
+      front: 0
+
+  - id: la_adu_max_height
+    title: "ADU max height"
+    citation: "Gov. Code §65852.2(a)(1)(D)(i); LAMC §12.22 A.33"
+    type: max_height
+    severity: blocking
+    params:
+      base_ft: 16
+      transit_bonus_ft: 9   # up to 25 ft if within ½-mi major transit
+
+  - id: la_adu_coverage
+    title: "Lot coverage (underlying zone cap)"
+    citation: "LAMC zone tables — enforced at underlying zone"
+    type: max_coverage
+    severity: blocking
+    params:
+      cap_pct: 100    # Defer to site.max_coverage_pct from zone lookup
+
+  - id: la_fire_chapter_7a
+    title: "WUI / Chapter 7A compliance"
+    citation: "CBC Chapter 7A; LAMC §57.6 (brush clearance)"
+    type: fire_wui_compliance
+    severity: blocking
+    params:
+      requires_chapter_7a_in: ["High", "VHFHSZ"]
+
+  - id: la_flood_compliance
+    title: "Flood zone compliance"
+    citation: "LAMC §91.1612; FEMA NFIP; LA freeboard 1 ft"
+    type: flood_compliance
+    severity: blocking
+    params:
+      allowed_foundations_in_sfha: ["raised_pier"]
+      freeboard_ft: 1.0
+
+  - id: la_slope_tolerance
+    title: "Slope tolerance (SKU foundation envelope)"
+    citation: "SKU certification envelope (FireCore-1200); LAMC hillside ordinance"
+    type: slope_tolerance
+    severity: blocking
+    params:
+      slab_max_pct: 15
+      stepped_pier_max_pct: 40
+
+  - id: la_transit_proximity_info
+    title: "Transit proximity — informational"
+    citation: "Gov. Code §65852.2; LA Metro service maps"
+    type: transit_proximity_bonus
+    severity: info
+    params: {}

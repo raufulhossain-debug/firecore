@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firecore-api"
+version = "0.1.0"
+description = "FireCore HTTP API wiring site intel + rules + solver"
+requires-python = ">=3.10"
+dependencies = [
+    "firecore-rules",
+    "firecore-sku",
+    "firecore-site",
+    "firecore-solver",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+include = ["firecore_api*"]

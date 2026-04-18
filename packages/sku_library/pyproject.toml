@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firecore-sku"
+version = "0.1.0"
+description = "FireCore certified SKU library"
+requires-python = ">=3.10"
+dependencies = ["pydantic>=2.6", "pyyaml>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+include = ["firecore_sku*"]
+
+[tool.setuptools.package-data]
+firecore_sku = ["skus/*.yaml"]

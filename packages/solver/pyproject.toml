@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firecore-solver"
+version = "0.1.0"
+description = "FireCore parametric SKU fit solver"
+requires-python = ">=3.10"
+dependencies = [
+    "firecore-rules",
+    "firecore-sku",
+    "pydantic>=2.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+include = ["firecore_solver*"]

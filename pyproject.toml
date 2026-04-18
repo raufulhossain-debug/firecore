@@ -1,0 +1,25 @@
+# Repo-level tooling config (pytest, ruff, mypy).
+# Actual installable packages live under packages/*/pyproject.toml.
+
+[tool.pytest.ini_options]
+testpaths = [
+    "packages/rules_engine/tests",
+    "packages/sku_library/tests",
+    "packages/site_intel/tests",
+    "packages/solver/tests",
+    "packages/api/tests",
+]
+addopts = "-q --import-mode=importlib"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true

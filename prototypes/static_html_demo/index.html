@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FireCore — ADU Feasibility</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root { color-scheme: light; }
+    html, body { height: 100%; }
+    #map { height: 100%; }
+    .chip { display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .55rem; border-radius:9999px; font-size:.75rem; font-weight:500; }
+    .gate-pass { color:#065f46; background:#d1fae5; }
+    .gate-fail { color:#991b1b; background:#fee2e2; }
+    .badge-EXACT  { background:#065f46; color:white; }
+    .badge-MINOR  { background:#b45309; color:white; }
+    .badge-MAJOR  { background:#c2410c; color:white; }
+    .badge-NO_FIT { background:#991b1b; color:white; }
+    .sitePlan { aspect-ratio: 1/1; width: 100%; background:#fafaf7; border:1px solid #e5e7eb; border-radius:.5rem; }
+  </style>
+</head>
+<body class="bg-neutral-50 text-neutral-900">
+<div class="flex flex-col h-screen">
+
+  <!-- Top bar -->
+  <header class="bg-white border-b border-neutral-200">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between px-6 py-3">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded bg-orange-600 grid place-items-center text-white font-bold">F</div>
+        <div>
+          <div class="font-semibold leading-tight">FireCore</div>
+          <div class="text-xs text-neutral-500 leading-tight">Wildfire-resilient ADU licensing</div>
+        </div>
+      </div>
+      <div class="text-xs text-neutral-500">Prototype · Feasibility grade · Not for permit</div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-hidden">
+    <div class="max-w-[1400px] mx-auto h-full grid grid-cols-12 gap-4 p-4">
+
+      <!-- Sidebar: inputs -->
+      <aside class="col-span-3 overflow-y-auto bg-white rounded-lg border border-neutral-200 p-4">
+        <h2 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide mb-2">Parcel</h2>
+        <label class="block text-sm mb-1">Zone</label>
+        <select id="zone" class="w-full border rounded px-2 py-1 mb-3 text-sm">
+          <option>R1</option><option>R2</option><option>R3</option>
+          <option>RD1.5</option><option>RE11</option><option>RE15</option><option>RE20</option>
+        </select>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-sm">Width (ft)</label>
+            <input id="width"  type="number" value="60"  class="w-full border rounded px-2 py-1 text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm">Depth (ft)</label>
+            <input id="depth"  type="number" value="120" class="w-full border rounded px-2 py-1 text-sm" />
+          </div>
+        </div>
+        <div class="text-xs text-neutral-500 mt-1 mb-3">Lot area: <span id="lotArea">7,200</span> sqft</div>
+
+        <h2 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide mt-2 mb-2">Setbacks (ft)</h2>
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <div><label class="block text-xs">Front</label><input id="sbF" type="number" value="20" class="w-full border rounded px-2 py-1 text-sm"/></div>
+          <div><label class="block text-xs">Side</label> <input id="sbS" type="number" value="5"  class="w-full border rounded px-2 py-1 text-sm"/></div>
+          <div><label class="block text-xs">Rear</label> <input id="sbR" type="number" value="15" class="w-full border rounded px-2 py-1 text-sm"/></div>
+        </div>
+
+        <h2 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide mb-2">Coverage / slope</h2>
+        <label class="block text-sm">Zone max coverage %: <span id="coverVal">45</span></label>
+        <input id="cover" type="range" min="20" max="80" value="45" class="w-full mb-2"/>
+        <label class="block text-sm">Existing coverage %: <span id="existVal">35</span></label>
+        <input id="exist" type="range" min="0" max="80" value="35" class="w-full mb-2"/>
+        <label class="block text-sm">Avg slope %: <span id="slopeVal">3</span></label>
+        <input id="slope" type="range" min="0" max="50" step="1" value="3" class="w-full mb-3"/>
+
+        <label class="flex items-center gap-2 text-sm mb-3">
+          <input id="transit" type="checkbox" checked /> Within ½-mi major transit
+        </label>
+
+        <h2 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide mb-2">Hazards</h2>
+        <label class="block text-sm mt-1">FHSZ</label>
+        <select id="fhsz" class="w-full border rounded px-2 py-1 mb-2 text-sm">
+          <option>Non-HFHSZ</option><option>Moderate</option><option>High</option><option>VHFHSZ</option>
+        </select>
+        <label class="block text-sm">FEMA flood zone</label>
+        <select id="flood" class="w-full border rounded px-2 py-1 mb-2 text-sm">
+          <option>X</option><option>A</option><option>AE</option><option>VE</option>
+        </select>
+        <div id="bfeWrap" class="hidden">
+          <label class="block text-sm">BFE (ft)</label>
+          <input id="bfe" type="number" value="8" class="w-full border rounded px-2 py-1 mb-2 text-sm"/>
+        </div>
+
+        <label class="flex items-center gap-2 text-sm mt-3">
+          <input id="future" type="checkbox"/> Include future stepped-pier cert
+        </label>
+        <p class="text-xs text-neutral-500 mt-1">
+          Simulates closing the slope gap identified in the Part B feasibility study.
+        </p>
+      </aside>
+
+      <!-- Center: map + site plan -->
+      <section class="col-span-6 flex flex-col gap-4">
+        <div class="bg-white rounded-lg border border-neutral-200 flex-1 overflow-hidden">
+          <div id="map"></div>
+        </div>
+        <div class="bg-white rounded-lg border border-neutral-200 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide">Site plan (indicative)</h3>
+            <span id="badge" class="chip badge-EXACT">EXACT FIT</span>
+          </div>
+          <canvas id="sitePlan" class="sitePlan"></canvas>
+          <p class="text-xs text-neutral-500 mt-2">
+            Not a permit set. Drawings submitted to LA DBS must be stamped by a
+            California-licensed architect.
+          </p>
+        </div>
+      </section>
+
+      <!-- Right: feasibility results -->
+      <aside class="col-span-3 overflow-y-auto bg-white rounded-lg border border-neutral-200 p-4">
+        <h2 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide mb-2">Result</h2>
+        <div class="mb-3">
+          <div class="text-xs text-neutral-500">Recommended variant</div>
+          <div id="variant" class="font-semibold">Standard 1-story</div>
+          <div id="rationale" class="text-sm text-neutral-600 mt-1">—</div>
+        </div>
+
+        <h3 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide mb-2">Gate checks</h3>
+        <ul id="gates" class="space-y-2 text-sm"></ul>
+
+        <h3 class="font-semibold text-sm text-neutral-500 uppercase tracking-wide mt-4 mb-2">Indicative BOM</h3>
+        <ul class="text-sm text-neutral-700 list-disc pl-5 space-y-1">
+          <li>Class-A fiber-cement cladding</li>
+          <li>Ember-resistant vents</li>
+          <li>Tempered dual-pane low-E windows</li>
+          <li>1-hr rated soffits / eaves</li>
+          <li>Foundation: <span id="bomFoundation" class="font-medium">slab</span></li>
+          <li>Title 24 2022 compliance package</li>
+        </ul>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-neutral-200 text-xs text-neutral-500">
+    <div class="max-w-[1400px] mx-auto px-6 py-2 flex justify-between">
+      <div>© 2026 FireCore · Prototype · <a class="underline" href="../../docs/architecture.md">architecture</a> · <a class="underline" href="../../docs/feasibility-study.md">feasibility study</a></div>
+      <div>Tile data © OpenStreetMap contributors</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+/* ============================================================================
+ * FireCore static HTML demo — client-side rules engine & solver
+ * Mirrors packages/rules_engine + packages/solver for portable pitch demos.
+ * Keep in sync with the canonical Python code in packages/.
+ * ========================================================================== */
+
+// ---- SKU ------------------------------------------------------------------
+const SKU = {
+  id: "firecore_1200",
+  name: "FireCore-1200",
+  variants: [
+    { id:"std_1story",       name:"Standard 1-story",              w:30, d:40, stories:1, h:16, foundation:"slab",         sqft:1200 },
+    { id:"compact_2story",   name:"Compact 2-story",               w:24, d:25, stories:2, h:25, foundation:"slab",         sqft:1200 },
+    { id:"flood_pier",       name:"Flood raised-pier",             w:30, d:40, stories:1, h:22, foundation:"raised_pier",  sqft:1200 },
+    { id:"hillside_stepped", name:"Hillside stepped-pier (planned)",w:30,d:40, stories:1, h:18, foundation:"stepped_pier", sqft:1200 },
+  ],
+};
+
+// ---- Rule handlers (mirror evaluator.py) ----------------------------------
+const rules = [
+  { id:"max_size", title:"ADU max size",
+    f:(s,b)=> b.sqft<=1200 ? ok(`${b.sqft} ≤ 1200 sqft`) : fail(`${b.sqft} > 1200`) },
+  { id:"setbacks", title:"Setbacks (state ADU min)",
+    f:(s,b)=> (s.sbS>=4 && s.sbR>=4) ? ok("side/rear ≥ 4 ft") : fail(`side=${s.sbS} rear=${s.sbR}`) },
+  { id:"height", title:"Max height",
+    f:(s,b)=> {
+      const cap = 16 + (s.transit ? 9 : 0);
+      return b.h<=cap ? ok(`${b.h} ft ≤ ${cap} ft (transit=${s.transit})`) : fail(`${b.h} > ${cap} ft`);
+    } },
+  { id:"coverage", title:"Lot coverage",
+    f:(s,b)=> {
+      const added = (b.w*b.d)/s.lotSqft*100;
+      const total = s.exist + added;
+      return total<=s.cover ? ok(`${s.exist}%+${added.toFixed(1)}%=${total.toFixed(1)}% ≤ ${s.cover}%`) : fail(`${total.toFixed(1)}% > ${s.cover}% cap`);
+    } },
+  { id:"fire", title:"WUI / Chapter 7A",
+    f:(s,b)=> (s.fhsz==="High"||s.fhsz==="VHFHSZ")
+        ? ok(`${s.fhsz} — SKU 7A package required (covered)`)
+        : ok(`${s.fhsz} — no WUI hardening required`) },
+  { id:"flood", title:"Flood compliance",
+    f:(s,b)=> {
+      const sfha = ["A","AE","VE"].includes(s.flood);
+      if(!sfha) return ok("outside SFHA");
+      return b.foundation==="raised_pier"
+        ? ok(`SFHA ${s.flood} — raised-pier w/ freeboard`)
+        : fail(`SFHA ${s.flood} requires raised-pier; build is ${b.foundation}`);
+    } },
+  { id:"slope", title:"Slope tolerance",
+    f:(s,b)=> {
+      const cap = b.foundation==="stepped_pier" ? 40 : 15;
+      return s.slope<=cap ? ok(`slope ${s.slope}% ≤ ${cap}% (${b.foundation})`) : fail(`slope ${s.slope}% > ${cap}% (${b.foundation})`);
+    } },
+];
+function ok(m){return {pass:true, msg:m};} function fail(m){return {pass:false, msg:m};}
+
+// ---- Solver (mirror best_fit.py) ------------------------------------------
+function solve(site, allowFuture){
+  const considered = SKU.variants.filter(v => allowFuture || v.foundation!=="stepped_pier");
+  const evals = considered.map(v => ({ v, results: rules.map(r => ({ rule:r, ...r.f(site, foundationBuildFor(v))})) }));
+  const passing = evals.filter(e => e.results.every(r=>r.pass));
+  if(passing.length){
+    const std = passing.find(e=>e.v.id==="std_1story");
+    if(std) return { outcome:"EXACT", variant:std.v, results:std.results, rationale:"Standard variant passes all blocking rules." };
+    const pick = passing[0];
+    return { outcome:"MINOR", variant:pick.v, results:pick.results, rationale:`In-envelope variant "${pick.v.name}" required.` };
+  }
+  if(!allowFuture){
+    const withFuture = solve(site, true);
+    if(withFuture.outcome!=="NO_FIT"){
+      return { ...withFuture, outcome:"MAJOR", rationale:`Fit requires future-cert variant "${withFuture.variant.name}".` };
+    }
+  }
+  const first = evals[0] || {v:null, results:[]};
+  return { outcome:"NO_FIT", variant:first.v, results:first.results, rationale:"No variant fits under current rules." };
+}
+function foundationBuildFor(v){ return { w:v.w, d:v.d, h:v.h, stories:v.stories, foundation:v.foundation, sqft:v.sqft }; }
+
+// ---- Inputs ---------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const inputs = ["zone","width","depth","sbF","sbS","sbR","cover","exist","slope","transit","fhsz","flood","bfe","future"];
+inputs.forEach(id => $(id).addEventListener("input", render));
+
+function readSite(){
+  const w=+$("width").value, d=+$("depth").value;
+  const site = {
+    zone:$("zone").value,
+    lotWidth:w, lotDepth:d, lotSqft:w*d,
+    sbF:+$("sbF").value, sbS:+$("sbS").value, sbR:+$("sbR").value,
+    cover:+$("cover").value, exist:+$("exist").value,
+    slope:+$("slope").value,
+    transit:$("transit").checked,
+    fhsz:$("fhsz").value,
+    flood:$("flood").value,
+    bfe:+$("bfe").value||0,
+  };
+  $("lotArea").textContent = site.lotSqft.toLocaleString();
+  $("coverVal").textContent = site.cover;
+  $("existVal").textContent = site.exist;
+  $("slopeVal").textContent = site.slope;
+  $("bfeWrap").classList.toggle("hidden", !["A","AE","VE"].includes(site.flood));
+  return site;
+}
+
+// ---- Render ---------------------------------------------------------------
+function render(){
+  const site = readSite();
+  const fit  = solve(site, $("future").checked);
+
+  // Badge
+  const badge = $("badge");
+  badge.className = `chip badge-${fit.outcome}`;
+  badge.textContent = fit.outcome==="NO_FIT" ? "NO FIT" : fit.outcome + " FIT";
+
+  $("variant").textContent    = fit.variant ? fit.variant.name : "—";
+  $("rationale").textContent  = fit.rationale;
+  $("bomFoundation").textContent = fit.variant ? fit.variant.foundation : "—";
+
+  // Gates
+  const ul = $("gates");
+  ul.innerHTML = "";
+  fit.results.forEach(r => {
+    const li = document.createElement("li");
+    li.className = "flex gap-2 items-start";
+    li.innerHTML = `<span class="chip ${r.pass?'gate-pass':'gate-fail'}">${r.pass?'PASS':'FAIL'}</span>
+                    <div><div class="font-medium">${r.rule.title}</div>
+                    <div class="text-xs text-neutral-500">${r.msg}</div></div>`;
+    ul.appendChild(li);
+  });
+
+  drawSitePlan(site, fit);
+}
+
+// ---- Site plan (canvas) ---------------------------------------------------
+function drawSitePlan(site, fit){
+  const c = document.getElementById("sitePlan");
+  const ctx = c.getContext("2d");
+  const rect = c.getBoundingClientRect();
+  c.width = rect.width * devicePixelRatio;
+  c.height = rect.width * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const W = rect.width, H = rect.width;
+  ctx.clearRect(0,0,W,H);
+
+  // scale to fit lot
+  const pad = 20;
+  const scale = Math.min((W-2*pad)/site.lotWidth, (H-2*pad)/site.lotDepth);
+  const ox = (W - site.lotWidth*scale)/2;
+  const oy = (H - site.lotDepth*scale)/2;
+
+  // lot
+  ctx.fillStyle = "#f6f6f2";
+  ctx.strokeStyle = "#444";
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(ox, oy, site.lotWidth*scale, site.lotDepth*scale);
+  ctx.strokeRect(ox, oy, site.lotWidth*scale, site.lotDepth*scale);
+
+  // buildable envelope (setbacks)
+  const envX = ox + site.sbS*scale;
+  const envY = oy + site.sbF*scale;
+  const envW = (site.lotWidth - 2*site.sbS)*scale;
+  const envH = (site.lotDepth - site.sbF - site.sbR)*scale;
+  ctx.strokeStyle = "#888";
+  ctx.setLineDash([4,4]);
+  ctx.strokeRect(envX, envY, envW, envH);
+  ctx.setLineDash([]);
+
+  // SKU footprint if there's a variant
+  if(fit.variant && fit.outcome!=="NO_FIT"){
+    const fw = fit.variant.w*scale;
+    const fd = fit.variant.d*scale;
+    const fx = envX + (envW-fw)/2;
+    const fy = envY + (envH-fd)/2;
+    const colors = { EXACT:"#2f8f4e", MINOR:"#b45309", MAJOR:"#c2410c", NO_FIT:"#991b1b" };
+    ctx.fillStyle = colors[fit.outcome] + "AA";
+    ctx.strokeStyle = colors[fit.outcome];
+    ctx.fillRect(fx,fy,fw,fd);
+    ctx.strokeRect(fx,fy,fw,fd);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 12px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(fit.variant.name, fx+fw/2, fy+fd/2+4);
+  }
+
+  // labels
+  ctx.fillStyle = "#6b7280";
+  ctx.font = "11px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(`${site.lotWidth} ft × ${site.lotDepth} ft · ${site.lotSqft.toLocaleString()} sqft`, ox, oy-6);
+}
+
+// ---- Map ------------------------------------------------------------------
+const map = L.map("map").setView([34.07, -118.32], 11);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// A handful of preset LA neighborhoods pulled from the Part B study — click to
+// auto-fill realistic hazard defaults. This is demo sugar, not an API call.
+const presets = [
+  { name:"Mandeville Canyon (VHFHSZ, steep)", lat:34.095, lon:-118.503, fhsz:"VHFHSZ",    flood:"X",  slope:25, zone:"RE15", w:110, d:200, cover:40, exist:18, transit:false },
+  { name:"Pacific Palisades flats (VHFHSZ)", lat:34.040, lon:-118.526, fhsz:"VHFHSZ",    flood:"X",  slope:3,  zone:"R1",   w:60,  d:120, cover:45, exist:42, transit:false },
+  { name:"Venice (AE flood)",                lat:33.991, lon:-118.469, fhsz:"Non-HFHSZ", flood:"AE", slope:1,  zone:"R1",   w:40,  d:120, cover:50, exist:55, transit:true  },
+  { name:"Mid-City (dense R2)",              lat:34.055, lon:-118.342, fhsz:"Non-HFHSZ", flood:"X",  slope:1,  zone:"R2",   w:50,  d:110, cover:55, exist:60, transit:true  },
+  { name:"Highland Park (R1, moderate FHSZ)",lat:34.110, lon:-118.196, fhsz:"Moderate",  flood:"X",  slope:12, zone:"R1",   w:50,  d:100, cover:45, exist:45, transit:true  },
+  { name:"Silver Lake hillside",             lat:34.088, lon:-118.275, fhsz:"Non-HFHSZ", flood:"X",  slope:27, zone:"R1",   w:45,  d:100, cover:50, exist:52, transit:true  },
+  { name:"Sherman Oaks valley",              lat:34.157, lon:-118.451, fhsz:"Non-HFHSZ", flood:"X",  slope:2,  zone:"R1",   w:70,  d:135, cover:45, exist:38, transit:true  },
+  { name:"Sylmar (VHFHSZ, flat)",            lat:34.312, lon:-118.455, fhsz:"VHFHSZ",    flood:"X",  slope:4,  zone:"R1",   w:60,  d:116, cover:45, exist:40, transit:false },
+  { name:"Wilmington (AE flood, dense)",     lat:33.785, lon:-118.266, fhsz:"Non-HFHSZ", flood:"AE", slope:1,  zone:"R1",   w:50,  d:100, cover:50, exist:48, transit:true  },
+];
+
+presets.forEach(p => {
+  const m = L.marker([p.lat, p.lon]).addTo(map).bindPopup(`
+    <div class="text-sm"><div class="font-semibold mb-1">${p.name}</div>
+    <button onclick='applyPreset(${JSON.stringify(p)})' class='underline text-orange-700'>Load preset</button></div>`);
+});
+window.applyPreset = (p) => {
+  $("fhsz").value=p.fhsz; $("flood").value=p.flood;
+  $("slope").value=p.slope; $("zone").value=p.zone;
+  $("width").value=p.w; $("depth").value=p.d;
+  $("cover").value=p.cover; $("exist").value=p.exist;
+  $("transit").checked=p.transit;
+  map.setView([p.lat,p.lon], 15);
+  render();
+};
+
+render();
+</script>
+</body>
+</html>
