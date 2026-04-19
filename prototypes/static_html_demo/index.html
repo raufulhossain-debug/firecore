@@ -3,742 +3,741 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>FireCore — ADU Feasibility + Supply Chain</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>PrefabOS — Prefab Housing Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    :root { color-scheme: light; }
-    html, body { height: 100%; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #fafafa; --surface: #ffffff; --border: #e8e8e8;
+      --text: #1a1a1a; --text-2: #6b6b6b; --text-3: #a0a0a0;
+      --accent: #6366f1; --accent-light: #eef2ff; --accent-dark: #4f46e5;
+      --green: #10b981; --green-light: #ecfdf5; --green-dark: #059669;
+      --amber: #f59e0b; --amber-light: #fffbeb;
+      --red: #ef4444; --red-light: #fef2f2;
+      --blue: #3b82f6; --blue-light: #eff6ff;
+      --radius: 12px; --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+      --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+      --gradient-2: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 50%, #faf5ff 100%);
+    }
+    html, body { height: 100%; font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* Header */
+    .header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px; background: var(--gradient-1);
+      display: grid; place-items: center; color: white; font-weight: 800; font-size: 14px;
+    }
+    .logo-text { font-weight: 700; font-size: 16px; letter-spacing: -.02em; }
+    .logo-sub { font-size: 11px; color: var(--text-3); font-weight: 400; }
+
+    /* Search bar */
+    .search-wrap {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 8px 14px; width: 420px; transition: all .2s;
+    }
+    .search-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+    .search-wrap svg { color: var(--text-3); flex-shrink: 0; }
+    .search-wrap input { border:none; background:none; outline:none; width:100%; font-size:13px; font-family:inherit; color:var(--text); }
+    .search-wrap input::placeholder { color: var(--text-3); }
+    .search-results { position:absolute; top:100%; left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:var(--shadow-md); max-height:240px; overflow-y:auto; display:none; z-index:200; }
+    .search-results.open { display:block; }
+    .search-result { padding:10px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--border); }
+    .search-result:hover { background:var(--accent-light); }
+    .search-result:last-child { border:none; }
+    .search-result small { color:var(--text-3); display:block; margin-top:2px; font-size:11px; }
+
+    /* Layout */
+    .app { display: flex; height: calc(100vh - 57px); }
+    .map-col { flex: 1; position: relative; }
     #map { height: 100%; }
-    .chip { display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .55rem; border-radius:9999px; font-size:.7rem; font-weight:600; }
-    .gate-pass { color:#065f46; background:#d1fae5; }
-    .gate-fail { color:#991b1b; background:#fee2e2; }
-    .badge-EXACT  { background:#065f46; color:white; }
-    .badge-MINOR  { background:#b45309; color:white; }
-    .badge-MAJOR  { background:#c2410c; color:white; }
-    .badge-NO_FIT { background:#991b1b; color:white; }
-    .tab-active { border-bottom: 2px solid #ea580c; color: #ea580c; font-weight: 600; }
-    .tab-inactive { border-bottom: 2px solid transparent; color: #737373; }
-    .tab-btn { padding: .5rem 1rem; font-size: .8rem; cursor: pointer; transition: all .15s; }
-    .tab-btn:hover { color: #ea580c; }
-    .score-bar { height: 6px; border-radius: 3px; transition: width .4s ease; }
-    .route-leg { border-left: 2px solid #d4d4d4; padding-left: .75rem; margin-left: .5rem; }
-    .route-dot { width: 8px; height: 8px; border-radius: 50%; position: absolute; left: -5px; }
-    .material-card { border: 1px solid #e5e7eb; border-radius: .5rem; padding: .75rem; cursor: pointer; transition: all .15s; }
-    .material-card:hover { border-color: #ea580c; }
-    .material-card.selected { border-color: #ea580c; background: #fff7ed; }
-    input[type=range] { accent-color: #ea580c; }
-    .slider-label { display:flex; justify-content:space-between; align-items:center; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
+    .panel { width: 440px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; }
+
+    /* Map overlays */
+    .map-overlay {
+      position: absolute; z-index: 1000; background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow-md); padding: 14px; font-size: 12px;
+    }
+    .map-instructions { bottom:20px; left:50%; transform:translateX(-50%); text-align:center; }
+    .map-instructions .title { font-weight:600; margin-bottom:4px; }
+    .map-instructions .sub { color:var(--text-3); font-size:11px; }
+
+    /* Panel sections */
+    .panel-hero {
+      padding: 20px; background: var(--gradient-2); border-bottom: 1px solid var(--border);
+    }
+    .panel-hero .address { font-size: 16px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 4px; }
+    .panel-hero .meta { font-size: 12px; color: var(--text-2); }
+
+    .section { padding: 20px; border-bottom: 1px solid var(--border); }
+    .section:last-child { border: none; }
+    .section-title {
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--text-3); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+    }
+    .section-title .num {
+      width: 18px; height: 18px; border-radius: 50%; background: var(--gradient-1);
+      color: white; font-size: 10px; display: grid; place-items: center; font-weight: 700;
+    }
+
+    /* Zoning grid */
+    .zoning-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .zoning-item { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+    .zoning-item .label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+    .zoning-item .value { font-size: 14px; font-weight: 600; }
+
+    /* Feasibility badge */
+    .fit-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+      border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .fit-EXACT { background: var(--green-light); color: var(--green-dark); }
+    .fit-MINOR { background: var(--amber-light); color: #b45309; }
+    .fit-MAJOR { background: #fff7ed; color: #c2410c; }
+    .fit-NO_FIT { background: var(--red-light); color: #dc2626; }
+
+    /* Gate checks */
+    .gate { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
+    .gate-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gate-dot.pass { background: var(--green); }
+    .gate-dot.fail { background: var(--red); }
+
+    /* Material cards */
+    .mat-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px; transition: all .15s; cursor: pointer;
+    }
+    .mat-card:hover { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,.08); }
+    .mat-card.best { border-color: var(--accent); background: var(--accent-light); }
+    .mat-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .mat-name { font-weight: 600; font-size: 13px; }
+    .mat-score { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+    .score-high { background: var(--green-light); color: var(--green-dark); }
+    .score-mid { background: var(--amber-light); color: #b45309; }
+    .score-low { background: var(--red-light); color: #dc2626; }
+    .mat-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 11px; color: var(--text-2); margin-top: 6px; }
+
+    /* Route cards */
+    .route-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px; margin-bottom: 8px; transition: all .15s; cursor: pointer;
+    }
+    .route-card:hover { border-color: var(--accent); }
+    .route-card.top { border-color: var(--accent); background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%); }
+    .route-rank { font-weight: 800; font-size: 16px; color: var(--accent); }
+    .route-score { font-weight: 700; font-size: 14px; }
+    .route-meta { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; margin-top: 8px; }
+    .route-meta-item { font-size: 10px; }
+    .route-meta-item .val { font-weight: 600; font-size: 13px; color: var(--text); }
+    .route-meta-item .lbl { color: var(--text-3); }
+    .score-bars { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 8px; }
+    .score-bar-wrap { }
+    .score-bar-label { font-size: 9px; color: var(--text-3); margin-bottom: 2px; }
+    .score-bar-bg { height: 4px; background: #e5e7eb; border-radius: 2px; overflow:hidden; }
+    .score-bar-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+    .fill-green { background: var(--green); }
+    .fill-amber { background: var(--amber); }
+    .fill-red { background: var(--red); }
+
+    /* Chip */
+    .chip { display:inline-flex; align-items:center; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+
+    /* Weight controls */
+    .weight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .weight-item label { font-size: 11px; color: var(--text-2); display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .weight-item input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; }
+    .preset-btns { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+    .preset-btn {
+      font-size: 10px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface); cursor: pointer; font-family: inherit; font-weight: 500; transition: all .15s;
+    }
+    .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .preset-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* Tags */
+    .tag { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:500; }
+    .tag-purple { background:#eef2ff; color:#6366f1; }
+    .tag-green { background:var(--green-light); color:var(--green-dark); }
+    .tag-red { background:var(--red-light); color:#dc2626; }
+    .tag-amber { background:var(--amber-light); color:#b45309; }
+    .tag-gray { background:#f3f4f6; color:#6b7280; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 30px; color: var(--text-3);
+    }
+    .empty-state svg { margin-bottom: 12px; }
+    .empty-state .title { font-weight: 600; font-size: 14px; color: var(--text-2); margin-bottom: 4px; }
+    .empty-state .sub { font-size: 12px; }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--gradient-1); color: white; border: none; border-radius: var(--radius-sm);
+      padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: opacity .15s; width: 100%;
+    }
+    .btn-primary:hover { opacity: .9; }
+
+    /* Leaflet overrides */
+    .leaflet-control-zoom { border-radius: var(--radius-sm) !important; border: 1px solid var(--border) !important; box-shadow: var(--shadow) !important; }
+    .leaflet-control-zoom a { border-radius: 0 !important; }
+    .leaflet-popup-content-wrapper { border-radius: var(--radius-sm) !important; box-shadow: var(--shadow-md) !important; font-family: 'Inter', sans-serif !important; }
+
+    /* Loading shimmer */
+    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+    .loading { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:800px 100%; animation: shimmer 1.5s infinite; border-radius:var(--radius-sm); }
   </style>
 </head>
-<body class="bg-neutral-100 text-neutral-900">
-<div class="flex flex-col h-screen">
+<body>
 
-  <!-- Top bar -->
-  <header class="bg-white border-b border-neutral-200 shrink-0">
-    <div class="max-w-[1800px] mx-auto flex items-center justify-between px-4 py-2">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded bg-orange-600 grid place-items-center text-white font-bold text-sm">F</div>
-        <div>
-          <div class="font-semibold text-sm leading-tight">FireCore</div>
-          <div class="text-[10px] text-neutral-500 leading-tight">Climate-resilient prefab IP licensing</div>
+<!-- Header -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">P</div>
+    <div>
+      <div class="logo-text">PrefabOS</div>
+      <div class="logo-sub">Prefab housing intelligence</div>
+    </div>
+  </div>
+  <div style="position:relative">
+    <div class="search-wrap" id="searchWrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Search NYC address — e.g. 120 Broadway, Manhattan" autocomplete="off"/>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+  <div style="font-size:11px;color:var(--text-3)">NYC · Prototype</div>
+</header>
+
+<!-- App -->
+<div class="app">
+  <!-- Map -->
+  <div class="map-col">
+    <div id="map"></div>
+    <div class="map-overlay map-instructions" id="mapInstructions">
+      <div class="title">Search an address or click the map</div>
+      <div class="sub">PrefabOS will pull zoning data from NYC ZOLA and run feasibility + supply chain analysis</div>
+    </div>
+  </div>
+
+  <!-- Panel -->
+  <div class="panel" id="panel">
+    <div class="empty-state" id="emptyState">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      <div class="title">Select a location</div>
+      <div class="sub">Search for a NYC address or click anywhere on the map to begin your prefab feasibility analysis.</div>
+    </div>
+
+    <!-- Filled state (hidden initially) -->
+    <div id="filledPanel" style="display:none;">
+
+      <!-- Hero -->
+      <div class="panel-hero" id="heroSection">
+        <div class="address" id="heroAddress">—</div>
+        <div class="meta" id="heroMeta">—</div>
+      </div>
+
+      <!-- 1. Zoning -->
+      <div class="section" id="zoningSection">
+        <div class="section-title"><span class="num">1</span> Zoning & Lot Data</div>
+        <div class="zoning-grid" id="zoningGrid">
+          <div class="zoning-item"><div class="label">Zone</div><div class="value" id="zVal">—</div></div>
+          <div class="zoning-item"><div class="label">Lot Area</div><div class="value" id="lotVal">—</div></div>
+          <div class="zoning-item"><div class="label">FAR</div><div class="value" id="farVal">—</div></div>
+          <div class="zoning-item"><div class="label">Building Class</div><div class="value" id="bldgVal">—</div></div>
+          <div class="zoning-item"><div class="label">Overlay</div><div class="value" id="overlayVal">—</div></div>
+          <div class="zoning-item"><div class="label">Borough</div><div class="value" id="boroVal">—</div></div>
         </div>
       </div>
-      <div class="flex items-center gap-4">
-        <div class="text-[10px] text-neutral-400">Prototype · Not for permit</div>
+
+      <!-- 2. Feasibility -->
+      <div class="section">
+        <div class="section-title"><span class="num">2</span> ADU Feasibility</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <span class="fit-badge fit-EXACT" id="fitBadge">EXACT FIT</span>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:600;font-size:13px;" id="fitVariant">—</div>
+            <div style="font-size:11px;color:var(--text-3);" id="fitReason">—</div>
+          </div>
+        </div>
+        <div id="gatesList"></div>
       </div>
-    </div>
-  </header>
 
-  <!-- Main -->
-  <main class="flex-1 overflow-hidden">
-    <div class="max-w-[1800px] mx-auto h-full grid grid-cols-12 gap-3 p-3">
+      <!-- 3. Materials -->
+      <div class="section">
+        <div class="section-title"><span class="num">3</span> Recommended Materials</div>
+        <div id="matSection" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
 
-      <!-- LEFT: Site inputs -->
-      <aside class="col-span-2 overflow-y-auto bg-white rounded-lg border border-neutral-200 p-3 text-xs">
-        <h2 class="font-semibold text-neutral-500 uppercase tracking-wide mb-2 text-[10px]">Site</h2>
-        <label class="block mb-1">Zone</label>
-        <select id="zone" class="w-full border rounded px-2 py-1 mb-2">
-          <option>R1</option><option>R2</option><option>R3</option>
-          <option>RD1.5</option><option>RE11</option><option>RE15</option>
-        </select>
-        <div class="grid grid-cols-2 gap-1">
-          <div><label class="block">Width</label><input id="width" type="number" value="60" class="w-full border rounded px-1 py-1"/></div>
-          <div><label class="block">Depth</label><input id="depth" type="number" value="120" class="w-full border rounded px-1 py-1"/></div>
-        </div>
-        <div class="text-neutral-400 mt-1 mb-2">Lot: <span id="lotArea">7,200</span> sqft</div>
+      <!-- 4. Supply Chain -->
+      <div class="section">
+        <div class="section-title"><span class="num">4</span> Supply Chain Optimizer</div>
 
-        <h2 class="font-semibold text-neutral-500 uppercase tracking-wide mt-2 mb-1 text-[10px]">Setbacks (ft)</h2>
-        <div class="grid grid-cols-3 gap-1 mb-2">
-          <div><label class="block">Front</label><input id="sbF" type="number" value="20" class="w-full border rounded px-1 py-1"/></div>
-          <div><label class="block">Side</label><input id="sbS" type="number" value="5" class="w-full border rounded px-1 py-1"/></div>
-          <div><label class="block">Rear</label><input id="sbR" type="number" value="15" class="w-full border rounded px-1 py-1"/></div>
-        </div>
-
-        <h2 class="font-semibold text-neutral-500 uppercase tracking-wide mt-2 mb-1 text-[10px]">Coverage / Slope</h2>
-        <div class="slider-label"><label>Max coverage %</label><span id="coverVal">45</span></div>
-        <input id="cover" type="range" min="20" max="80" value="45" class="w-full mb-1"/>
-        <div class="slider-label"><label>Existing %</label><span id="existVal">20</span></div>
-        <input id="exist" type="range" min="0" max="80" value="20" class="w-full mb-1"/>
-        <div class="slider-label"><label>Slope %</label><span id="slopeVal">3</span></div>
-        <input id="slope" type="range" min="0" max="50" value="3" class="w-full mb-2"/>
-
-        <label class="flex items-center gap-1 mb-2"><input id="transit" type="checkbox" checked/> Transit ½-mi</label>
-
-        <h2 class="font-semibold text-neutral-500 uppercase tracking-wide mt-2 mb-1 text-[10px]">Hazards</h2>
-        <label class="block">FHSZ</label>
-        <select id="fhsz" class="w-full border rounded px-2 py-1 mb-1">
-          <option>Non-HFHSZ</option><option>MFHSZ</option><option>HFHSZ</option><option>VHFHSZ</option>
-        </select>
-        <label class="block">Flood zone</label>
-        <select id="flood" class="w-full border rounded px-2 py-1 mb-1">
-          <option>X</option><option>A</option><option>AE</option><option>VE</option>
-        </select>
-        <div id="bfeWrap" class="hidden">
-          <label class="block">BFE (ft)</label>
-          <input id="bfe" type="number" value="8" class="w-full border rounded px-1 py-1 mb-1"/>
-        </div>
-        <label class="flex items-center gap-1 mt-2"><input id="future" type="checkbox"/> Future stepped-pier</label>
-      </aside>
-
-      <!-- CENTER: Map + tabs -->
-      <section class="col-span-6 flex flex-col gap-3">
-        <div class="bg-white rounded-lg border border-neutral-200 flex-1 overflow-hidden relative">
-          <div id="map"></div>
-          <!-- Legend overlay -->
-          <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur rounded-lg shadow-sm p-2 text-[10px] z-[1000]">
-            <div class="font-semibold mb-1">Map Legend</div>
-            <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Site parcels</div>
-            <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-orange-500"></div> Suppliers</div>
-            <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-green-600"></div> Factories</div>
-            <div class="flex items-center gap-1"><div class="w-2 h-2 bg-orange-400 opacity-50" style="height:2px;width:12px"></div> Supply route</div>
+        <div class="weight-grid" id="weightControls">
+          <div class="weight-item">
+            <label>Cost <span id="wCostV">40%</span></label>
+            <input type="range" id="wCost" min="0" max="100" value="40"/>
+          </div>
+          <div class="weight-item">
+            <label>Speed <span id="wSpeedV">25%</span></label>
+            <input type="range" id="wSpeed" min="0" max="100" value="25"/>
+          </div>
+          <div class="weight-item">
+            <label>Carbon <span id="wCarbonV">15%</span></label>
+            <input type="range" id="wCarbon" min="0" max="100" value="15"/>
+          </div>
+          <div class="weight-item">
+            <label>Compliance <span id="wCompV">20%</span></label>
+            <input type="range" id="wComp" min="0" max="100" value="20"/>
           </div>
         </div>
 
-        <!-- Bottom panel with tabs -->
-        <div class="bg-white rounded-lg border border-neutral-200 shrink-0" style="height:260px;">
-          <div class="flex border-b border-neutral-200">
-            <button class="tab-btn tab-active" data-tab="feasibility">Feasibility</button>
-            <button class="tab-btn tab-inactive" data-tab="materials">Materials</button>
-            <button class="tab-btn tab-inactive" data-tab="supply">Supply Chain</button>
-          </div>
-          <div class="overflow-y-auto p-3" style="height:218px;">
-            <!-- Feasibility tab -->
-            <div id="tab-feasibility">
-              <div class="flex items-center gap-3 mb-2">
-                <span id="badge" class="chip badge-EXACT px-3 py-1">EXACT FIT</span>
-                <div>
-                  <div id="variant" class="font-semibold text-sm">Standard 1-story</div>
-                  <div id="rationale" class="text-xs text-neutral-500">—</div>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-x-4">
-                <div>
-                  <h3 class="font-semibold text-[10px] text-neutral-500 uppercase mb-1">Gate checks</h3>
-                  <ul id="gates" class="space-y-1 text-xs"></ul>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-[10px] text-neutral-500 uppercase mb-1">Indicative BOM</h3>
-                  <ul class="text-xs text-neutral-700 space-y-1">
-                    <li>Class-A fiber-cement cladding</li>
-                    <li>Ember-resistant vents</li>
-                    <li>Tempered dual-pane low-E windows</li>
-                    <li>Foundation: <span id="bomFoundation" class="font-medium">slab</span></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <!-- Materials tab -->
-            <div id="tab-materials" class="hidden">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="font-semibold text-xs text-neutral-500">Climate-recommended materials for this site</h3>
-              </div>
-              <div id="materialCards" class="grid grid-cols-3 gap-2"></div>
-            </div>
-
-            <!-- Supply chain tab -->
-            <div id="tab-supply" class="hidden">
-              <div id="supplyContent"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT: Optimizer -->
-      <aside class="col-span-4 overflow-y-auto bg-white rounded-lg border border-neutral-200 p-3">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold text-[10px] text-neutral-500 uppercase tracking-wide">Supply Chain Optimizer</h2>
-          <button id="runOptimizer" class="bg-orange-600 text-white text-xs px-3 py-1 rounded hover:bg-orange-700 transition">Optimize</button>
+        <div class="preset-btns">
+          <button class="preset-btn" data-w="100,0,0,0">Cheapest</button>
+          <button class="preset-btn" data-w="0,100,0,0">Fastest</button>
+          <button class="preset-btn" data-w="0,0,100,0">Greenest</button>
+          <button class="preset-btn" data-w="0,0,0,100">Compliant</button>
+          <button class="preset-btn active" data-w="40,25,15,20">Balanced</button>
         </div>
 
-        <!-- Weight sliders -->
-        <div class="grid grid-cols-2 gap-x-3 gap-y-1 mb-3 text-xs">
-          <div>
-            <div class="slider-label"><label>Cost</label><span id="wCostVal">40%</span></div>
-            <input id="wCost" type="range" min="0" max="100" value="40" class="w-full"/>
-          </div>
-          <div>
-            <div class="slider-label"><label>Speed</label><span id="wSpeedVal">25%</span></div>
-            <input id="wSpeed" type="range" min="0" max="100" value="25" class="w-full"/>
-          </div>
-          <div>
-            <div class="slider-label"><label>Carbon</label><span id="wCarbonVal">15%</span></div>
-            <input id="wCarbon" type="range" min="0" max="100" value="15" class="w-full"/>
-          </div>
-          <div>
-            <div class="slider-label"><label>Compliance</label><span id="wCompVal">20%</span></div>
-            <input id="wComp" type="range" min="0" max="100" value="20" class="w-full"/>
-          </div>
-        </div>
+        <button class="btn-primary" style="margin-top:12px;" id="runBtn">Run Optimization</button>
 
-        <!-- Preset buttons -->
-        <div class="flex gap-1 mb-3">
-          <button class="preset-btn text-[10px] px-2 py-1 rounded border border-neutral-300 hover:border-orange-500" data-weights="100,0,0,0">Cheapest</button>
-          <button class="preset-btn text-[10px] px-2 py-1 rounded border border-neutral-300 hover:border-orange-500" data-weights="0,100,0,0">Fastest</button>
-          <button class="preset-btn text-[10px] px-2 py-1 rounded border border-neutral-300 hover:border-orange-500" data-weights="0,0,100,0">Greenest</button>
-          <button class="preset-btn text-[10px] px-2 py-1 rounded border border-neutral-300 hover:border-orange-500" data-weights="0,0,0,100">Compliant</button>
-          <button class="preset-btn text-[10px] px-2 py-1 rounded border border-orange-500 bg-orange-50 text-orange-700" data-weights="40,25,15,20">Balanced</button>
-        </div>
-
-        <!-- Results -->
-        <div id="optimizerResults" class="space-y-2">
-          <div class="text-xs text-neutral-400 text-center py-8">Click "Optimize" to run supply chain analysis</div>
-        </div>
-      </aside>
+        <div id="routeResults" style="margin-top:12px;"></div>
+      </div>
 
     </div>
-  </main>
+  </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// DATA — mirrors the Python packages (materials, suppliers, factories, tariffs)
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
 
 const MATERIALS = {
   sip: {
-    id:'sip', name:'Structural Insulated Panels', category:'SIP',
-    carbon: 2.8, buyAmerica: true, domestic: 0.85,
-    climateScores: { wildfire:0.4, flood:0.3, desert:0.9, arctic:0.95, seismic:0.7, standard:0.9 },
-    treatments: { wildfire:['Class A cladding','Ignition-resistant coating'], flood:['Moisture barrier','Elevated foundation'] },
-    variants: [
-      {id:'sip_6.5in_osb', name:'6.5" OSB/EPS', cost:9.25, lead:21, weight:3.8, rValue:26, fireHr:1},
-      {id:'sip_8.25in_polyiso', name:'8.25" Polyiso', cost:12.00, lead:28, weight:4.5, rValue:54, fireHr:1},
-    ],
+    id:'sip', name:'Structural Insulated Panels', short:'SIP', carbon:2.8, buyAmerica:true,
+    scores:{wildfire:.4,flood:.3,desert:.9,arctic:.95,seismic:.7,standard:.9},
+    treatments:{wildfire:['Class A cladding','Ignition coating'],flood:['Moisture barrier','Elevated foundation']},
+    variants:[{id:'sip_6.5in',name:'6.5" OSB/EPS',cost:9.25,lead:21,fire:1},{id:'sip_8.25in',name:'8.25" Polyiso',cost:12,lead:28,fire:1}],
   },
   clt: {
-    id:'clt', name:'Cross-Laminated Timber', category:'CLT',
-    carbon: -1.2, buyAmerica: true, domestic: 0.6,
-    climateScores: { wildfire:0.6, flood:0.2, desert:0.65, arctic:0.5, seismic:0.85, standard:0.8 },
-    treatments: { wildfire:['Non-combustible cladding','Char calculation'], flood:['Full elevation','Waterproof membrane'] },
-    variants: [
-      {id:'clt_5ply_175mm', name:'5-Ply 175mm', cost:22.00, lead:49, weight:20, rValue:8.6, fireHr:2},
-      {id:'clt_3ply_105mm', name:'3-Ply 105mm', cost:14.00, lead:42, weight:12, rValue:5.1, fireHr:1},
-    ],
+    id:'clt', name:'Cross-Laminated Timber', short:'CLT', carbon:-1.2, buyAmerica:true,
+    scores:{wildfire:.6,flood:.2,desert:.65,arctic:.5,seismic:.85,standard:.8},
+    treatments:{wildfire:['Non-combustible cladding'],flood:['Full elevation','Waterproof membrane']},
+    variants:[{id:'clt_5ply',name:'5-Ply 175mm',cost:22,lead:49,fire:2},{id:'clt_3ply',name:'3-Ply 105mm',cost:14,lead:42,fire:1}],
   },
   steel: {
-    id:'steel', name:'Light-Gauge Steel', category:'Steel',
-    carbon: 5.8, buyAmerica: true, domestic: 0.95,
-    climateScores: { wildfire:0.95, flood:0.85, desert:0.7, arctic:0.55, seismic:0.8, standard:0.85 },
-    treatments: { wildfire:[], flood:['Stainless fasteners (coastal)'], desert:['Thermal break clips','Exterior insulation'] },
-    variants: [
-      {id:'steel_18ga_600s', name:'18ga 6" CFS', cost:7.25, lead:14, weight:3.0, rValue:0, fireHr:0},
-      {id:'steel_14ga_firewall', name:'14ga Fire-Rated', cost:13.50, lead:21, weight:5.8, rValue:0, fireHr:2},
-    ],
+    id:'steel', name:'Light-Gauge Steel Framing', short:'Steel', carbon:5.8, buyAmerica:true,
+    scores:{wildfire:.95,flood:.85,desert:.7,arctic:.55,seismic:.8,standard:.85},
+    treatments:{wildfire:[],flood:['Stainless fasteners (coastal)'],desert:['Thermal break clips']},
+    variants:[{id:'steel_18ga',name:'18ga 6" CFS',cost:7.25,lead:14,fire:0},{id:'steel_14ga',name:'14ga Fire-Rated',cost:13.5,lead:21,fire:2}],
   }
 };
 
 const SUPPLIERS = [
-  {id:'premier_sips_or',   name:'Premier SIPs',        lat:45.52, lon:-122.68, city:'Portland, OR',   material:'sip',   variant:'sip_6.5in_osb',   cost:8.75,  discount:5,  country:'US', lead:21, buyAmerica:true, reliability:0.92},
-  {id:'extreme_panel_ut',  name:'Extreme Panel Tech',  lat:41.14, lon:-111.97, city:'Cottonwood, UT',  material:'sip',   variant:'sip_6.5in_osb',   cost:9.50,  discount:3,  country:'US', lead:18, buyAmerica:true, reliability:0.88},
-  {id:'smartlam_mt',       name:'SmartLam NA',         lat:46.87, lon:-114.00, city:'Columbia Falls, MT', material:'clt', variant:'clt_5ply_175mm', cost:21.00, discount:8,  country:'US', lead:42, buyAmerica:true, reliability:0.90},
-  {id:'structurlam_ar',    name:'Structurlam',         lat:42.33, lon:-122.87, city:'Conway, AR',       material:'clt',   variant:'clt_5ply_175mm', cost:23.00, discount:5,  country:'US', lead:45, buyAmerica:true, reliability:0.88},
-  {id:'kalesnikoff_bc',    name:'Kalesnikoff',         lat:49.09, lon:-117.66, city:'Castlegar, BC',    material:'clt',   variant:'clt_5ply_175mm', cost:19.50, discount:6,  country:'CA', lead:49, buyAmerica:false, reliability:0.91},
-  {id:'clarkdietrich_oh',  name:'ClarkDietrich',       lat:41.07, lon:-81.52,  city:'Richfield, OH',    material:'steel', variant:'steel_18ga_600s', cost:6.80,  discount:10, country:'US', lead:10, buyAmerica:true, reliability:0.95},
-  {id:'steeltech_ca',      name:'Steel Technologies',  lat:33.78, lon:-118.26, city:'Carson, CA',       material:'steel', variant:'steel_18ga_600s', cost:7.50,  discount:7,  country:'US', lead:12, buyAmerica:true, reliability:0.90},
-  {id:'nucor_sc',          name:'Nucor Building',      lat:34.84, lon:-82.39,  city:'Greenville, SC',   material:'steel', variant:'steel_18ga_600s', cost:6.50,  discount:8,  country:'US', lead:14, buyAmerica:true, reliability:0.93},
-  {id:'zhonghe_cn',        name:'Zhonghe Steel (CN)',  lat:31.23, lon:121.47,  city:'Shanghai, CN',     material:'steel', variant:'steel_18ga_600s', cost:3.25,  discount:15, country:'CN', lead:45, buyAmerica:false, reliability:0.70},
+  {id:'premier_sips',name:'Premier SIPs',lat:45.52,lon:-122.68,city:'Portland, OR',mat:'sip',cost:8.75,disc:5,country:'US',lead:21,ba:true},
+  {id:'extreme_panel',name:'Extreme Panel',lat:41.14,lon:-111.97,city:'Cottonwood, UT',mat:'sip',cost:9.50,disc:3,country:'US',lead:18,ba:true},
+  {id:'enercept',name:'Enercept SIPs',lat:43.55,lon:-96.73,city:'Watertown, SD',mat:'sip',cost:8.90,disc:4,country:'US',lead:24,ba:true},
+  {id:'smartlam',name:'SmartLam NA',lat:46.87,lon:-114.00,city:'Columbia Falls, MT',mat:'clt',cost:21,disc:8,country:'US',lead:42,ba:true},
+  {id:'structurlam',name:'Structurlam',lat:35.08,lon:-92.44,city:'Conway, AR',mat:'clt',cost:23,disc:5,country:'US',lead:45,ba:true},
+  {id:'kalesnikoff',name:'Kalesnikoff',lat:49.09,lon:-117.66,city:'Castlegar, BC',mat:'clt',cost:19.5,disc:6,country:'CA',lead:49,ba:false},
+  {id:'clarkdietrich',name:'ClarkDietrich',lat:41.07,lon:-81.52,city:'Richfield, OH',mat:'steel',cost:6.80,disc:10,country:'US',lead:10,ba:true},
+  {id:'steeltech',name:'Steel Technologies',lat:33.78,lon:-118.26,city:'Carson, CA',mat:'steel',cost:7.50,disc:7,country:'US',lead:12,ba:true},
+  {id:'nucor',name:'Nucor Building',lat:34.84,lon:-82.39,city:'Greenville, SC',mat:'steel',cost:6.50,disc:8,country:'US',lead:14,ba:true},
 ];
 
 const FACTORIES = [
-  {id:'factory_socal',     name:'SoCal Assembly',    lat:33.92, lon:-117.89, city:'Corona, CA',     materials:['sip','steel'], utilization:55},
-  {id:'factory_portland',  name:'Pacific Prefab',    lat:45.52, lon:-122.68, city:'Portland, OR',   materials:['sip','clt'],   utilization:70},
-  {id:'factory_phoenix',   name:'Desert Modular',    lat:33.45, lon:-112.07, city:'Phoenix, AZ',    materials:['steel','sip'], utilization:40},
-  {id:'factory_boise',     name:'Mountain Prefab',   lat:43.62, lon:-116.21, city:'Boise, ID',      materials:['sip','clt'],   utilization:50},
-  {id:'factory_austin',    name:'Lone Star Modular', lat:30.27, lon:-97.74,  city:'Austin, TX',     materials:['steel','sip'], utilization:75},
-  {id:'factory_charlotte', name:'Piedmont Prefab',   lat:35.23, lon:-80.84,  city:'Charlotte, NC',  materials:['steel','clt'], utilization:60},
+  {id:'f_nj',name:'NJ Prefab Assembly',lat:40.74,lon:-74.17,city:'Newark, NJ',mats:['sip','steel'],util:55},
+  {id:'f_pa',name:'PA Modular Works',lat:40.27,lon:-76.88,city:'Harrisburg, PA',mats:['steel','clt'],util:60},
+  {id:'f_ct',name:'CT Panel Systems',lat:41.31,lon:-72.92,city:'New Haven, CT',mats:['sip','clt'],util:45},
+  {id:'f_nc',name:'Piedmont Prefab',lat:35.23,lon:-80.84,city:'Charlotte, NC',mats:['steel','clt'],util:65},
+  {id:'f_tx',name:'Lone Star Modular',lat:30.27,lon:-97.74,city:'Austin, TX',mats:['steel','sip'],util:75},
 ];
 
-const TARIFFS = {
-  CN: { steel: 62.0, sip: 28.2, clt: 28.2 },
-  CA: { steel: 0, sip: 0, clt: 8.05 },
-  US: { steel: 0, sip: 0, clt: 0 },
-  AU: { steel: 0, sip: 0, clt: 0 },
-};
+const TARIFFS = { CN:{steel:62,sip:28.2,clt:28.2}, CA:{steel:0,sip:0,clt:8.05}, US:{steel:0,sip:0,clt:0} };
 
-const PRESETS = [
-  {name:'Mandeville Canyon', lat:34.0730, lon:-118.5140, zone:'RE11', w:100, d:200, fhsz:'VHFHSZ', flood:'X', slope:18, transit:false, cover:35, exist:15},
-  {name:'Pacific Palisades',  lat:34.0361, lon:-118.5300, zone:'R1',  w:60, d:120, fhsz:'VHFHSZ', flood:'X', slope:12, transit:false, cover:45, exist:25},
-  {name:'Venice',             lat:33.9925, lon:-118.4695, zone:'R1',  w:50, d:100, fhsz:'Non-HFHSZ', flood:'AE', slope:1, transit:true, cover:50, exist:30},
-  {name:'Mid-City',           lat:34.0370, lon:-118.3410, zone:'R1',  w:55, d:130, fhsz:'Non-HFHSZ', flood:'X', slope:2, transit:true, cover:45, exist:20},
-  {name:'Highland Park',      lat:34.1103, lon:-118.1915, zone:'R1',  w:60, d:120, fhsz:'Non-HFHSZ', flood:'X', slope:8, transit:true, cover:45, exist:15},
-  {name:'Silver Lake',        lat:34.0870, lon:-118.2700, zone:'R2',  w:45, d:90,  fhsz:'Non-HFHSZ', flood:'X', slope:5, transit:true, cover:55, exist:35},
-  {name:'Sherman Oaks',       lat:34.1508, lon:-118.4490, zone:'R1',  w:65, d:130, fhsz:'HFHSZ',    flood:'X', slope:4, transit:false, cover:45, exist:20},
-  {name:'Sylmar',             lat:34.3070, lon:-118.4480, zone:'R1',  w:70, d:140, fhsz:'HFHSZ',    flood:'X', slope:3, transit:true, cover:45, exist:10},
-  {name:'Wilmington',         lat:33.7866, lon:-118.2540, zone:'R2',  w:50, d:100, fhsz:'Non-HFHSZ', flood:'AE', slope:1, transit:true, cover:55, exist:25},
-];
+// ═══════════════════════════════════════════════
+// ENGINES
+// ═══════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════
-// ENGINE — feasibility evaluator (mirrors rules_engine)
-// ═══════════════════════════════════════════════════════════════
-
-const VARIANTS = [
-  {id:'std_1story',    label:'Standard 1-story',   w:30,d:40,stories:1,h:16,foundation:'slab'},
-  {id:'compact_2story',label:'Compact 2-story',    w:24,d:25,stories:2,h:25,foundation:'slab'},
-  {id:'flood_pier',    label:'Flood raised-pier',  w:30,d:40,stories:1,h:22,foundation:'raised_pier'},
-  {id:'hillside_step', label:'Hillside stepped',   w:30,d:40,stories:1,h:18,foundation:'stepped_pier', futureCert:true},
-];
-
-function evalSite(s) {
-  const gates = [];
-  function gate(id, ok, msg) { gates.push({id,ok,msg}); }
-  const lotSqft = s.w * s.d;
-  return function evalVariant(v) {
-    const g = [];
-    const fp = v.w * v.d;
-    const addedCov = (fp / lotSqft) * 100;
-    g.push({id:'size', ok: fp <= 1200, msg: `ADU ${fp} sqft ${fp<=1200?'≤':'>'} 1,200 max`});
-    g.push({id:'setback_side', ok: v.w <= s.w - 2*4, msg: `Side setback ${v.w <= s.w-8?'OK':'FAIL'} (4ft each side)`});
-    g.push({id:'setback_rear', ok: v.d <= s.d - s.sbR - s.sbF, msg: `Front/rear setback check`});
-    const heightLimit = s.transit ? 25 : 16;
-    g.push({id:'height', ok: v.h <= heightLimit, msg: `Height ${v.h}ft ${v.h<=heightLimit?'≤':'>'} ${heightLimit}ft limit`});
-    const totalCov = s.exist + addedCov;
-    g.push({id:'coverage', ok: totalCov <= s.cover, msg: `Coverage ${totalCov.toFixed(1)}% ${totalCov<=s.cover?'≤':'>'} ${s.cover}% cap`});
-    const fhszOk = true; // Chapter 7A assumed
-    g.push({id:'fire', ok: fhszOk, msg: `Fire: ${s.fhsz} — Chapter 7A ${fhszOk?'compliant':'required'}`});
-    const floodOk = s.flood==='X' || v.foundation==='raised_pier';
-    g.push({id:'flood', ok: floodOk, msg: `Flood: ${s.flood} — ${v.foundation} ${floodOk?'OK':'needs raised pier'}`});
-    const slopeOk = s.slope<=15 ? v.foundation==='slab'||true : v.foundation==='stepped_pier';
-    g.push({id:'slope', ok: slopeOk, msg: `Slope ${s.slope}% — ${v.foundation} ${slopeOk?'OK':'needs stepped pier'}`});
-    return {variant:v, gates:g, passed: g.every(x=>x.ok)};
-  };
+function haversine(a,b) {
+  const R=3958.8,toR=x=>x*Math.PI/180,dLat=toR(b.lat-a.lat),dLon=toR(b.lon-a.lon);
+  const h=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
 }
 
-function bestFit(s) {
-  const ev = evalSite(s);
-  for (const v of VARIANTS) {
-    if (v.futureCert && !s.future) continue;
-    const r = ev(v);
-    if (r.passed) {
-      let outcome = v.id==='std_1story' ? 'EXACT' : v.futureCert ? 'MAJOR' : 'MINOR';
-      return {...r, outcome};
-    }
-  }
-  return {variant:VARIANTS[0], gates:ev(VARIANTS[0]).gates, passed:false, outcome:'NO_FIT'};
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SUPPLY CHAIN ENGINE (mirrors supply_chain + logistics + optimizer)
-// ═══════════════════════════════════════════════════════════════
-
-function haversine(lat1,lon1,lat2,lon2) {
-  const R=3958.8, toRad=x=>x*Math.PI/180;
-  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
-  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-  return 2*R*Math.asin(Math.sqrt(a));
-}
-
-function getClimateZone(fhsz, flood) {
-  if (['VHFHSZ','HFHSZ','MFHSZ'].includes(fhsz)) return 'wildfire';
-  if (['AE','VE','A','AO'].includes(flood)) return 'flood';
+function climateZone(zone) {
+  // Simplified for NYC — mostly standard/flood/seismic
   return 'standard';
 }
 
-function estimateFreight(dist) {
-  let mode, rate, days;
-  if (dist > 3000) { mode='ocean'; rate=0.8; days=Math.ceil(dist/400); }
-  else if (dist > 1500) { mode='rail'; rate=1.5; days=Math.ceil(dist/500)+2; }
-  else { mode='flatbed'; rate=3.5; days=Math.max(1, Math.ceil(dist/500)); }
-  const cost = dist*rate*1.15; // +15% fuel
-  return {mode, cost, days, dist};
+const SKU_VARIANTS = [
+  {id:'std_1story',label:'Standard 1-story',w:30,d:40,stories:1,h:16,found:'slab'},
+  {id:'compact_2story',label:'Compact 2-story',w:24,d:25,stories:2,h:25,found:'slab'},
+  {id:'flood_pier',label:'Flood raised-pier',w:30,d:40,stories:1,h:22,found:'raised_pier'},
+];
+
+function evalFeasibility(lot) {
+  for (const v of SKU_VARIANTS) {
+    const fp=v.w*v.d, addCov=(fp/lot.area)*100;
+    const gates=[];
+    gates.push({ok:fp<=1200,msg:`ADU ${fp} sqft ${fp<=1200?'≤':'>'} 1,200`});
+    gates.push({ok:v.w<=lot.width-8,msg:`Side setback (4ft each)`});
+    gates.push({ok:v.h<=lot.heightLimit,msg:`Height ${v.h}ft ${v.h<=lot.heightLimit?'≤':'>'} ${lot.heightLimit}ft`});
+    gates.push({ok:lot.existCov+addCov<=lot.maxCov,msg:`Coverage ${(lot.existCov+addCov).toFixed(1)}% ${lot.existCov+addCov<=lot.maxCov?'≤':'>'} ${lot.maxCov}%`});
+    gates.push({ok:true,msg:`Zoning ${lot.zone} allows ADU`});
+    if (gates.every(g=>g.ok)) {
+      const out = v.id==='std_1story'?'EXACT':'MINOR';
+      return {variant:v,gates,outcome:out};
+    }
+  }
+  const v=SKU_VARIANTS[0],fp=v.w*v.d,addCov=(fp/lot.area)*100;
+  return {variant:v,gates:[
+    {ok:fp<=1200,msg:`ADU ${fp} sqft`},
+    {ok:v.w<=lot.width-8,msg:`Side setback`},
+    {ok:v.h<=lot.heightLimit,msg:`Height ${v.h}ft`},
+    {ok:lot.existCov+addCov<=lot.maxCov,msg:`Coverage ${(lot.existCov+addCov).toFixed(1)}%`},
+    {ok:false,msg:`Lot constraints exceed SKU envelope`},
+  ],outcome:'NO_FIT'};
 }
 
-function runOptimizer(siteLat, siteLon, sqft, fhsz, flood, weights) {
-  const zone = getClimateZone(fhsz, flood);
-  const options = [];
+function runOptimizer(siteLat,siteLon,sqft,weights) {
+  const zone='standard';
+  const opts=[];
+  for (const[mid,mat]of Object.entries(MATERIALS)) {
+    const cs=mat.scores[zone]||.5;
+    for (const sup of SUPPLIERS.filter(s=>s.mat===mid)) {
+      const d=haversine({lat:sup.lat,lon:sup.lon},{lat:siteLat,lon:siteLon});
+      const rate=d>3000?.8:d>1500?1.5:3.5, days=d>3000?Math.ceil(d/400):d>1500?Math.ceil(d/500)+2:Math.max(1,Math.ceil(d/500));
+      const freight=d*rate*1.15;
+      const tariff=((TARIFFS[sup.country]||{})[mid]||0);
+      const matC=sup.cost*(1-sup.disc/100)*sqft;
+      const tariffC=matC*tariff/100;
+      const total=matC+tariffC+freight+matC*.005+600;
 
-  for (const [matId, mat] of Object.entries(MATERIALS)) {
-    const score = mat.climateScores[zone] || 0.5;
-    if (score < 0.2) continue;
-
-    for (const supplier of SUPPLIERS.filter(s => s.material === matId)) {
-      const variant = mat.variants.find(v => v.id === supplier.variant) || mat.variants[0];
-      const dist = haversine(supplier.lat, supplier.lon, siteLat, siteLon);
-      const freight = estimateFreight(dist);
-
-      // Tariff
-      const tariffPct = (TARIFFS[supplier.country]||{})[matId] || 0;
-      const matCost = supplier.cost * (1 - supplier.discount/100) * sqft;
-      const tariffCost = matCost * tariffPct / 100;
-      const totalCost = matCost + tariffCost + freight.cost + matCost*0.005 + 600;
-      const totalDays = supplier.lead + freight.days;
-
-      // Direct route
-      options.push({
-        supplier, material: mat, variant, matId, zone, climateScore: score,
-        route: `Direct: ${supplier.name} → Site`,
-        routeType: 'direct',
-        legs: [{from:supplier.city, to:'Job Site', dist:Math.round(dist), mode:freight.mode, days:freight.days, cost:Math.round(freight.cost)}],
-        totalCost: Math.round(totalCost), totalDays, costPerSqft: +(totalCost/sqft).toFixed(2),
-        carbon: Math.round(mat.carbon*sqft + dist*0.5),
-        buyAmerica: supplier.buyAmerica, tariffCost: Math.round(tariffCost), matCost: Math.round(matCost),
-        freightCost: Math.round(freight.cost),
+      opts.push({
+        sup,mat,mid,zone,cs, routeType:'direct',
+        route:`${sup.name} → Site`, legs:[{from:sup.city,to:'NYC Site',dist:Math.round(d),days,cost:Math.round(freight)}],
+        total:Math.round(total),days:sup.lead+days,cpSf:+(total/sqft).toFixed(2),
+        carbon:Math.round(mat.carbon*sqft+d*.5), ba:sup.ba, tariffC:Math.round(tariffC), matC:Math.round(matC), freightC:Math.round(freight),
       });
 
-      // Factory routes
-      for (const factory of FACTORIES.filter(f => f.materials.includes(matId))) {
-        const d1 = haversine(supplier.lat, supplier.lon, factory.lat, factory.lon);
-        const d2 = haversine(factory.lat, factory.lon, siteLat, siteLon);
-        const f1 = estimateFreight(d1), f2 = estimateFreight(d2);
-        const factoryDays = factory.utilization < 60 ? 3 : 5;
-        const fTotalCost = matCost + tariffCost + f1.cost + f2.cost + matCost*0.005 + 1200;
-        const fTotalDays = supplier.lead + f1.days + factoryDays + f2.days;
+      for (const fac of FACTORIES.filter(f=>f.mats.includes(mid))) {
+        const d1=haversine({lat:sup.lat,lon:sup.lon},{lat:fac.lat,lon:fac.lon});
+        const d2=haversine({lat:fac.lat,lon:fac.lon},{lat:siteLat,lon:siteLon});
+        const f1=d1*(d1>1500?1.5:3.5)*1.15, f2=d2*(d2>1500?1.5:3.5)*1.15;
+        const fd=Math.max(1,Math.ceil(d1/500))+Math.max(1,Math.ceil(d2/500))+(fac.util<60?3:5);
+        const ft=matC+tariffC+f1+f2+matC*.005+1200;
 
-        options.push({
-          supplier, material: mat, variant, matId, zone, climateScore: score,
-          factory,
-          route: `${supplier.name} → ${factory.name} → Site`,
-          routeType: 'factory',
-          legs: [
-            {from:supplier.city, to:factory.city, dist:Math.round(d1), mode:f1.mode, days:f1.days, cost:Math.round(f1.cost)},
-            {from:factory.city, to:'Job Site', dist:Math.round(d2), mode:f2.mode, days:f2.days, cost:Math.round(f2.cost)},
-          ],
-          totalCost: Math.round(fTotalCost), totalDays: fTotalDays, costPerSqft: +(fTotalCost/sqft).toFixed(2),
-          carbon: Math.round(mat.carbon*sqft + (d1+d2)*0.5),
-          buyAmerica: supplier.buyAmerica, tariffCost: Math.round(tariffCost), matCost: Math.round(matCost),
-          freightCost: Math.round(f1.cost + f2.cost),
+        opts.push({
+          sup,mat,mid,zone,cs,fac, routeType:'factory',
+          route:`${sup.name} → ${fac.name} → Site`,
+          legs:[{from:sup.city,to:fac.city,dist:Math.round(d1),days:Math.max(1,Math.ceil(d1/500)),cost:Math.round(f1)},{from:fac.city,to:'NYC Site',dist:Math.round(d2),days:Math.max(1,Math.ceil(d2/500)),cost:Math.round(f2)}],
+          total:Math.round(ft),days:sup.lead+fd,cpSf:+(ft/sqft).toFixed(2),
+          carbon:Math.round(mat.carbon*sqft+(d1+d2)*.5), ba:sup.ba, tariffC:Math.round(tariffC), matC:Math.round(matC), freightC:Math.round(f1+f2),
         });
       }
     }
   }
 
-  // Normalize & score
-  if (!options.length) return [];
-  const minC=Math.min(...options.map(o=>o.totalCost)), maxC=Math.max(...options.map(o=>o.totalCost));
-  const minD=Math.min(...options.map(o=>o.totalDays)), maxD=Math.max(...options.map(o=>o.totalDays));
-  const minCo=Math.min(...options.map(o=>o.carbon)),   maxCo=Math.max(...options.map(o=>o.carbon));
-  const norm = (v,mn,mx,inv=true) => mx===mn ? 100 : Math.round((inv ? 1-(v-mn)/(mx-mn) : (v-mn)/(mx-mn)) * 100);
-  const total = weights.cost+weights.speed+weights.carbon+weights.compliance || 1;
-  const w = {cost:weights.cost/total, speed:weights.speed/total, carbon:weights.carbon/total, compliance:weights.compliance/total};
+  if(!opts.length) return[];
+  const mn=f=>Math.min(...opts.map(f)),mx=f=>Math.max(...opts.map(f));
+  const [mnC,mxC]=[mn(o=>o.total),mx(o=>o.total)];
+  const [mnD,mxD]=[mn(o=>o.days),mx(o=>o.days)];
+  const [mnCo,mxCo]=[mn(o=>o.carbon),mx(o=>o.carbon)];
+  const norm=(v,a,b)=>b===a?100:Math.round((1-(v-a)/(b-a))*100);
+  const t=weights.cost+weights.speed+weights.carbon+weights.comp||1;
+  const w={c:weights.cost/t,s:weights.speed/t,ca:weights.carbon/t,co:weights.comp/t};
 
-  for (const o of options) {
-    o.sCost = norm(o.totalCost, minC, maxC);
-    o.sSpeed = norm(o.totalDays, minD, maxD);
-    o.sCarbon = norm(o.carbon, minCo, maxCo);
-    o.sCompliance = Math.min(100, (o.buyAmerica?80:20) + o.climateScore*20);
-    o.score = Math.round(w.cost*o.sCost + w.speed*o.sSpeed + w.carbon*o.sCarbon + w.compliance*o.sCompliance);
+  for(const o of opts){
+    o.sC=norm(o.total,mnC,mxC); o.sS=norm(o.days,mnD,mxD);
+    o.sCa=norm(o.carbon,mnCo,mxCo); o.sCo=Math.min(100,(o.ba?80:20)+o.cs*20);
+    o.score=Math.round(w.c*o.sC+w.s*o.sS+w.ca*o.sCa+w.co*o.sCo);
   }
-
-  options.sort((a,b) => b.score - a.score);
-  options.forEach((o,i) => o.rank = i+1);
-  return options.slice(0, 12);
+  opts.sort((a,b)=>b.score-a.score);
+  opts.forEach((o,i)=>o.rank=i+1);
+  return opts.slice(0,8);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// UI — Map, tabs, rendering
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════════════
 
-// Map
-const map = L.map('map').setView([34.05, -118.24], 10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution:'© OpenStreetMap', maxZoom:18
+const map = L.map('map',{zoomControl:false}).setView([40.7128,-74.006],12);
+L.control.zoom({position:'topright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+  attribution:'© OpenStreetMap © CARTO', maxZoom:19, subdomains:'abcd'
 }).addTo(map);
 
-// Markers
-const siteIcon = L.divIcon({className:'', html:'<div style="width:10px;height:10px;background:#3b82f6;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>', iconSize:[10,10], iconAnchor:[5,5]});
-const supplierIcon = L.divIcon({className:'', html:'<div style="width:10px;height:10px;background:#f97316;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>', iconSize:[10,10], iconAnchor:[5,5]});
-const factoryIcon = L.divIcon({className:'', html:'<div style="width:10px;height:10px;background:#16a34a;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>', iconSize:[10,10], iconAnchor:[5,5]});
+const pinIcon = L.divIcon({className:'',html:`<div style="width:20px;height:20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div>`,iconSize:[20,20],iconAnchor:[10,10]});
+const supIcon = L.divIcon({className:'',html:`<div style="width:8px;height:8px;background:#f97316;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>`,iconSize:[8,8],iconAnchor:[4,4]});
+const facIcon = L.divIcon({className:'',html:`<div style="width:8px;height:8px;background:#10b981;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>`,iconSize:[8,8],iconAnchor:[4,4]});
 
-// Add preset site markers
-const siteMarkers = [];
-PRESETS.forEach(p => {
-  const m = L.marker([p.lat, p.lon], {icon:siteIcon}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.zone} · ${p.fhsz}`);
-  m.on('click', () => loadPreset(p));
-  siteMarkers.push(m);
-});
+SUPPLIERS.forEach(s=>L.marker([s.lat,s.lon],{icon:supIcon}).addTo(map).bindPopup(`<b>${s.name}</b><br>${s.city}<br>$${s.cost}/sqft`));
+FACTORIES.forEach(f=>L.marker([f.lat,f.lon],{icon:facIcon}).addTo(map).bindPopup(`<b>${f.name}</b><br>${f.city}`));
 
-// Add supplier markers
-SUPPLIERS.forEach(s => {
-  L.marker([s.lat, s.lon], {icon:supplierIcon}).addTo(map)
-    .bindPopup(`<b>${s.name}</b><br>${s.city}<br>${MATERIALS[s.material].name}<br>$${s.cost}/sqft`);
-});
+let siteMarker=null, routeLines=[];
+function clearRoutes(){routeLines.forEach(l=>map.removeLayer(l));routeLines=[];}
 
-// Add factory markers
-FACTORIES.forEach(f => {
-  L.marker([f.lat, f.lon], {icon:factoryIcon}).addTo(map)
-    .bindPopup(`<b>${f.name}</b><br>${f.city}<br>${f.materials.join(', ')}<br>${f.utilization}% utilized`);
-});
-
-let routeLines = [];
-function clearRouteLines() { routeLines.forEach(l=>map.removeLayer(l)); routeLines=[]; }
-
-function drawRoute(option) {
-  clearRouteLines();
-  const points = [[option.supplier.lat, option.supplier.lon]];
-  if (option.factory) points.push([option.factory.lat, option.factory.lon]);
-  points.push([currentSite.lat, currentSite.lon]);
-
-  for (let i=0; i<points.length-1; i++) {
-    const line = L.polyline([points[i], points[i+1]], {color:'#f97316', weight:2, opacity:0.6, dashArray:'6,4'}).addTo(map);
-    routeLines.push(line);
-  }
-  const bounds = L.latLngBounds(points);
-  map.fitBounds(bounds, {padding:[40,40]});
+function placePin(lat,lon){
+  if(siteMarker) map.removeLayer(siteMarker);
+  siteMarker=L.marker([lat,lon],{icon:pinIcon}).addTo(map);
+  map.setView([lat,lon],15);
+  document.getElementById('mapInstructions').style.display='none';
 }
 
-// Current site state
-let currentSite = {lat:34.05, lon:-118.24};
-
-// Tabs
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn tab-inactive');
-    btn.className = 'tab-btn tab-active';
-    document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
-    document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-  });
+// Map click
+map.on('click', e => {
+  const {lat,lng}=e.latlng;
+  placePin(lat,lng);
+  reverseGeocode(lat,lng);
 });
 
+// ═══════════════════════════════════════════════
+// SEARCH + ZOLA
+// ═══════════════════════════════════════════════
+
+const searchInput=document.getElementById('searchInput');
+const searchResults=document.getElementById('searchResults');
+let searchTimeout;
+
+searchInput.addEventListener('input', ()=>{
+  clearTimeout(searchTimeout);
+  const q=searchInput.value.trim();
+  if(q.length<3){searchResults.classList.remove('open');return;}
+  searchTimeout=setTimeout(()=>geoSearch(q),300);
+});
+
+searchInput.addEventListener('focus',()=>{if(searchResults.children.length)searchResults.classList.add('open');});
+document.addEventListener('click',e=>{if(!e.target.closest('#searchWrap'))searchResults.classList.remove('open');});
+
+async function geoSearch(query){
+  try{
+    const r=await fetch(`https://geosearch.planninglabs.nyc/v2/autocomplete?text=${encodeURIComponent(query)}`);
+    const data=await r.json();
+    searchResults.innerHTML='';
+    if(!data.features||!data.features.length){
+      searchResults.innerHTML='<div class="search-result" style="color:var(--text-3)">No results found</div>';
+      searchResults.classList.add('open');
+      return;
+    }
+    data.features.slice(0,6).forEach(f=>{
+      const div=document.createElement('div');
+      div.className='search-result';
+      div.innerHTML=`${f.properties.label}<small>${f.properties.borough||''} · BBL: ${f.properties.pad_bbl||'—'}</small>`;
+      div.onclick=()=>{
+        searchResults.classList.remove('open');
+        searchInput.value=f.properties.label;
+        const[lon,lat]=f.geometry.coordinates;
+        placePin(lat,lon);
+        loadSite(lat,lon,f.properties);
+      };
+      searchResults.appendChild(div);
+    });
+    searchResults.classList.add('open');
+  }catch(e){console.error('GeoSearch error:',e);}
+}
+
+async function reverseGeocode(lat,lon){
+  try{
+    const r=await fetch(`https://geosearch.planninglabs.nyc/v2/reverse?point.lat=${lat}&point.lon=${lon}&size=1`);
+    const data=await r.json();
+    if(data.features&&data.features.length){
+      searchInput.value=data.features[0].properties.label||'';
+      loadSite(lat,lon,data.features[0].properties);
+    }else{
+      loadSite(lat,lon,{label:`${lat.toFixed(5)}, ${lon.toFixed(5)}`,borough:'NYC'});
+    }
+  }catch(e){
+    loadSite(lat,lon,{label:`${lat.toFixed(5)}, ${lon.toFixed(5)}`,borough:'NYC'});
+  }
+}
+
+// ═══════════════════════════════════════════════
+// LOAD + RENDER
+// ═══════════════════════════════════════════════
+
+let currentLat,currentLon;
+
+function loadSite(lat,lon,props){
+  currentLat=lat; currentLon=lon;
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('filledPanel').style.display='block';
+
+  // Hero
+  document.getElementById('heroAddress').textContent=props.label||`${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+  document.getElementById('heroMeta').textContent=[props.borough,props.pad_bbl?`BBL ${props.pad_bbl}`:''].filter(Boolean).join(' · ');
+
+  // Zoning — derive from zone district or default
+  const zoneDistrict = props.pad_bbl ? guessZone(props) : 'R6';
+  const lotArea = 2500 + Math.round(Math.random()*3000); // Simulated for now
+  const lotWidth = Math.round(25 + Math.random()*35);
+  const far = zoneDistrict.startsWith('R') ? parseFloat((1 + Math.random()*3).toFixed(1)) : 5.0;
+
+  document.getElementById('zVal').textContent=zoneDistrict;
+  document.getElementById('lotVal').textContent=lotArea.toLocaleString()+' sf';
+  document.getElementById('farVal').textContent=far;
+  document.getElementById('bldgVal').textContent=props.pad_bbl?'R1':'—';
+  document.getElementById('overlayVal').textContent='None';
+  document.getElementById('boroVal').textContent=props.borough||'—';
+
+  // Feasibility
+  const lot={zone:zoneDistrict,area:lotArea,width:lotWidth,heightLimit:35,maxCov:65,existCov:30+Math.random()*15};
+  const fit=evalFeasibility(lot);
+  renderFeasibility(fit);
+
+  // Materials
+  renderMaterials('standard');
+
+  // Clear old route results
+  document.getElementById('routeResults').innerHTML='';
+  clearRoutes();
+}
+
+function guessZone(props){
+  // Simple heuristic based on borough
+  const b=(props.borough||'').toLowerCase();
+  if(b.includes('manhattan')) return 'R8';
+  if(b.includes('brooklyn')) return 'R6';
+  if(b.includes('queens')) return 'R5';
+  if(b.includes('bronx')) return 'R6';
+  if(b.includes('staten')) return 'R3-2';
+  return 'R6';
+}
+
+function renderFeasibility(fit){
+  const badge=document.getElementById('fitBadge');
+  badge.textContent=fit.outcome==='EXACT'?'EXACT FIT':fit.outcome==='MINOR'?'MINOR FIT':fit.outcome==='MAJOR'?'NEEDS CERT':'NO FIT';
+  badge.className='fit-badge fit-'+fit.outcome;
+  document.getElementById('fitVariant').textContent=fit.variant.label;
+  const reasons={EXACT:'All gates pass with standard variant',MINOR:'Non-standard variant required',MAJOR:'Future certification needed',NO_FIT:'No variant fits this site'};
+  document.getElementById('fitReason').textContent=reasons[fit.outcome];
+
+  document.getElementById('gatesList').innerHTML=fit.gates.map(g=>`
+    <div class="gate">
+      <div class="gate-dot ${g.ok?'pass':'fail'}"></div>
+      <span>${g.msg}</span>
+    </div>
+  `).join('');
+}
+
+function renderMaterials(zone){
+  const el=document.getElementById('matSection');
+  const entries=Object.values(MATERIALS).map(m=>({...m,s:m.scores[zone]||.5})).sort((a,b)=>b.s-a.s);
+
+  el.innerHTML=entries.map((m,i)=>{
+    const sc=m.s>=.8?'score-high':m.s>=.5?'score-mid':'score-low';
+    const carbonTxt=m.carbon<0?`${m.carbon} kg (sequesters)`:`${m.carbon} kg/sqft`;
+    return `
+      <div class="mat-card ${i===0?'best':''}">
+        <div class="mat-head">
+          <span class="mat-name">${m.short} — ${m.name}</span>
+          <span class="mat-score ${sc}">${(m.s*100).toFixed(0)}%</span>
+        </div>
+        <div class="mat-stats">
+          <div>Carbon: <b>${carbonTxt}</b></div>
+          <div>Buy America: <b>${m.buyAmerica?'Yes':'No'}</b></div>
+          <div>From $${m.variants[m.variants.length-1].cost}/sqft</div>
+          <div>Lead: ${m.variants[0].lead}–${m.variants[m.variants.length-1].lead}d</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 // Weight sliders
-['wCost','wSpeed','wCarbon','wComp'].forEach(id => {
-  const el = document.getElementById(id);
-  const val = document.getElementById(id+'Val');
-  el.addEventListener('input', () => { val.textContent = el.value+'%'; });
+['wCost','wSpeed','wCarbon','wComp'].forEach(id=>{
+  const el=document.getElementById(id),v=document.getElementById(id+'V');
+  el.addEventListener('input',()=>{v.textContent=el.value+'%';});
 });
 
 // Presets
-document.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const [c,s,ca,co] = btn.dataset.weights.split(',').map(Number);
-    document.getElementById('wCost').value = c; document.getElementById('wCostVal').textContent = c+'%';
-    document.getElementById('wSpeed').value = s; document.getElementById('wSpeedVal').textContent = s+'%';
-    document.getElementById('wCarbon').value = ca; document.getElementById('wCarbonVal').textContent = ca+'%';
-    document.getElementById('wComp').value = co; document.getElementById('wCompVal').textContent = co+'%';
-    document.querySelectorAll('.preset-btn').forEach(b => { b.className='preset-btn text-[10px] px-2 py-1 rounded border border-neutral-300 hover:border-orange-500'; });
-    btn.className='preset-btn text-[10px] px-2 py-1 rounded border border-orange-500 bg-orange-50 text-orange-700';
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const[c,s,ca,co]=btn.dataset.w.split(',').map(Number);
+    document.getElementById('wCost').value=c;document.getElementById('wCostV').textContent=c+'%';
+    document.getElementById('wSpeed').value=s;document.getElementById('wSpeedV').textContent=s+'%';
+    document.getElementById('wCarbon').value=ca;document.getElementById('wCarbonV').textContent=ca+'%';
+    document.getElementById('wComp').value=co;document.getElementById('wCompV').textContent=co+'%';
   });
 });
 
-// Load preset
-function loadPreset(p) {
-  currentSite = {lat:p.lat, lon:p.lon};
-  document.getElementById('zone').value = p.zone;
-  document.getElementById('width').value = p.w;
-  document.getElementById('depth').value = p.d;
-  document.getElementById('sbF').value = 20; document.getElementById('sbS').value = 5; document.getElementById('sbR').value = 15;
-  document.getElementById('cover').value = p.cover; document.getElementById('coverVal').textContent = p.cover;
-  document.getElementById('exist').value = p.exist; document.getElementById('existVal').textContent = p.exist;
-  document.getElementById('slope').value = p.slope; document.getElementById('slopeVal').textContent = p.slope;
-  document.getElementById('transit').checked = p.transit;
-  document.getElementById('fhsz').value = p.fhsz;
-  document.getElementById('flood').value = p.flood;
-  refresh();
-}
-
-// Gather inputs
-function gatherSite() {
-  return {
-    w: +document.getElementById('width').value, d: +document.getElementById('depth').value,
-    sbF: +document.getElementById('sbF').value, sbS: +document.getElementById('sbS').value, sbR: +document.getElementById('sbR').value,
-    cover: +document.getElementById('cover').value, exist: +document.getElementById('exist').value,
-    slope: +document.getElementById('slope').value, transit: document.getElementById('transit').checked,
-    fhsz: document.getElementById('fhsz').value, flood: document.getElementById('flood').value,
-    future: document.getElementById('future').checked,
-  };
-}
-
-// Render feasibility
-function renderFeasibility(result) {
-  const badge = document.getElementById('badge');
-  badge.textContent = result.outcome === 'EXACT' ? 'EXACT FIT' : result.outcome;
-  badge.className = 'chip badge-' + result.outcome + ' px-3 py-1';
-  document.getElementById('variant').textContent = result.variant.label;
-  const reasons = {EXACT:'Standard variant passes all gates', MINOR:'Non-default variant required', MAJOR:'Future certification needed', NO_FIT:'No variant fits this site'};
-  document.getElementById('rationale').textContent = reasons[result.outcome];
-  document.getElementById('bomFoundation').textContent = result.variant.foundation;
-
-  const gatesEl = document.getElementById('gates');
-  gatesEl.innerHTML = result.gates.map(g =>
-    `<li><span class="chip ${g.ok?'gate-pass':'gate-fail'}">${g.ok?'PASS':'FAIL'}</span> ${g.msg}</li>`
-  ).join('');
-}
-
-// Render materials
-function renderMaterials(fhsz, flood) {
-  const zone = getClimateZone(fhsz, flood);
-  const cards = document.getElementById('materialCards');
-  const entries = Object.values(MATERIALS).map(m => ({...m, score: m.climateScores[zone]||0})).sort((a,b)=>b.score-a.score);
-
-  cards.innerHTML = entries.map(m => {
-    const color = m.score >= 0.8 ? 'text-green-700 bg-green-50' : m.score >= 0.5 ? 'text-amber-700 bg-amber-50' : 'text-red-700 bg-red-50';
-    const carbonLabel = m.carbon < 0 ? `<span class="text-green-600">${m.carbon} kg</span> (sequesters)` : `${m.carbon} kg/sqft`;
-    const treatments = (m.treatments[zone]||[]).join(', ') || 'None required';
-    return `
-      <div class="material-card">
-        <div class="flex items-center justify-between mb-1">
-          <span class="font-semibold text-xs">${m.category}</span>
-          <span class="chip ${color}">${(m.score*100).toFixed(0)}%</span>
-        </div>
-        <div class="text-[10px] text-neutral-500 mb-1">${m.name}</div>
-        <div class="text-[10px]">
-          <div>Carbon: ${carbonLabel}</div>
-          <div>Buy America: ${m.buyAmerica?'<span class="text-green-600">Yes</span>':'<span class="text-red-600">No</span>'}</div>
-          <div class="text-neutral-400 mt-1">Treatments: ${treatments}</div>
-        </div>
-        <div class="mt-1 text-[10px] text-neutral-400">${m.variants.length} variants · $${m.variants[0].cost}/sqft+</div>
-      </div>`;
-  }).join('');
-}
-
-// Render optimizer results
-function renderOptimizer(results) {
-  const el = document.getElementById('optimizerResults');
-  if (!results.length) {
-    el.innerHTML = '<div class="text-xs text-neutral-400 text-center py-4">No viable routes found</div>';
-    return;
-  }
-
-  el.innerHTML = results.map((o,i) => {
-    const barColor = i===0?'bg-orange-500':i<3?'bg-amber-400':'bg-neutral-300';
-    const matColor = {sip:'bg-blue-100 text-blue-700', clt:'bg-green-100 text-green-700', steel:'bg-neutral-200 text-neutral-700'}[o.matId]||'bg-neutral-100';
-    const crown = i===0 ? '<span class="text-orange-500 font-bold">★</span>' : '';
-
-    return `
-      <div class="border rounded-lg p-2 ${i===0?'border-orange-400 bg-orange-50/50':'border-neutral-200'} cursor-pointer hover:border-orange-300 transition" onclick="selectRoute(${i})">
-        <div class="flex items-center justify-between mb-1">
-          <div class="flex items-center gap-1">
-            ${crown}<span class="font-bold text-sm">#${o.rank}</span>
-            <span class="chip ${matColor} text-[10px]">${o.material.category}</span>
-            ${o.buyAmerica?'<span class="chip bg-green-100 text-green-700 text-[10px]">Buy America</span>':'<span class="chip bg-red-100 text-red-700 text-[10px]">Import</span>'}
-          </div>
-          <span class="font-bold text-sm">${o.score}/100</span>
-        </div>
-        <div class="text-xs text-neutral-600 mb-1">${o.route}</div>
-        <div class="grid grid-cols-4 gap-1 mb-1 text-[10px]">
-          <div><span class="text-neutral-400">Cost</span><div class="font-semibold">$${o.costPerSqft}/sf</div></div>
-          <div><span class="text-neutral-400">Total</span><div class="font-semibold">$${o.totalCost.toLocaleString()}</div></div>
-          <div><span class="text-neutral-400">Days</span><div class="font-semibold">${o.totalDays}d</div></div>
-          <div><span class="text-neutral-400">CO₂</span><div class="font-semibold">${o.carbon}kg</div></div>
-        </div>
-        <div class="grid grid-cols-4 gap-1 text-[10px]">
-          <div><div class="text-neutral-400 mb-0.5">Cost</div><div class="w-full bg-neutral-100 rounded-full"><div class="score-bar ${o.sCost>70?'bg-green-500':o.sCost>40?'bg-amber-400':'bg-red-400'}" style="width:${o.sCost}%"></div></div></div>
-          <div><div class="text-neutral-400 mb-0.5">Speed</div><div class="w-full bg-neutral-100 rounded-full"><div class="score-bar ${o.sSpeed>70?'bg-green-500':o.sSpeed>40?'bg-amber-400':'bg-red-400'}" style="width:${o.sSpeed}%"></div></div></div>
-          <div><div class="text-neutral-400 mb-0.5">Carbon</div><div class="w-full bg-neutral-100 rounded-full"><div class="score-bar ${o.sCarbon>70?'bg-green-500':o.sCarbon>40?'bg-amber-400':'bg-red-400'}" style="width:${o.sCarbon}%"></div></div></div>
-          <div><div class="text-neutral-400 mb-0.5">Compl.</div><div class="w-full bg-neutral-100 rounded-full"><div class="score-bar ${o.sCompliance>70?'bg-green-500':o.sCompliance>40?'bg-amber-400':'bg-red-400'}" style="width:${o.sCompliance}%"></div></div></div>
-        </div>
-        ${o.tariffCost > 0 ? `<div class="text-[10px] text-red-500 mt-1">⚠ Tariff: $${o.tariffCost.toLocaleString()} (${((o.tariffCost/o.matCost)*100).toFixed(0)}%)</div>` : ''}
-      </div>`;
-  }).join('');
-}
-
-let lastResults = [];
-function selectRoute(i) {
-  if (lastResults[i]) drawRoute(lastResults[i]);
-}
-
-// Refresh everything
-function refresh() {
-  const s = gatherSite();
-  document.getElementById('lotArea').textContent = (s.w*s.d).toLocaleString();
-  document.getElementById('bfeWrap').classList.toggle('hidden', s.flood==='X');
-
-  const result = bestFit(s);
-  renderFeasibility(result);
-  renderMaterials(s.fhsz, s.flood);
-}
-
-// Slider bindings
-['cover','exist','slope'].forEach(id => {
-  document.getElementById(id).addEventListener('input', e => {
-    document.getElementById(id+'Val').textContent = e.target.value;
-    refresh();
-  });
-});
-document.querySelectorAll('input,select').forEach(el => el.addEventListener('change', refresh));
-
-// Optimizer button
-document.getElementById('runOptimizer').addEventListener('click', () => {
-  const s = gatherSite();
-  const weights = {
-    cost: +document.getElementById('wCost').value,
-    speed: +document.getElementById('wSpeed').value,
-    carbon: +document.getElementById('wCarbon').value,
-    compliance: +document.getElementById('wComp').value,
-  };
-  lastResults = runOptimizer(currentSite.lat, currentSite.lon, 1200, s.fhsz, s.flood, weights);
-  renderOptimizer(lastResults);
-
-  // Switch to supply tab and show top route
-  document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn tab-inactive');
-  document.querySelector('[data-tab="supply"]').className = 'tab-btn tab-active';
-  document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
-  document.getElementById('tab-supply').classList.remove('hidden');
-
-  if (lastResults.length) {
-    const top = lastResults[0];
-    drawRoute(top);
-    renderSupplyDetail(top);
-  }
+// Run optimizer
+document.getElementById('runBtn').addEventListener('click',()=>{
+  if(!currentLat) return;
+  const weights={cost:+document.getElementById('wCost').value,speed:+document.getElementById('wSpeed').value,carbon:+document.getElementById('wCarbon').value,comp:+document.getElementById('wComp').value};
+  const results=runOptimizer(currentLat,currentLon,1200,weights);
+  renderRoutes(results);
+  if(results.length) drawRoute(results[0]);
 });
 
-function renderSupplyDetail(o) {
-  const el = document.getElementById('supplyContent');
-  el.innerHTML = `
-    <div class="flex items-center gap-2 mb-2">
-      <span class="font-bold text-sm">Top route: ${o.material.name}</span>
-      <span class="chip bg-orange-100 text-orange-700">Score: ${o.score}/100</span>
-    </div>
-    <div class="grid grid-cols-3 gap-3 text-xs mb-2">
-      <div class="border rounded p-2">
-        <div class="text-neutral-400 text-[10px]">Material Cost</div>
-        <div class="font-bold">$${o.matCost.toLocaleString()}</div>
-      </div>
-      <div class="border rounded p-2">
-        <div class="text-neutral-400 text-[10px]">Freight</div>
-        <div class="font-bold">$${o.freightCost.toLocaleString()}</div>
-      </div>
-      <div class="border rounded p-2">
-        <div class="text-neutral-400 text-[10px]">${o.tariffCost>0?'Tariff':'No Tariff'}</div>
-        <div class="font-bold ${o.tariffCost>0?'text-red-600':''}">${o.tariffCost>0?'$'+o.tariffCost.toLocaleString():'$0'}</div>
-      </div>
-    </div>
-    <div class="text-xs">
-      <div class="font-semibold text-neutral-500 text-[10px] uppercase mb-1">Route legs</div>
-      ${o.legs.map((l,i) => `
-        <div class="flex items-center gap-2 mb-1">
-          <div class="w-4 h-4 rounded-full ${i===0?'bg-orange-500':'bg-green-500'} text-white text-[8px] grid place-items-center font-bold">${i+1}</div>
-          <div class="flex-1">
-            <span class="font-medium">${l.from}</span> → <span class="font-medium">${l.to}</span>
-            <span class="text-neutral-400 ml-1">${l.dist.toLocaleString()} mi · ${l.mode} · ${l.days}d · $${l.cost.toLocaleString()}</span>
+function renderRoutes(results){
+  const el=document.getElementById('routeResults');
+  if(!results.length){el.innerHTML='<div style="text-align:center;color:var(--text-3);padding:20px;font-size:12px;">No viable routes</div>';return;}
+
+  el.innerHTML=results.map((o,i)=>{
+    const fillClass=v=>v>70?'fill-green':v>40?'fill-amber':'fill-red';
+    return `
+      <div class="route-card ${i===0?'top':''}" onclick="drawRoute(window._routes[${i}])">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="route-rank">#${o.rank}</span>
+            <span class="tag tag-purple">${o.mat.short}</span>
+            ${o.ba?'<span class="tag tag-green">Buy America</span>':'<span class="tag tag-red">Import</span>'}
+            ${o.tariffC>0?`<span class="tag tag-amber">Tariff $${o.tariffC.toLocaleString()}</span>`:''}
           </div>
+          <span class="route-score">${o.score}<span style="font-size:11px;color:var(--text-3);font-weight:400">/100</span></span>
         </div>
-      `).join('')}
-      <div class="mt-2 flex gap-3 text-[10px] text-neutral-500">
-        <span>Total: <b>$${o.totalCost.toLocaleString()}</b></span>
-        <span>Lead: <b>${o.totalDays} days</b></span>
-        <span>CO₂: <b>${o.carbon} kg</b></span>
-        <span>Variant: <b>${o.variant.name}</b></span>
-      </div>
-    </div>
-  `;
+        <div style="font-size:11px;color:var(--text-2);margin-bottom:4px;">${o.route}</div>
+        <div class="route-meta">
+          <div class="route-meta-item"><div class="val">$${o.cpSf}</div><div class="lbl">per sqft</div></div>
+          <div class="route-meta-item"><div class="val">$${o.total.toLocaleString()}</div><div class="lbl">total</div></div>
+          <div class="route-meta-item"><div class="val">${o.days}d</div><div class="lbl">lead time</div></div>
+          <div class="route-meta-item"><div class="val">${o.carbon}kg</div><div class="lbl">CO₂</div></div>
+        </div>
+        <div class="score-bars">
+          <div class="score-bar-wrap"><div class="score-bar-label">Cost</div><div class="score-bar-bg"><div class="score-bar-fill ${fillClass(o.sC)}" style="width:${o.sC}%"></div></div></div>
+          <div class="score-bar-wrap"><div class="score-bar-label">Speed</div><div class="score-bar-bg"><div class="score-bar-fill ${fillClass(o.sS)}" style="width:${o.sS}%"></div></div></div>
+          <div class="score-bar-wrap"><div class="score-bar-label">Carbon</div><div class="score-bar-bg"><div class="score-bar-fill ${fillClass(o.sCa)}" style="width:${o.sCa}%"></div></div></div>
+          <div class="score-bar-wrap"><div class="score-bar-label">Compliance</div><div class="score-bar-bg"><div class="score-bar-fill ${fillClass(o.sCo)}" style="width:${o.sCo}%"></div></div></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  window._routes=results;
 }
 
-// Init
-refresh();
+function drawRoute(o){
+  clearRoutes();
+  const pts=[[o.sup.lat,o.sup.lon]];
+  if(o.fac) pts.push([o.fac.lat,o.fac.lon]);
+  pts.push([currentLat,currentLon]);
+  for(let i=0;i<pts.length-1;i++){
+    const line=L.polyline([pts[i],pts[i+1]],{color:'#6366f1',weight:2.5,opacity:.7,dashArray:'8,6'}).addTo(map);
+    routeLines.push(line);
+  }
+  // Don't change zoom if already viewing NYC
+}
+
 </script>
 </body>
 </html>
