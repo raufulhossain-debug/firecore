@@ -6573,7 +6573,6 @@ function renderPlans() {
   const rear = rules.yards.rear || 20;
   const sideVal = parseInt(rules.yards.side) || 0;
 
-  // Title block data
   const tb = {
     addr: addr.toUpperCase(),
     zone: zone,
@@ -6602,15 +6601,18 @@ function noSheet(msg) {
   return `<div style="padding:60px;text-align:center;color:#9ca3af;font-size:14px;">${msg}</div>`;
 }
 
-// SVG helper functions
-function svgLine(x1,y1,x2,y2,opts={}) {
+// ===================================
+// SVG CORE HELPERS
+// ===================================
+
+function svgLine(x1, y1, x2, y2, opts = {}) {
   const sw = opts.sw || 1;
   const color = opts.color || '#000';
   const dash = opts.dash ? ` stroke-dasharray="${opts.dash}"` : '';
-  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${sw}"${dash}/>`;
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"${dash}/>`;
 }
 
-function svgRect(x,y,w,h,opts={}) {
+function svgRect(x, y, w, h, opts = {}) {
   const fill = opts.fill || 'none';
   const stroke = opts.stroke || '#000';
   const sw = opts.sw || 1;
@@ -6618,171 +6620,688 @@ function svgRect(x,y,w,h,opts={}) {
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"${dash}/>`;
 }
 
-function svgText(x,y,text,opts={}) {
+function svgText(x, y, text, opts = {}) {
   const size = opts.size || 10;
   const anchor = opts.anchor || 'middle';
   const weight = opts.weight || 'normal';
   const color = opts.color || '#000';
-  const rotate = opts.rotate ? ` transform="rotate(${opts.rotate},${x},${y})"` : '';
-  return `<text x="${x}" y="${y}" font-size="${size}" font-family="'Inter',sans-serif" text-anchor="${anchor}" font-weight="${weight}" fill="${color}"${rotate}>${text}</text>`;
+  const rotate = opts.rotate ? ` transform="rotate(${opts.rotate}, ${x}, ${y})"` : '';
+  return `<text x="${x}" y="${y}" font-size="${size}" font-family="'Inter', sans-serif" text-anchor="${anchor}" font-weight="${weight}" fill="${color}" dominant-baseline="central"${rotate}>${text}</text>`;
 }
 
-function svgDimension(x1,y1,x2,y2,label,side='below',offset=20) {
-  const isHoriz = Math.abs(y1-y2) < Math.abs(x1-x2);
-  let lines = '';
+function svgDimension(x1, y1, x2, y2, label, side = 'below', offset = 20) {
+  const isHoriz = Math.abs(y1 - y2) < Math.abs(x1 - x2);
+  let markup = '';
   if (isHoriz) {
     const dy = side === 'below' ? offset : -offset;
     const ey = y1 + dy;
-    lines += svgLine(x1,y1,x1,ey+3,{sw:0.5,color:'#333'});
-    lines += svgLine(x2,y2,x2,ey+3,{sw:0.5,color:'#333'});
-    lines += svgLine(x1,ey,x2,ey,{sw:0.5,color:'#333'});
-    lines += svgLine(x1,ey-4,x1,ey+4,{sw:1,color:'#333'});
-    lines += svgLine(x2,ey-4,x2,ey+4,{sw:1,color:'#333'});
-    lines += svgText((x1+x2)/2, ey-5, label, {size:9,color:'#333'});
+    markup += svgLine(x1, y1, x1, ey + 3, { sw: 0.5, color: '#333' });
+    markup += svgLine(x2, y2, x2, ey + 3, { sw: 0.5, color: '#333' });
+    markup += svgLine(x1, ey, x2, ey, { sw: 0.5, color: '#333' });
+    markup += svgLine(x1, ey - 4, x1, ey + 4, { sw: 1, color: '#333' });
+    markup += svgLine(x2, ey - 4, x2, ey + 4, { sw: 1, color: '#333' });
+    markup += svgText((x1 + x2) / 2, ey - 8, label, { size: 8, color: '#333' });
   } else {
     const dx = side === 'right' ? offset : -offset;
     const ex = x1 + dx;
-    lines += svgLine(x1,y1,ex+3,y1,{sw:0.5,color:'#333'});
-    lines += svgLine(x2,y2,ex+3,y2,{sw:0.5,color:'#333'});
-    lines += svgLine(ex,y1,ex,y2,{sw:0.5,color:'#333'});
-    lines += svgLine(ex-4,y1,ex+4,y1,{sw:1,color:'#333'});
-    lines += svgLine(ex-4,y2,ex+4,y2,{sw:1,color:'#333'});
-    lines += svgText(ex-8, (y1+y2)/2, label, {size:9,color:'#333',rotate:-90});
+    markup += svgLine(x1, y1, ex + 3, y1, { sw: 0.5, color: '#333' });
+    markup += svgLine(x2, y2, ex + 3, y2, { sw: 0.5, color: '#333' });
+    markup += svgLine(ex, y1, ex, y2, { sw: 0.5, color: '#333' });
+    markup += svgLine(ex - 4, y1, ex + 4, y1, { sw: 1, color: '#333' });
+    markup += svgLine(ex - 4, y2, ex + 4, y2, { sw: 1, color: '#333' });
+    markup += svgText(ex - 12, (y1 + y2) / 2, label, { size: 8, color: '#333', rotate: -90 });
   }
-  return lines;
+  return markup;
 }
 
 function svgTitleBlock(x, y, w, h, tb, sheetName, sheetNo) {
   let s = '';
-  s += svgRect(x, y, w, h, {sw:2});
-  s += svgLine(x+w-180, y, x+w-180, y+h, {sw:1});
-  const rx = x + w - 170;
-  s += svgText(rx, y+15, 'PrefabOS', {size:14, weight:'800', anchor:'start', color:'#4f46e5'});
-  s += svgText(rx, y+28, 'Prefab Housing Intelligence', {size:7, anchor:'start', color:'#666'});
-  s += svgLine(rx-10, y+34, x+w-10, y+34, {sw:0.5, color:'#ccc'});
-  s += svgText(rx, y+48, tb.addr, {size:8, weight:'600', anchor:'start'});
-  s += svgText(rx, y+60, `Zone: ${tb.zone}  |  ${tb.sku}`, {size:7, anchor:'start', color:'#666'});
-  s += svgLine(rx-10, y+66, x+w-10, y+66, {sw:0.5, color:'#ccc'});
-  s += svgText(rx, y+78, `Date: ${tb.date}`, {size:7, anchor:'start', color:'#666'});
-  s += svgText(rx, y+88, `Job: ${tb.jobNo}`, {size:7, anchor:'start', color:'#666'});
-  s += svgText(rx, y+98, `Scale: ${tb.scale}`, {size:7, anchor:'start', color:'#666'});
-  s += svgLine(rx-10, y+104, x+w-10, y+104, {sw:0.5, color:'#ccc'});
-  s += svgText(rx+80, y+120, sheetNo, {size:16, weight:'800', color:'#4f46e5'});
-  s += svgText(rx, y+120, sheetName, {size:8, weight:'600', anchor:'start'});
+  s += svgRect(x, y, w, h, { fill: '#fafafa', stroke: '#000', sw: 2 });
+  s += svgLine(x + w - 200, y, x + w - 200, y + h, { sw: 1, color: '#000' });
+  const rx = x + w - 190;
+  s += svgText(rx, y + 12, 'PrefabOS', { size: 13, weight: '700', anchor: 'start', color: '#4f46e5' });
+  s += svgText(rx, y + 24, 'Architectural Plans', { size: 6, anchor: 'start', color: '#666' });
+  s += svgLine(rx - 8, y + 30, x + w - 8, y + 30, { sw: 0.5, color: '#ccc' });
+  s += svgText(rx, y + 42, tb.addr.substring(0, 35), { size: 7, weight: '600', anchor: 'start' });
+  s += svgText(rx, y + 52, `Zone ${tb.zone} | ${tb.sku}`, { size: 6, anchor: 'start', color: '#666' });
+  s += svgLine(rx - 8, y + 58, x + w - 8, y + 58, { sw: 0.5, color: '#ccc' });
+  s += svgText(rx, y + 68, `Date: ${tb.date}`, { size: 6, anchor: 'start', color: '#666' });
+  s += svgText(rx, y + 76, `Job: ${tb.jobNo}`, { size: 6, anchor: 'start', color: '#666' });
+  s += svgText(rx, y + 84, `Scale: ${tb.scale}`, { size: 6, anchor: 'start', color: '#666' });
+  s += svgLine(rx - 8, y + 90, x + w - 8, y + 90, { sw: 0.5, color: '#ccc' });
+  s += svgText(x + w - 20, y + h - 15, sheetNo, { size: 14, weight: '700', anchor: 'end', color: '#4f46e5' });
+  s += svgText(rx, y + h - 15, sheetName, { size: 7, weight: '600', anchor: 'start' });
   return s;
 }
 
-// Simplified drawing functions
-function drawCoverSheet(sku, tb, lotW, lotD, bldgW, bldgD, bldgH, stories, floorH, front, rear, sideVal, rules) {
-  const W = 1000, H = 700;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
-  svg += svgRect(10, 10, W-20, H-20, {sw:2});
-  svg += svgText(50, 50, 'AXONOMETRIC DIAGRAM', {size:12, weight:'700', anchor:'start'});
-  svg += svgText(W/2, H-160, 'Cover Sheet — Zoning Analysis', {size:11, weight:'600', anchor:'middle'});
-  svg += svgText(50, H-160, `Zone: ${tb.zone} | Lot: ${lotW}\'×${lotD}\'`, {size:10, anchor:'start', color:'#666'});
-  svg += svgText(50, H-140, `Max Height: ${rules.height.maxHeight}ft | FAR: ${rules.far.standard}`, {size:10, anchor:'start', color:'#666'});
-  svg += svgTitleBlock(10, H-130, W-20, 110, tb, 'COVER', 'G-100');
-  svg += '</svg>';
-  return svg;
+// ===================================
+// ARCHITECTURAL FIXTURE HELPERS
+// ===================================
+
+function svgWallThick(x1, y1, x2, y2, thickness, opts = {}) {
+  const fill = opts.fill || '#e5e7eb';
+  const stroke = opts.stroke || '#000';
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  const nx = -dy / len * (thickness / 2);
+  const ny = dx / len * (thickness / 2);
+  const p1 = `${x1 + nx},${y1 + ny}`;
+  const p2 = `${x2 + nx},${y2 + ny}`;
+  const p3 = `${x2 - nx},${y2 - ny}`;
+  const p4 = `${x1 - nx},${y1 - ny}`;
+  return `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/>`;
 }
 
-function drawSitePlan(sku, tb, lotW, lotD, bldgW, bldgD, front, rear, sideVal, rules) {
-  const W = 1000, H = 700;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
-  svg += svgRect(10, 10, W-20, H-20, {sw:2});
-  svg += svgText(W/2, 50, 'SITE PLAN', {size:12, weight:'700', anchor:'middle'});
-  svg += svgText(W/2, 80, `Scale: 1/4" = 1'-0"`, {size:8, anchor:'middle', color:'#666'});
-  const s = 4;
-  const ox = 200, oy = 100;
-  const lw = lotW * s, ld = lotD * s;
-  svg += svgRect(ox, oy, lw, ld, {fill:'#fafafa', stroke:'#2d6a4f', sw:1.5});
-  svg += svgDimension(ox, oy+ld, ox+lw, oy+ld, `${lotW}'-0"`, 'below', 25);
-  svg += svgDimension(ox+lw, oy, ox+lw, oy+ld, `${lotD}'-0"`, 'right', 25);
-  const bw = bldgW * s, bd = bldgD * s;
-  const bx = ox + sideVal * s, by = oy + front * s;
-  svg += svgRect(bx, by, bw, bd, {fill:'rgba(99,102,241,0.08)', stroke:'#4f46e5', sw:1.5});
-  svg += svgText(bx+bw/2, by+bd/2, `${sku.name}`, {size:9, weight:'700', color:'#4f46e5'});
-  svg += svgTitleBlock(10, H-130, W-20, 110, tb, 'SITE PLAN', 'Z-100');
-  svg += '</svg>';
-  return svg;
+function svgToilet(x, y, angle = 0) {
+  const s = angle === 90 ? `<g transform="rotate(${angle}, ${x}, ${y})">` : '<g>';
+  let g = s;
+  g += svgRect(x - 6, y - 8, 12, 8, { fill: '#f5f5f5', stroke: '#000', sw: 0.75 });
+  g += svgRect(x - 5, y - 16, 10, 7, { fill: 'none', stroke: '#000', sw: 0.75 });
+  g += svgRect(x - 3, y - 14, 6, 3, { fill: '#f5f5f5', stroke: '#000', sw: 0.5 });
+  g += '</g>';
+  return g;
 }
+
+function svgSink(x, y, angle = 0) {
+  const s = angle === 90 ? `<g transform="rotate(${angle}, ${x}, ${y})">` : '<g>';
+  let g = s;
+  g += svgRect(x - 6, y - 4, 12, 8, { fill: 'none', stroke: '#000', sw: 0.75 });
+  g += `<path d="M ${x - 4} ${y - 4} Q ${x - 4} ${y + 2} ${x} ${y + 3} Q ${x + 4} ${y + 2} ${x + 4} ${y - 4}" fill="none" stroke="#000" stroke-width="0.75"/>`;
+  g += '</g>';
+  return g;
+}
+
+function svgBathtub(x, y, w, h) {
+  let g = '<g>';
+  g += svgRect(x, y, w, h, { fill: '#f0f9ff', stroke: '#000', sw: 1 });
+  g += svgRect(x + 2, y + 2, 3, 3, { fill: 'none', stroke: '#333', sw: 0.5 });
+  g += '</g>';
+  return g;
+}
+
+function svgShower(x, y, w, h) {
+  let g = '<g>';
+  g += svgRect(x, y, w, h, { fill: 'none', stroke: '#000', sw: 1 });
+  g += svgLine(x + 2, y + 2, x + w - 2, y + h - 2, { sw: 0.5, color: '#666' });
+  g += svgLine(x + w - 2, y + 2, x + 2, y + h - 2, { sw: 0.5, color: '#666' });
+  g += svgRect(x + w / 2 - 2, y + h - 3, 4, 3, { fill: 'none', stroke: '#333', sw: 0.5 });
+  g += '</g>';
+  return g;
+}
+
+function svgStove(x, y) {
+  let g = '<g>';
+  g += svgRect(x - 8, y - 8, 16, 16, { fill: 'none', stroke: '#000', sw: 0.75 });
+  for (let i = 0; i < 4; i++) {
+    const bx = x - 6 + (i % 2) * 6;
+    const by = y - 6 + Math.floor(i / 2) * 6;
+    g += svgRect(bx - 2, by - 2, 4, 4, { fill: 'none', stroke: '#000', sw: 0.75 });
+    g += svgRect(bx - 1.5, by - 1.5, 3, 3, { fill: '#f5f5f5', stroke: 'none' });
+  }
+  g += '</g>';
+  return g;
+}
+
+function svgFridge(x, y) {
+  let g = '<g>';
+  g += svgRect(x - 10, y - 8, 20, 16, { fill: '#e0e7ff', stroke: '#000', sw: 1 });
+  g += svgLine(x - 10, y, x + 10, y, { sw: 0.5, color: '#666' });
+  g += svgText(x, y - 2, 'REF', { size: 6, anchor: 'middle', weight: '600', color: '#333' });
+  g += '</g>';
+  return g;
+}
+
+function svgDoorSwing(x, y, w, angle = 0, flip = false) {
+  let g = '<g>';
+  const sign = flip ? -1 : 1;
+  g += svgLine(x, y, x + w, y, { sw: 2.5, color: '#000' });
+  g += svgLine(x, y, x + sign * w * 0.7 * Math.cos(Math.PI / 4), y + sign * w * 0.7 * Math.sin(Math.PI / 4), { sw: 1.5, color: '#000' });
+  const arcPath = `M ${x} ${y} A ${w * 0.7} ${w * 0.7} 0 0 ${flip ? 0 : 1} ${x + sign * w * 0.7 * Math.cos(Math.PI / 4)} ${y + sign * w * 0.7 * Math.sin(Math.PI / 4)}`;
+  g += `<path d="${arcPath}" fill="none" stroke="#000" stroke-width="0.75" stroke-dasharray="2,1"/>`;
+  g += '</g>';
+  return g;
+}
+
+function svgWindow(x, y, len, inWall = true) {
+  let g = '<g>';
+  if (inWall) {
+    g += svgLine(x, y - 1, x + len, y - 1, { sw: 1.5, color: '#000' });
+    g += svgLine(x, y, x + len, y, { sw: 0.75, color: '#000' });
+    g += svgLine(x, y + 1, x + len, y + 1, { sw: 1.5, color: '#000' });
+    g += svgLine(x + len / 2, y - 1, x + len / 2, y + 1, { sw: 0.5, color: '#666' });
+  } else {
+    g += svgRect(x, y - 2, len, 4, { fill: 'none', stroke: '#000', sw: 1 });
+    g += svgLine(x + len / 2, y - 2, x + len / 2, y + 2, { sw: 0.5, color: '#666' });
+  }
+  g += '</g>';
+  return g;
+}
+
+function svgStairPlan(x, y, w, h, numTreads = 4, dir = 'UP') {
+  let g = '<g>';
+  const treadH = h / numTreads;
+  for (let i = 0; i < numTreads; i++) {
+    const ty = y + i * treadH;
+    g += svgLine(x, ty, x + w, ty, { sw: 1, color: '#000' });
+  }
+  g += svgRect(x, y, w, h, { fill: 'none', stroke: '#000', sw: 1.5 });
+  const arrowX = x + w / 2;
+  const arrowY = y + h / 2;
+  g += `<polygon points="${arrowX},${arrowY - 4} ${arrowX - 3},${arrowY + 2} ${arrowX + 3},${arrowY + 2}" fill="#000"/>`;
+  g += svgText(arrowX, arrowY + 8, dir, { size: 7, weight: '600', anchor: 'middle', color: '#000' });
+  g += '</g>';
+  return g;
+}
+
+function svgSectionMarker(x, y, num, ref) {
+  let g = '<g>';
+  g += `<circle cx="${x}" cy="${y}" r="8" fill="none" stroke="#000" stroke-width="1.5"/>`;
+  g += svgText(x, y, num.toString(), { size: 8, weight: '700', anchor: 'middle', color: '#000' });
+  g += svgText(x, y + 12, ref, { size: 6, anchor: 'middle', color: '#333' });
+  g += '</g>';
+  return g;
+}
+
+function svgNorthArrow(x, y) {
+  let g = '<g>';
+  g += `<polygon points="${x},${y - 12} ${x - 4},${y + 2} ${x},${y} ${x + 4},${y + 2}" fill="#000"/>`;
+  g += svgText(x, y + 16, 'N', { size: 8, weight: '700', anchor: 'middle', color: '#000' });
+  g += '</g>';
+  return g;
+}
+
+function svgSmokeDet(x, y) {
+  let g = '<g>';
+  g += `<circle cx="${x}" cy="${y}" r="4" fill="none" stroke="#000" stroke-width="1"/>`;
+  g += `<circle cx="${x}" cy="${y}" r="2" fill="#000"/>`;
+  g += svgText(x, y + 8, 'S/C', { size: 5, anchor: 'middle', color: '#000' });
+  g += '</g>';
+  return g;
+}
+
+function svgExhaustFan(x, y, cfm = 50) {
+  let g = '<g>';
+  g += `<circle cx="${x}" cy="${y}" r="4" fill="none" stroke="#000" stroke-width="1"/>`;
+  g += svgLine(x - 3, y - 3, x + 3, y + 3, { sw: 0.5, color: '#000' });
+  g += svgLine(x + 3, y - 3, x - 3, y + 3, { sw: 0.5, color: '#000' });
+  g += svgText(x, y + 10, `XF ${cfm}`, { size: 5, anchor: 'middle', color: '#333' });
+  g += '</g>';
+  return g;
+}
+
+function svgCloset(x, y, w, h) {
+  let g = '<g>';
+  g += svgRect(x, y, w, h, { fill: 'none', stroke: '#000', sw: 0.75 });
+  g += svgLine(x, y, x + w, y + h, { sw: 0.75, color: '#000' });
+  g += svgText(x + w / 2, y + h / 2 + 3, 'CL.', { size: 6, anchor: 'middle', weight: '600', color: '#333' });
+  g += '</g>';
+  return g;
+}
+
+function svgCounter(x, y, w, h) {
+  let g = '<g>';
+  g += svgRect(x, y, w, h, { fill: '#f5f5f5', stroke: '#000', sw: 1 });
+  g += svgRect(x + w / 2 - 5, y + h / 2 - 3, 10, 6, { fill: 'none', stroke: '#000', sw: 0.75 });
+  g += '</g>';
+  return g;
+}
+
+// ===================================
+// FLOOR PLAN LAYOUT ALGORITHM
+// ===================================
+
+function layoutFloorPlan(bldgW, bldgD, bedrooms, bathrooms, isUpperFloor = false) {
+  const wallT = 0.33;
+  const rooms = [];
+
+  if (isUpperFloor) {
+    const bedroomW = (bldgW - wallT * 2) / 2 - wallT / 2;
+    const bedroomD = (bldgD - wallT * 3) * 0.6;
+    const bathroomW = (bldgW - wallT * 2) / 2 - wallT / 2;
+    const bathroomD = (bldgD - wallT * 3) * 0.4;
+
+    rooms.push({
+      name: 'BEDROOM 1',
+      x: wallT,
+      y: wallT,
+      w: bedroomW,
+      h: bedroomD,
+      fixtures: ['bed']
+    });
+
+    if (bedrooms >= 2) {
+      rooms.push({
+        name: 'BEDROOM 2',
+        x: wallT + bedroomW + wallT,
+        y: wallT,
+        w: bedroomW,
+        h: bedroomD,
+        fixtures: ['bed']
+      });
+    }
+
+    rooms.push({
+      name: 'BATHROOM',
+      x: wallT + bedroomW + wallT,
+      y: wallT + bedroomD + wallT,
+      w: bathroomW,
+      h: bathroomD,
+      fixtures: ['toilet', 'sink', 'bathtub']
+    });
+
+    rooms.push({
+      name: 'HALLWAY',
+      x: wallT,
+      y: wallT + bedroomD + wallT,
+      w: bedroomW,
+      h: bathroomD,
+      fixtures: []
+    });
+  } else {
+    const entryD = bldgD * 0.15;
+    const livingD = bldgD * 0.4;
+    const kitchenD = bldgD * 0.25;
+    const bedroomD = bldgD * 0.2;
+
+    rooms.push({
+      name: 'ENTRY',
+      x: wallT,
+      y: wallT,
+      w: bldgW - wallT * 2,
+      h: entryD,
+      fixtures: []
+    });
+
+    rooms.push({
+      name: 'LIVING & DINING',
+      x: wallT,
+      y: wallT + entryD + wallT,
+      w: bldgW - wallT * 2,
+      h: livingD,
+      fixtures: []
+    });
+
+    rooms.push({
+      name: 'KITCHEN',
+      x: wallT,
+      y: wallT + entryD + wallT + livingD + wallT,
+      w: bldgW - wallT * 2,
+      h: kitchenD,
+      fixtures: ['stove', 'sink', 'fridge']
+    });
+
+    const bedroomW = (bldgW - wallT * 2) / 2 - wallT / 2;
+    rooms.push({
+      name: 'MASTER BEDROOM',
+      x: wallT,
+      y: wallT + entryD + wallT + livingD + wallT + kitchenD + wallT,
+      w: bedroomW,
+      h: bedroomD,
+      fixtures: ['bed']
+    });
+
+    rooms.push({
+      name: 'BATHROOM',
+      x: wallT + bedroomW + wallT,
+      y: wallT + entryD + wallT + livingD + wallT + kitchenD + wallT,
+      w: bedroomW,
+      h: bedroomD,
+      fixtures: ['toilet', 'sink', 'bathtub']
+    });
+  }
+
+  return rooms;
+}
+
+// ===================================
+// FLOOR PLAN RENDERING
+// ===================================
 
 function drawFloorPlan(sku, tb, bldgW, bldgD, floorNum, totalStories) {
-  const W = 1000, H = 700;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
-  svg += svgRect(10, 10, W-20, H-20, {sw:2});
-  const s = 6;
-  const ox = 150, oy = 80;
-  const bw = bldgW * s, bd = bldgD * s;
-  svg += svgRect(ox, oy, bw, bd, {fill:'#fff', stroke:'#000', sw:3});
-  svg += svgDimension(ox, oy+bd, ox+bw, oy+bd, `${bldgW.toFixed(0)}'-0"`, 'below', 30);
-  svg += svgDimension(ox+bw, oy, ox+bw, oy+bd, `${bldgD.toFixed(0)}'-0"`, 'right', 30);
-  const floorNames = {1: 'FIRST', 2: 'SECOND', 3: 'THIRD', 4: 'FOURTH'};
-  svg += svgText(W/2, H-160, `${floorNames[floorNum] || floorNum+'TH'} FLOOR PLAN`, {size:11, weight:'700', anchor:'middle'});
-  svg += svgText(W/2, H-140, `Scale: 1/4" = 1'-0"`, {size:8, anchor:'middle', color:'#666'});
-  svg += svgText(ox+bw/2, oy+bd/2, `${sku.beds} BR / ${sku.baths} BA`, {size:11, weight:'600'});
-  svg += svgTitleBlock(10, H-130, W-20, 110, tb, `${floorNames[floorNum] || floorNum+'TH'} FLOOR`, `A-10${floorNum}`);
+  const VW = 1200, VH = 850;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
+
+  svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
+
+  const s = 8;
+  const ox = 80;
+  const oy = 60;
+  const bw = bldgW * s;
+  const bd = bldgD * s;
+
+  const isUpperFloor = floorNum > 1;
+  const rooms = layoutFloorPlan(bldgW, bldgD, sku.beds, sku.baths, isUpperFloor);
+
+  svg += svgRect(ox, oy, bw, bd, { fill: '#fff', stroke: '#000', sw: 3 });
+
+  for (const room of rooms) {
+    const rx = ox + room.x * s;
+    const ry = oy + room.y * s;
+    const rw = room.w * s;
+    const rh = room.h * s;
+
+    svg += svgRect(rx, ry, rw, rh, { fill: 'none', stroke: '#000', sw: 1.5 });
+
+    for (const fix of room.fixtures) {
+      if (fix === 'bed') {
+        const bx = rx + rw / 2 - 12;
+        const by = ry + rh / 2 - 8;
+        svg += svgRect(bx, by, 24, 16, { fill: '#f5f5f5', stroke: '#000', sw: 0.75 });
+      } else if (fix === 'toilet') {
+        svg += svgToilet(rx + rw * 0.2, ry + rh * 0.3);
+      } else if (fix === 'sink') {
+        svg += svgSink(rx + rw * 0.5, ry + rh * 0.2);
+      } else if (fix === 'bathtub') {
+        svg += svgBathtub(rx + rw * 0.2, ry + rh * 0.5, 16, 20);
+      } else if (fix === 'stove') {
+        svg += svgStove(rx + rw * 0.3, ry + rh * 0.5);
+      } else if (fix === 'fridge') {
+        svg += svgFridge(rx + rw * 0.7, ry + rh * 0.4);
+      }
+    }
+
+    const labelSize = rw > 40 ? 9 : 7;
+    svg += svgText(rx + rw / 2, ry + rh / 2 + 20, room.name, { size: labelSize, weight: '600', anchor: 'middle', color: '#333' });
+  }
+
+  svg += svgDimension(ox, oy + bd + 20, ox + bw, oy + bd + 20, `${bldgW.toFixed(1)}'-0"`, 'below', 25);
+  svg += svgDimension(ox - 20, oy, ox - 20, oy + bd, `${bldgD.toFixed(1)}'-0"`, 'left', 20);
+
+  svg += svgNorthArrow(ox + bw + 30, oy + 30);
+
+  const floorNames = { 1: 'FIRST', 2: 'SECOND', 3: 'THIRD' };
+  svg += svgText(VW / 2, VH - 130, `${floorNames[floorNum] || floorNum + 'TH'} FLOOR PLAN`, { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgText(VW / 2, VH - 105, `Scale: 1/4" = 1'-0" | ${sku.beds} Bedroom / ${sku.baths} Bathroom`, { size: 9, anchor: 'middle', color: '#666' });
+
+  svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, `${floorNames[floorNum] || floorNum + 'TH'} FLOOR`, `A-10${floorNum}`);
+
   svg += '</svg>';
   return svg;
 }
+
+// ===================================
+// ELEVATIONS
+// ===================================
 
 function drawElevations(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) {
-  const W = 1000, H = 700;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
-  svg += svgRect(10, 10, W-20, H-20, {sw:2});
-  svg += svgText(W/2, 50, 'ELEVATIONS', {size:12, weight:'700', anchor:'middle'});
-  svg += svgText(W/2, 80, `Scale: 1/4" = 1'-0"`, {size:8, anchor:'middle', color:'#666'});
+  const VW = 1200, VH = 850;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
+
+  svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
+
   const s = 5;
-  const fx = 80, ry = 80 + stories * floorH * s;
-  svg += svgLine(fx-30, ry, fx+bldgW*s+30, ry, {sw:1.5});
-  svg += svgRect(fx, 200, bldgW*s, stories*floorH*s, {stroke:'#000', sw:1.5});
-  svg += svgLine(fx-5, ry-stories*floorH*s, fx+bldgW*s+5, ry-stories*floorH*s, {sw:2});
-  svg += svgText(fx+bldgW*s/2, H-160, 'FRONT ELEVATION', {size:10, weight:'700', anchor:'middle'});
-  svg += svgTitleBlock(10, H-130, W-20, 110, tb, 'ELEVATIONS', 'A-201');
+  const ox = 100;
+  const oy = 100;
+  const bw = bldgW * s;
+  const bh = (stories * floorH + cellarH) * s;
+
+  svg += svgText(VW / 2, 50, 'FRONT ELEVATION', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgText(VW / 2, 75, `Scale: 1/4" = 1'-0"`, { size: 9, anchor: 'middle', color: '#666' });
+
+  const gradeY = oy + cellarH * s;
+
+  svg += svgLine(ox - 40, gradeY, ox + bw + 40, gradeY, { sw: 2, color: '#2d6a4f' });
+  svg += svgText(ox - 35, gradeY - 5, 'GRADE', { size: 7, weight: '600', color: '#2d6a4f' });
+
+  svg += svgRect(ox, gradeY, bw, cellarH * s, { fill: '#f5f5f0', stroke: '#000', sw: 2 });
+  svg += svgText(ox + bw / 2, gradeY + cellarH * s / 2, 'CELLAR', { size: 8, weight: '600', color: '#666' });
+
+  let elev = 61.34;
+  for (let f = 0; f < stories; f++) {
+    const fy = gradeY - (f + 1) * floorH * s;
+    svg += svgRect(ox, fy, bw, floorH * s, { fill: f % 2 === 0 ? '#fff' : '#fafafa', stroke: '#000', sw: 2 });
+
+    const winW = bw / 3;
+    for (let w = 0; w < 2; w++) {
+      const wx = ox + 15 + w * (bw - 30) / 2;
+      const wy = fy + 10;
+      svg += svgRect(wx, wy, 20, 18, { fill: '#cce5ff', stroke: '#000', sw: 1 });
+      svg += svgLine(wx + 10, wy, wx + 10, wy + 18, { sw: 0.5, color: '#666' });
+      svg += svgLine(wx, wy + 9, wx + 20, wy + 9, { sw: 0.5, color: '#666' });
+    }
+
+    const floorLabel = f === 0 ? 'FIRST' : f === 1 ? 'SECOND' : 'THIRD';
+    svg += svgText(ox - 30, fy + floorH * s / 2, floorLabel, { size: 8, weight: '600', color: '#666', anchor: 'end' });
+    svg += svgDimension(ox - 15, fy, ox - 15, fy + floorH * s, `${floorH}'-0"`, 'left', 10);
+
+    svg += svgText(ox + bw + 30, fy + floorH * s / 2, `EL: ${elev.toFixed(2)}'`, { size: 7, color: '#333', anchor: 'start' });
+    elev += floorH;
+  }
+
+  svg += svgText(VW / 2, VH - 130, 'BUILDING ELEVATION', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'ELEVATION', 'A-201');
+
   svg += '</svg>';
   return svg;
 }
+
+// ===================================
+// BUILDING SECTION
+// ===================================
 
 function drawSection(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) {
-  const W = 1000, H = 700;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
-  svg += svgRect(10, 10, W-20, H-20, {sw:2});
-  svg += svgText(W/2, 50, 'SECTION 1-1', {size:12, weight:'700', anchor:'middle'});
-  svg += svgText(W/2, 80, `Scale: 1/4" = 1'-0"`, {size:8, anchor:'middle', color:'#666'});
+  const VW = 1200, VH = 850;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
+
+  svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
+
+  svg += svgText(VW / 2, 50, 'BUILDING SECTION 1-1', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgText(VW / 2, 75, `Scale: 1/4" = 1'-0"`, { size: 9, anchor: 'middle', color: '#666' });
+
   const s = 5;
-  const gradeY = 440;
-  const bw = bldgD * s;
-  const cx = 250;
-  svg += svgLine(cx-40, gradeY, cx+bw+40, gradeY, {sw:2});
-  svg += svgRect(cx, gradeY, bw, cellarH * s, {fill:'#f5f5f0', stroke:'#000', sw:2});
+  const ox = 150;
+  const oy = 120;
+  const sd = bldgD * s;
+
+  const gradeY = oy + cellarH * s;
+
+  svg += svgLine(ox - 50, gradeY, ox + sd + 50, gradeY, { sw: 2.5, color: '#2d6a4f' });
+  svg += svgText(ox - 45, gradeY - 5, 'GRADE', { size: 8, weight: '600', color: '#2d6a4f' });
+
+  svg += svgRect(ox, gradeY, sd, cellarH * s, { fill: '#f5f5f0', stroke: '#000', sw: 2 });
+  svg += svgText(ox + sd / 2, gradeY + cellarH * s / 2, 'CELLAR', { size: 8, weight: '600', color: '#666' });
+
   for (let f = 0; f < stories; f++) {
-    const fy = gradeY - (f+1) * floorH * s;
-    svg += svgRect(cx, fy, bw, floorH * s, {fill: f % 2 === 0 ? '#fafafa' : '#f5f5f5', stroke:'#000', sw:2});
+    const fy = gradeY - (f + 1) * floorH * s;
+    const floorFill = f % 2 === 0 ? '#fafafa' : '#fff';
+    svg += svgRect(ox, fy, sd, floorH * s, { fill: floorFill, stroke: '#000', sw: 2 });
+
+    const stairW = sd * 0.25;
+    const stairH = floorH * s * 0.8;
+    svg += svgStairPlan(ox + sd * 0.1, fy + 5, stairW, stairH, 3, f < stories - 1 ? 'UP' : '');
+
+    const floorLabel = f === 0 ? 'FIRST' : f === 1 ? 'SECOND' : 'THIRD';
+    svg += svgText(ox - 30, fy + floorH * s / 2, floorLabel, { size: 8, weight: '600', color: '#666', anchor: 'end' });
   }
-  svg += svgText(W/2, H-160, 'BUILDING SECTION', {size:10, weight:'700', anchor:'middle'});
-  svg += svgTitleBlock(10, H-130, W-20, 110, tb, 'SECTION', 'A-301');
+
+  svg += svgLine(ox, gradeY - stories * floorH * s, ox + sd, gradeY - stories * floorH * s, { sw: 1.5, color: '#000' });
+  svg += svgText(ox - 30, gradeY - stories * floorH * s, 'ROOF', { size: 8, weight: '600', color: '#666', anchor: 'end' });
+
+  svg += svgDimension(ox - 15, oy, ox - 15, gradeY, `${cellarH}'-0"`, 'left', 15);
+  svg += svgDimension(ox - 15, gradeY, ox - 15, gradeY - stories * floorH * s, `${(stories * floorH).toFixed(0)}'-0"`, 'left', 15);
+
+  svg += svgText(VW / 2, VH - 130, 'SECTION THROUGH BUILDING', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'SECTION', 'A-301');
+
   svg += '</svg>';
   return svg;
 }
+
+// ===================================
+// SITE PLAN
+// ===================================
+
+function drawSitePlan(sku, tb, lotW, lotD, bldgW, bldgD, front, rear, sideVal, rules) {
+  const VW = 1200, VH = 850;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
+
+  svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
+
+  svg += svgText(VW / 2, 50, 'SITE PLAN', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgText(VW / 2, 75, `Scale: 1/4" = 1'-0"`, { size: 9, anchor: 'middle', color: '#666' });
+
+  const s = 3;
+  const ox = 150;
+  const oy = 100;
+  const lw = lotW * s;
+  const ld = lotD * s;
+
+  svg += svgRect(ox, oy, lw, ld, { fill: '#f0f9ff', stroke: '#2d6a4f', sw: 2 });
+
+  svg += svgLine(ox + 5, oy + 5, ox + 15, oy + 5, { sw: 0.5, color: '#999', dash: '3,2' });
+  svg += svgText(ox + 20, oy + 8, 'Street', { size: 7, color: '#666' });
+
+  const bw = bldgW * s;
+  const bd = bldgD * s;
+  const bx = ox + sideVal * s;
+  const by = oy + front * s;
+
+  svg += svgRect(bx, by, bw, bd, { fill: '#fff4e6', stroke: '#4f46e5', sw: 2 });
+  svg += svgText(bx + bw / 2, by + bd / 2, sku.name, { size: 10, weight: '700', color: '#4f46e5' });
+
+  svg += svgDimension(ox, oy + ld + 15, ox + lw, oy + ld + 15, `${lotW}'-0"`, 'below', 10);
+  svg += svgDimension(ox - 15, oy, ox - 15, oy + ld, `${lotD}'-0"`, 'left', 10);
+
+  svg += svgDimension(ox, by - 5, bx, by - 5, `${sideVal}'-0"`, 'above', 8);
+  svg += svgDimension(bx, by - 5, bx + bw, by - 5, `${bldgW.toFixed(1)}'-0"`, 'above', 8);
+
+  svg += svgNorthArrow(ox + lw + 40, oy + 40);
+
+  svg += svgText(VW / 2, VH - 130, 'PROPERTY SITE PLAN', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'SITE PLAN', 'Z-100');
+
+  svg += '</svg>';
+  return svg;
+}
+
+// ===================================
+// COVER SHEET
+// ===================================
+
+function drawCoverSheet(sku, tb, lotW, lotD, bldgW, bldgD, bldgH, stories, floorH, front, rear, sideVal, rules) {
+  const VW = 1200, VH = 850;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
+
+  svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
+
+  svg += svgText(VW / 2, 50, 'PROJECT OVERVIEW', { size: 16, weight: '700', anchor: 'middle', color: '#4f46e5' });
+
+  let cy = 100;
+
+  svg += svgText(60, cy, 'PROJECT SUMMARY', { size: 11, weight: '700', anchor: 'start', color: '#000' });
+  cy += 20;
+  svg += svgText(60, cy, `Property Address: ${tb.addr}`, { size: 9, anchor: 'start', color: '#333' }); cy += 12;
+  svg += svgText(60, cy, `Zoning: ${tb.zone}  |  FAR: ${rules.far.standard}  |  Max Height: ${rules.height.maxHeight}ft`, { size: 9, anchor: 'start', color: '#333' }); cy += 12;
+  svg += svgText(60, cy, `Lot Dimensions: ${lotW}' × ${lotD}'  |  Lot Area: ${(lotW * lotD).toFixed(0)} sq ft`, { size: 9, anchor: 'start', color: '#333' }); cy += 12;
+
+  cy += 15;
+  svg += svgText(60, cy, 'BUILDING CHARACTERISTICS', { size: 11, weight: '700', anchor: 'start', color: '#000' });
+  cy += 20;
+  svg += svgText(60, cy, `Building Footprint: ${bldgW.toFixed(1)}' × ${bldgD.toFixed(1)}'  |  Area: ${(bldgW * bldgD).toFixed(0)} sq ft`, { size: 9, anchor: 'start', color: '#333' }); cy += 12;
+  svg += svgText(60, cy, `Total Height: ${(stories * floorH).toFixed(1)}'  |  Stories: ${stories}  |  Total Sqft: ${sku.defaultSqft}`, { size: 9, anchor: 'start', color: '#333' }); cy += 12;
+  svg += svgText(60, cy, `Design Type: ${sku.typeName}  |  Unit Config: ${sku.beds} BR / ${sku.baths} BA`, { size: 9, anchor: 'start', color: '#333' }); cy += 12;
+
+  cy += 15;
+  svg += svgText(60, cy, 'SITE SETBACKS', { size: 11, weight: '700', anchor: 'start', color: '#000' });
+  cy += 20;
+  svg += svgText(60, cy, `Front: ${front}'  |  Rear: ${rear}'  |  Side: ${sideVal}'  |  Opposite Side: ${sideVal}'`, { size: 9, anchor: 'start', color: '#333' }); cy += 12;
+
+  cy += 15;
+  svg += svgText(60, cy, 'ARCHITECTURAL SYMBOLS', { size: 11, weight: '700', anchor: 'start', color: '#000' });
+  cy += 18;
+  const sx = 60, sy = cy;
+  svg += svgToilet(sx + 20, sy); svg += svgText(sx + 35, sy + 2, 'Toilet', { size: 8, anchor: 'start', color: '#333' });
+  svg += svgSink(sx + 100, sy); svg += svgText(sx + 115, sy + 2, 'Sink', { size: 8, anchor: 'start', color: '#333' });
+  cy += 18;
+  svg += svgBathtub(sx, sy + 20, 16, 14); svg += svgText(sx + 35, sy + 27, 'Bathtub', { size: 8, anchor: 'start', color: '#333' });
+  svg += svgStove(sx + 100, sy + 27); svg += svgText(sx + 115, sy + 27, 'Stove', { size: 8, anchor: 'start', color: '#333' });
+
+  svg += svgText(VW / 2, VH - 130, 'COVER SHEET', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'COVER', 'G-100');
+
+  svg += '</svg>';
+  return svg;
+}
+
+// ===================================
+// DOOR & WINDOW SCHEDULE
+// ===================================
 
 function drawSchedule(sku, tb, stories) {
-  const W = 1000, H = 700;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
-  svg += svgRect(10, 10, W-20, H-20, {sw:2});
-  svg += svgText(50, 50, 'DOOR & WINDOW SCHEDULE', {size:12, weight:'700', anchor:'start'});
-  svg += svgText(50, 450, 'Doors', {size:11, weight:'700', anchor:'start'});
-  svg += svgText(50, 480, 'D1: 36"×80" Entry Door | Steel | Deadbolt+Lever | 90 MIN | Entry', {size:9, anchor:'start', color:'#333'});
-  svg += svgText(50, 500, 'D2: 30"×80" Interior | Wood | Lever | None | Bedroom', {size:9, anchor:'start', color:'#333'});
-  svg += svgText(50, 580, 'Windows', {size:11, weight:'700', anchor:'start'});
-  svg += svgText(50, 610, 'W1: 36"×56" Double Hung | Double Low-E | Vinyl | 0.30 | Front', {size:9, anchor:'start', color:'#333'});
-  svg += svgText(W/2, H-160, 'DOOR & WINDOW SCHEDULE', {size:10, weight:'700', anchor:'middle'});
-  svg += svgTitleBlock(10, H-130, W-20, 110, tb, 'SCHEDULE', 'A-501');
+  const VW = 1200, VH = 850;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:white;">`;
+
+  svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
+
+  svg += svgText(60, 50, 'DOOR & WINDOW SCHEDULE', { size: 14, weight: '700', anchor: 'start', color: '#000' });
+
+  let cy = 90;
+
+  svg += svgText(60, cy, 'DOORS', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 20;
+  svg += svgRect(60, cy, VW - 120, 120, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
+
+  const doorRows = [
+    ['D1', '36"×80"', 'Entry Door', 'Steel', 'Grade 1', 'Entry'],
+    ['D2', '32"×80"', 'Interior', 'Wood', 'Grade 2', 'Bedroom'],
+    ['D3', '30"×80"', 'Interior', 'Wood', 'Grade 2', 'Bathroom'],
+  ];
+
+  const colW = [(VW - 120) / 6, (VW - 120) / 6, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5];
+  const headers = ['Mark', 'Size', 'Type', 'Material', 'Grade', 'Location'];
+
+  let cx = 65;
+  headers.forEach((h, i) => {
+    svg += svgText(cx, cy + 8, h, { size: 8, weight: '600', anchor: 'start', color: '#333' });
+    cx += colW[i];
+  });
+
+  doorRows.forEach((row, ri) => {
+    cy += 15;
+    cx = 65;
+    row.forEach((cell, ci) => {
+      svg += svgText(cx, cy + 8, cell, { size: 8, anchor: 'start', color: '#333' });
+      cx += colW[ci];
+    });
+  });
+
+  cy += 40;
+  svg += svgText(60, cy, 'WINDOWS', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 20;
+  svg += svgRect(60, cy, VW - 120, 100, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
+
+  const winRows = [
+    ['W1', '36"×56"', 'Double Hung', 'Vinyl', 'Double Low-E', 'Front/Rear'],
+    ['W2', '32"×50"', 'Double Hung', 'Vinyl', 'Double Low-E', 'Side'],
+  ];
+
+  cx = 65;
+  headers.forEach((h, i) => {
+    svg += svgText(cx, cy + 8, h, { size: 8, weight: '600', anchor: 'start', color: '#333' });
+    cx += colW[i];
+  });
+
+  winRows.forEach((row, ri) => {
+    cy += 15;
+    cx = 65;
+    row.forEach((cell, ci) => {
+      svg += svgText(cx, cy + 8, cell, { size: 8, anchor: 'start', color: '#333' });
+      cx += colW[ci];
+    });
+  });
+
+  svg += svgText(VW / 2, VH - 130, 'DOOR & WINDOW SCHEDULE', { size: 14, weight: '700', anchor: 'middle' });
+  svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'SCHEDULE', 'A-501');
+
   svg += '</svg>';
   return svg;
 }
 
+// ===================================
+// PDF EXPORT
+// ===================================
+
 function exportPlansPDF() {
-  alert('PDF export coming soon — will bundle all plan sheets into a downloadable PDF package.');
+  alert('PDF export coming soon — will bundle all plan sheets into a professional downloadable PDF package.');
 }
 
 // =============================================
