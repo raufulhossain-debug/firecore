@@ -1183,10 +1183,14 @@ function evalFeasibility(lot) {
   ],outcome:'NO_FIT'};
 }
 
-function runOptimizer(siteLat,siteLon,sqft,weights) {
+function runOptimizer(siteLat,siteLon,sqft,weights,selectedMaterial) {
   const zone='standard';
   const opts=[];
-  for (const[mid,mat]of Object.entries(MATERIALS)) {
+  // Filter to selected material if specified
+  const matEntries = selectedMaterial
+    ? Object.entries(MATERIALS).filter(([mid])=> mid === selectedMaterial)
+    : Object.entries(MATERIALS);
+  for (const[mid,mat]of matEntries) {
     const cs=mat.scores[zone]||.5;
     for (const sup of SUPPLIERS.filter(s=>s.mat===mid)) {
       const d=haversine({lat:sup.lat,lon:sup.lon},{lat:siteLat,lon:siteLon});
@@ -1452,7 +1456,7 @@ document.querySelectorAll('.preset-btn').forEach(btn=>{
 document.getElementById('runBtn').addEventListener('click',()=>{
   if(!currentLat) return;
   const weights={cost:+document.getElementById('wCost').value,speed:+document.getElementById('wSpeed').value,carbon:+document.getElementById('wCarbon').value,comp:+document.getElementById('wComp').value};
-  const results=runOptimizer(currentLat,currentLon,design.sqft,weights);
+  const results=runOptimizer(currentLat,currentLon,design.sqft,weights,design.material);
   renderRoutes(results);
   if(results.length) drawRoute(results[0]);
   // Auto-scroll to results
