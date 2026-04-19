@@ -260,6 +260,62 @@
     @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
     .loading { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:800px 100%; animation: shimmer 1.5s infinite; border-radius:var(--radius-sm); }
 
+    /* Mode toggle in header */
+    .mode-toggle { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .mode-btn {
+      padding: 6px 14px; font-size: 11px; font-weight: 600; border: none; cursor: pointer;
+      font-family: inherit; background: var(--surface); color: var(--text-2); transition: all .15s;
+      display: flex; align-items: center; gap: 5px; border-right: 1px solid var(--border);
+    }
+    .mode-btn:last-child { border-right: none; }
+    .mode-btn.active { background: var(--accent); color: white; }
+    .mode-btn:hover:not(.active) { background: var(--accent-light); }
+
+    /* Property Finder Panel */
+    .finder-panel { padding: 20px; }
+    .finder-input-wrap {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 12px; margin-bottom: 12px; transition: all .2s;
+    }
+    .finder-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+    .finder-textarea {
+      width: 100%; border: none; background: none; outline: none; font-family: inherit;
+      font-size: 13px; resize: none; min-height: 60px; color: var(--text); line-height: 1.5;
+    }
+    .finder-textarea::placeholder { color: var(--text-3); }
+    .finder-hint { font-size: 10px; color: var(--text-3); margin-top: 6px; }
+
+    .finder-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .finder-filter {
+      background: var(--bg); border-radius: var(--radius-sm); padding: 10px;
+    }
+    .finder-filter .ff-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+    .finder-filter input, .finder-filter select {
+      width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px;
+      font-size: 12px; font-family: inherit; background: var(--surface); color: var(--text);
+    }
+    .finder-filter input:focus, .finder-filter select:focus { outline: none; border-color: var(--accent); }
+
+    /* Property result cards */
+    .prop-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all .15s;
+    }
+    .prop-card:hover { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,.08); }
+    .prop-card.top-pick { border-color: var(--green); background: var(--green-light); }
+    .prop-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .prop-address { font-weight: 600; font-size: 13px; }
+    .prop-match { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+    .prop-match-high { background: var(--green-light); color: var(--green-dark); }
+    .prop-match-mid { background: var(--amber-light); color: #b45309; }
+    .prop-match-low { background: var(--red-light); color: #dc2626; }
+    .prop-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; font-size: 10px; color: var(--text-2); }
+    .prop-stats .val { font-weight: 600; font-size: 12px; color: var(--text); }
+    .prop-stats .lbl { color: var(--text-3); }
+    .prop-why { margin-top: 6px; font-size: 11px; color: var(--text-2); padding: 6px 8px; background: white; border-radius: 6px; }
+
+    .finder-count { font-size: 12px; color: var(--text-2); margin-bottom: 8px; font-weight: 500; }
+
     /* Financing Stack */
     .fin-summary {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px;
@@ -327,7 +383,16 @@
     </div>
     <div class="search-results" id="searchResults"></div>
   </div>
-  <div style="font-size:11px;color:var(--text-3)">NYC &middot; Prototype</div>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modeAnalyze" onclick="setMode('analyze')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      Analyze Site
+    </button>
+    <button class="mode-btn" id="modeFinder" onclick="setMode('finder')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      Find Properties
+    </button>
+  </div>
 </header>
 
 <!-- App -->
@@ -510,7 +575,7 @@
       </div>
 
       <!-- 6. Financing Stack -->
-      <div class="section" id="financeSection">
+      <div class="section" id="financeSection" style="border-bottom:none;">
         <div class="section-title"><span class="num">6</span> Financing Stack</div>
 
         <!-- Summary cards -->
@@ -550,6 +615,70 @@
       </div>
 
     </div>
+
+    <!-- PROPERTY FINDER PANEL (hidden by default) -->
+    <div id="finderPanel" style="display:none;">
+      <div class="finder-panel">
+        <div style="margin-bottom:14px;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">AI Property Finder</div>
+          <div style="font-size:12px;color:var(--text-2);">Describe what you need or use the filters below. AI will search NYC's PLUTO database for matching properties.</div>
+        </div>
+
+        <!-- Natural language input -->
+        <div class="finder-input-wrap">
+          <textarea class="finder-textarea" id="finderQuery" placeholder="e.g. I need a lot at least 3,000 sqft in Brooklyn with a wide street for crane access, zoned R6 or higher, ideally near transit..."></textarea>
+          <div class="finder-hint">Tip: mention lot size, borough, zoning, street width, proximity needs</div>
+        </div>
+
+        <!-- Quick filters -->
+        <div class="finder-filters">
+          <div class="finder-filter">
+            <div class="ff-label">Min Lot Size (sqft)</div>
+            <input type="number" id="ffLotMin" value="2500" step="500"/>
+          </div>
+          <div class="finder-filter">
+            <div class="ff-label">Borough</div>
+            <select id="ffBoro">
+              <option value="">Any Borough</option>
+              <option value="BK">Brooklyn</option>
+              <option value="QN">Queens</option>
+              <option value="BX">Bronx</option>
+              <option value="SI">Staten Island</option>
+              <option value="MN">Manhattan</option>
+            </select>
+          </div>
+          <div class="finder-filter">
+            <div class="ff-label">Zoning</div>
+            <select id="ffZone">
+              <option value="">Any Zone</option>
+              <option value="R3">R3+ (Low Density)</option>
+              <option value="R5">R5+ (Medium)</option>
+              <option value="R6">R6+ (Med-High)</option>
+              <option value="R8">R8+ (High Density)</option>
+            </select>
+          </div>
+          <div class="finder-filter">
+            <div class="ff-label">Street Width</div>
+            <select id="ffStreet">
+              <option value="">Any</option>
+              <option value="wide">Wide (75ft+, crane OK)</option>
+              <option value="narrow">Narrow (&lt;75ft)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="finderBtn" onclick="runPropertyFinder()">
+          <span style="display:flex;align-items:center;justify-content:center;gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Search Properties
+          </span>
+        </button>
+
+        <!-- Results -->
+        <div id="finderResults" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1247,6 +1376,395 @@ function drawRoute(o){
   for(let i=0;i<pts.length-1;i++){
     const line=L.polyline([pts[i],pts[i+1]],{color:'#6366f1',weight:2.5,opacity:.7,dashArray:'8,6'}).addTo(map);
     routeLines.push(line);
+  }
+}
+
+// =============================================
+// MODE SWITCHING (Analyze Site vs Find Properties)
+// =============================================
+
+let currentMode = 'analyze';
+let finderMarkers = [];
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeAnalyze').classList.toggle('active', mode === 'analyze');
+  document.getElementById('modeFinder').classList.toggle('active', mode === 'finder');
+
+  // Toggle panels
+  const searchWrap = document.getElementById('searchWrap');
+  const emptyState = document.getElementById('emptyState');
+  const filledPanel = document.getElementById('filledPanel');
+  const finderPanel = document.getElementById('finderPanel');
+
+  if (mode === 'analyze') {
+    searchWrap.style.display = 'flex';
+    finderPanel.style.display = 'none';
+    if (currentLat) { filledPanel.style.display = 'block'; emptyState.style.display = 'none'; }
+    else { filledPanel.style.display = 'none'; emptyState.style.display = 'block'; }
+    clearFinderMarkers();
+  } else {
+    searchWrap.style.display = 'none';
+    emptyState.style.display = 'none';
+    filledPanel.style.display = 'none';
+    finderPanel.style.display = 'block';
+    document.getElementById('mapInstructions').style.display = 'none';
+    map.setView([40.7128, -74.006], 11);
+  }
+}
+
+function clearFinderMarkers() {
+  finderMarkers.forEach(m => map.removeLayer(m));
+  finderMarkers = [];
+}
+
+// =============================================
+// PROPERTY FINDER ENGINE
+// =============================================
+
+const PLUTO_API = 'https://data.cityofnewyork.us/resource/64uk-42ks.json';
+const PLUTO_APP_TOKEN = ''; // Public dataset, no token needed for light use
+
+function buildPlutoQuery(filters) {
+  const conditions = [];
+
+  // Lot area
+  if (filters.lotMin) {
+    conditions.push(`lotarea > ${filters.lotMin}`);
+  }
+
+  // Borough
+  const boroMap = { BK: 'BK', QN: 'QN', BX: 'BX', SI: 'SI', MN: 'MN' };
+  if (filters.boro && boroMap[filters.boro]) {
+    conditions.push(`borocode = '${filters.boro === 'MN' ? '1' : filters.boro === 'BX' ? '2' : filters.boro === 'BK' ? '3' : filters.boro === 'QN' ? '4' : '5'}'`);
+  }
+
+  // Zoning — partial match
+  if (filters.zone) {
+    const zoneNum = parseInt(filters.zone.replace('R', ''));
+    // Get zones >= the selected threshold
+    const zones = [];
+    for (let i = zoneNum; i <= 10; i++) zones.push(`zonedist1 LIKE 'R${i}%'`);
+    if (zones.length) conditions.push(`(${zones.join(' OR ')})`);
+  }
+
+  // Only residential lots with enough space
+  conditions.push('lotarea > 1500');
+  conditions.push("landuse = '01'"); // 1&2 family residential
+
+  const where = conditions.join(' AND ');
+  return `${PLUTO_API}?$where=${encodeURIComponent(where)}&$limit=50&$order=lotarea DESC`;
+}
+
+async function queryPluto(filters) {
+  const url = buildPlutoQuery(filters);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`PLUTO API ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('PLUTO query error:', err);
+    return null;
+  }
+}
+
+function scorePlutoResult(lot, filters) {
+  let score = 50; // Base score
+  const reasons = [];
+
+  // Lot area scoring
+  const area = parseFloat(lot.lotarea) || 0;
+  if (area >= (filters.lotMin || 2500)) {
+    score += 15;
+    reasons.push(`Lot ${area.toLocaleString()} sqft meets minimum`);
+  }
+  if (area >= 4000) { score += 5; reasons.push('Large lot for flexible placement'); }
+  if (area >= 6000) { score += 5; reasons.push('Ample space for staging + crane'); }
+
+  // Lot width — wider is better for crane access
+  const width = parseFloat(lot.lotfront) || 0;
+  if (width >= 40) { score += 10; reasons.push(`${width}ft lot frontage — good crane access`); }
+  else if (width >= 25) { score += 5; reasons.push(`${width}ft frontage — tight but workable`); }
+  else if (width > 0) { reasons.push(`${width}ft frontage — crane access limited`); }
+
+  // Street width (PLUTO doesn't have this directly, infer from lot width + context)
+  // Lots on wider streets tend to have wider frontage and be on mapped wide streets
+  if (width >= 50) { score += 5; reasons.push('Likely wide street — easier delivery'); }
+
+  // Zoning compatibility
+  const zone = lot.zonedist1 || '';
+  if (zone.match(/R[5-9]/)) { score += 10; reasons.push(`${zone} zoning allows ADU`); }
+  else if (zone.match(/R[3-4]/)) { score += 5; reasons.push(`${zone} — may need variance`); }
+
+  // FAR — lower existing usage = more room
+  const far = parseFloat(lot.builtfar) || 0;
+  const maxFar = parseFloat(lot.residfar) || 0;
+  if (maxFar > 0 && far < maxFar * 0.7) { score += 10; reasons.push(`FAR ${far}/${maxFar} — room to build`); }
+
+  // Building class — 1-2 family ideal
+  const bldgClass = lot.bldgclass || '';
+  if (bldgClass.startsWith('A') || bldgClass.startsWith('B')) {
+    score += 5; reasons.push('1-2 family property — ADU eligible');
+  }
+
+  return { score: Math.min(100, score), reasons };
+}
+
+async function runPropertyFinder() {
+  const btn = document.getElementById('finderBtn');
+  const resultsEl = document.getElementById('finderResults');
+  const query = document.getElementById('finderQuery').value.trim();
+
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Searching PLUTO database...</span>';
+  resultsEl.innerHTML = '<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span>Querying NYC open data...</span></div>';
+
+  const filters = {
+    lotMin: parseInt(document.getElementById('ffLotMin').value) || 2500,
+    boro: document.getElementById('ffBoro').value,
+    zone: document.getElementById('ffZone').value,
+    street: document.getElementById('ffStreet').value,
+  };
+
+  // If user typed a natural language query, use AI to extract filters
+  if (query && CLAUDE_API_KEY) {
+    try {
+      const aiFilters = await aiParseQuery(query, filters);
+      if (aiFilters) Object.assign(filters, aiFilters);
+    } catch (e) { console.error('AI parse error:', e); }
+  }
+
+  // Query PLUTO
+  const lots = await queryPluto(filters);
+
+  if (!lots || lots.length === 0) {
+    resultsEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-3);font-size:12px;">No matching properties found. Try adjusting your filters.</div>';
+    btn.disabled = false;
+    btn.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Search Properties</span>';
+    return;
+  }
+
+  // Score and rank results
+  const scored = lots
+    .map(lot => {
+      const { score, reasons } = scorePlutoResult(lot, filters);
+      return { ...lot, matchScore: score, matchReasons: reasons };
+    })
+    .filter(l => l.matchScore >= 40)
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 15);
+
+  // Render results
+  clearFinderMarkers();
+  renderFinderResults(scored);
+
+  // If AI is available, get a summary
+  if (query && CLAUDE_API_KEY && scored.length > 0) {
+    await aiSummarizeResults(query, scored, resultsEl);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Search Properties</span>';
+}
+
+function renderFinderResults(results) {
+  const el = document.getElementById('finderResults');
+  const fmt = v => parseFloat(v).toLocaleString();
+
+  // Add AI summary placeholder at top
+  let html = '<div id="aiFinderSummary"></div>';
+
+  html += `<div class="finder-count">${results.length} properties found</div>`;
+
+  html += results.map((lot, i) => {
+    const addr = [lot.address, lot.zipcode].filter(Boolean).join(', ');
+    const boro = { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'Staten Island' }[lot.borocode] || '';
+    const matchClass = lot.matchScore >= 80 ? 'prop-match-high' : lot.matchScore >= 60 ? 'prop-match-mid' : 'prop-match-low';
+
+    return `
+      <div class="prop-card ${i === 0 ? 'top-pick' : ''}" onclick="selectFinderProperty(${i})">
+        <div class="prop-head">
+          <div>
+            <span class="prop-address">${addr || `BBL ${lot.bbl}`}</span>
+            ${i === 0 ? '<span class="tag tag-green" style="margin-left:6px;">Top Pick</span>' : ''}
+          </div>
+          <span class="prop-match ${matchClass}">${lot.matchScore}%</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;">${boro} &middot; ${lot.zonedist1 || '—'} &middot; BBL ${lot.bbl || '—'}</div>
+        <div class="prop-stats">
+          <div><div class="val">${fmt(lot.lotarea)} sf</div><div class="lbl">Lot Area</div></div>
+          <div><div class="val">${fmt(lot.lotfront || 0)}ft</div><div class="lbl">Frontage</div></div>
+          <div><div class="val">${lot.builtfar || '—'}/${lot.residfar || '—'}</div><div class="lbl">FAR Used/Max</div></div>
+          <div><div class="val">${lot.bldgclass || '—'}</div><div class="lbl">Bldg Class</div></div>
+        </div>
+        <div class="prop-why">${lot.matchReasons.slice(0, 3).join(' · ')}</div>
+      </div>`;
+  }).join('');
+
+  el.innerHTML = html;
+
+  // Add markers to map
+  const bounds = [];
+  results.forEach((lot, i) => {
+    const lat = parseFloat(lot.latitude);
+    const lon = parseFloat(lot.longitude);
+    if (!lat || !lon) return;
+    bounds.push([lat, lon]);
+
+    const color = lot.matchScore >= 80 ? '#10b981' : lot.matchScore >= 60 ? '#f59e0b' : '#ef4444';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:${i === 0 ? 20 : 14}px;height:${i === 0 ? 20 : 14}px;background:${color};border-radius:50%;border:${i === 0 ? 3 : 2}px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:grid;place-items:center;color:white;font-size:8px;font-weight:700;">${i < 5 ? i + 1 : ''}</div>`,
+      iconSize: [i === 0 ? 20 : 14, i === 0 ? 20 : 14],
+      iconAnchor: [i === 0 ? 10 : 7, i === 0 ? 10 : 7],
+    });
+
+    const marker = L.marker([lat, lon], { icon })
+      .addTo(map)
+      .bindPopup(`<b>${lot.address || 'Property'}</b><br>${lot.zonedist1} · ${fmt(lot.lotarea)} sf<br>Match: ${lot.matchScore}%`);
+    finderMarkers.push(marker);
+  });
+
+  if (bounds.length > 1) map.fitBounds(bounds, { padding: [40, 40] });
+  else if (bounds.length === 1) map.setView(bounds[0], 16);
+
+  // Store results for click handling
+  window._finderResults = results;
+}
+
+function selectFinderProperty(idx) {
+  const lot = window._finderResults[idx];
+  if (!lot) return;
+  const lat = parseFloat(lot.latitude);
+  const lon = parseFloat(lot.longitude);
+  if (!lat || !lon) return;
+
+  // Switch to analyze mode with this property
+  setMode('analyze');
+  placePin(lat, lon);
+
+  const props = {
+    label: lot.address || `BBL ${lot.bbl}`,
+    borough: { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'Staten Island' }[lot.borocode] || '',
+    pad_bbl: lot.bbl,
+  };
+  loadSiteFromPluto(lat, lon, props, lot);
+}
+
+function loadSiteFromPluto(lat, lon, props, plutoData) {
+  currentLat = lat; currentLon = lon;
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('filledPanel').style.display = 'block';
+
+  document.getElementById('heroAddress').textContent = props.label;
+  document.getElementById('heroMeta').textContent = [props.borough, props.pad_bbl ? `BBL ${props.pad_bbl}` : ''].filter(Boolean).join(' · ');
+
+  // Use REAL PLUTO data instead of simulated
+  const zoneDistrict = plutoData.zonedist1 || 'R6';
+  const lotArea = parseFloat(plutoData.lotarea) || 3000;
+  const lotWidth = parseFloat(plutoData.lotfront) || 30;
+  const far = parseFloat(plutoData.residfar) || 2.0;
+
+  document.getElementById('zVal').textContent = zoneDistrict;
+  document.getElementById('lotVal').textContent = lotArea.toLocaleString() + ' sf';
+  document.getElementById('farVal').textContent = far;
+  document.getElementById('bldgVal').textContent = plutoData.bldgclass || '—';
+  document.getElementById('overlayVal').textContent = plutoData.overlay1 || 'None';
+  document.getElementById('boroVal').textContent = props.borough || '—';
+
+  const lot = { zone: zoneDistrict, area: lotArea, width: lotWidth, heightLimit: 35, maxCov: 65, existCov: parseFloat(plutoData.builtfar || 30) / (far || 2) * 30 };
+  const fit = evalFeasibility(lot);
+  renderFeasibility(fit);
+  renderMaterials('standard');
+  renderCosts();
+
+  document.getElementById('routeResults').innerHTML = '';
+  document.getElementById('aiResult').innerHTML = '';
+  clearRoutes();
+  renderFinancing();
+}
+
+// AI helpers for property finder
+async function aiParseQuery(query, existingFilters) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{ role: 'user', content: `Extract property search filters from this request. Return ONLY a JSON object with these optional fields:
+- lotMin (number, minimum lot sqft)
+- boro (string: BK/QN/BX/SI/MN)
+- zone (string: R3/R5/R6/R8)
+- street (string: wide/narrow)
+
+User request: "${query}"
+
+Current filters: ${JSON.stringify(existingFilters)}
+
+Return only the JSON, no explanation.` }],
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+  } catch (e) { console.error('AI parse error:', e); }
+  return null;
+}
+
+async function aiSummarizeResults(query, results, containerEl) {
+  const summaryEl = document.getElementById('aiFinderSummary');
+  if (!summaryEl) return;
+
+  summaryEl.innerHTML = '<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span>AI analyzing results...</span></div>';
+
+  const top5 = results.slice(0, 5).map(r => ({
+    address: r.address,
+    borough: { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'SI' }[r.borocode],
+    lotArea: r.lotarea,
+    frontage: r.lotfront,
+    zone: r.zonedist1,
+    score: r.matchScore,
+    reasons: r.matchReasons,
+  }));
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: `You are PrefabOS, an AI property advisor for prefab housing in NYC. The user searched for: "${query}"
+
+Here are the top ${top5.length} matching properties from NYC PLUTO data:
+${JSON.stringify(top5, null, 2)}
+
+Give a brief (100 words max) analysis: which property is best and why, any concerns about crane access or delivery logistics based on lot frontage, and one key recommendation. Be specific about addresses and numbers. Plain text, no markdown.` }],
+      }),
+    });
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    summaryEl.innerHTML = `<div class="ai-response" style="margin-bottom:12px;border:1px solid #c7d2fe;background:linear-gradient(135deg,#f5f3ff,#eef2ff);">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><span class="ai-badge" style="background:var(--gradient-1);color:white;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">AI</span><span style="font-size:12px;font-weight:600;">Property Analysis</span></div>
+      ${text.split('\n').filter(l=>l.trim()).map(p=>`<p>${p}</p>`).join('')}
+    </div>`;
+  } catch (e) {
+    summaryEl.innerHTML = '';
   }
 }
 
