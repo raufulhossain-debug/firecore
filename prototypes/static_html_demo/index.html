@@ -758,6 +758,17 @@
           <div style="font-size:11px;color:var(--text-2);margin-bottom:10px;">
             Get AI-powered recommendations to optimize your design for cost, compliance, and buildability.
           </div>
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">Claude API Key</label>
+            <div style="display:flex;gap:6px;">
+              <input type="password" id="apiKeyInput" placeholder="sk-ant-..." value="" oninput="setApiKey(this.value.trim())"
+                style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;transition:border .2s;"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+              <button onclick="const inp=document.getElementById('apiKeyInput');inp.type=inp.type==='password'?'text':'password';this.textContent=inp.type==='password'?'Show':'Hide'"
+                style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:10px;font-family:inherit;cursor:pointer;background:var(--bg);color:var(--text-2);">Show</button>
+            </div>
+            <div id="apiKeyStatus" style="font-size:10px;margin-top:4px;color:var(--text-3);">Enables AI Design Advisor, Property Finder AI, and 3D Optimizer</div>
+          </div>
           <button class="ai-btn" id="aiBtn" onclick="askAI()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4Z"/></svg>
             Analyze My Design
@@ -1560,16 +1571,39 @@ let CLAUDE_API_KEY = localStorage.getItem('prefabos_api_key') || '';
 function setApiKey(key) {
   CLAUDE_API_KEY = key;
   try { localStorage.setItem('prefabos_api_key', key); } catch(e) {}
+  // Update status indicator
+  const status = document.getElementById('apiKeyStatus');
+  if (status) {
+    if (key && key.startsWith('sk-ant-')) {
+      status.textContent = 'API key set — AI features enabled';
+      status.style.color = 'var(--green)';
+    } else if (key) {
+      status.textContent = 'Key should start with sk-ant-...';
+      status.style.color = 'var(--amber)';
+    } else {
+      status.textContent = 'Enables AI Design Advisor, Property Finder AI, and 3D Optimizer';
+      status.style.color = 'var(--text-3)';
+    }
+  }
 }
+
+// Restore saved key to input on load
+window.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('apiKeyInput');
+  if (inp && CLAUDE_API_KEY) {
+    inp.value = CLAUDE_API_KEY;
+    setApiKey(CLAUDE_API_KEY); // trigger status update
+  }
+});
 
 async function askAI() {
   const btn = document.getElementById('aiBtn');
   const resultEl = document.getElementById('aiResult');
 
   if (!CLAUDE_API_KEY) {
-    const key = window.prompt('Enter your Claude API key to enable AI design analysis:');
-    if (!key) return;
-    setApiKey(key.trim());
+    resultEl.innerHTML = '<div style="padding:12px;border-radius:var(--radius-sm);background:var(--amber-light);font-size:11px;color:#92400e;">Paste your Claude API key in the field above to enable AI features.</div>';
+    document.getElementById('apiKeyInput')?.focus();
+    return;
   }
 
   btn.disabled = true;
