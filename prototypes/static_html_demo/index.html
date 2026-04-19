@@ -2246,28 +2246,68 @@ function loadSite(lat,lon,props){
   document.getElementById('heroAddress').textContent=props.label||`${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   document.getElementById('heroMeta').textContent=[props.borough,props.pad_bbl?`BBL ${props.pad_bbl}`:''].filter(Boolean).join(' · ');
 
-  const zoneDistrict = props.pad_bbl ? guessZone(props) : 'R6';
-  const lotArea = 2500 + Math.round(Math.random()*3000);
-  const lotWidth = Math.round(25 + Math.random()*35);
-  const far = zoneDistrict.startsWith('R') ? parseFloat((1 + Math.random()*3).toFixed(1)) : 5.0;
+  // Try to fetch real PLUTO data for this location
+  fetchNearbyPluto(lat, lon).then(plutoData => {
+    if (plutoData) {
+      // Got real data — use it
+      loadSiteFromPluto(lat, lon, props, plutoData);
+    } else {
+      // Fallback to simulated data
+      const zoneDistrict = props.pad_bbl ? guessZone(props) : 'R6';
+      const lotArea = 2500 + Math.round(Math.random()*3000);
+      const lotWidth = Math.round(25 + Math.random()*35);
+      const far = zoneDistrict.startsWith('R') ? parseFloat((1 + Math.random()*3).toFixed(1)) : 5.0;
 
-  document.getElementById('zVal').textContent=zoneDistrict;
-  document.getElementById('lotVal').textContent=lotArea.toLocaleString()+' sf';
-  document.getElementById('farVal').textContent=far;
-  document.getElementById('bldgVal').textContent=props.pad_bbl?'R1':'—';
-  document.getElementById('overlayVal').textContent='None';
-  document.getElementById('boroVal').textContent=props.borough||'—';
+      // Store simulated data for 3D viewer
+      window._currentPlutoData = {
+        address: props.label || `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+        zonedist1: zoneDistrict,
+        lotarea: String(lotArea),
+        lotfront: String(lotWidth),
+        lotdepth: String(Math.round(lotArea / lotWidth)),
+        residfar: String(far),
+        borocode: {Manhattan:'1',Bronx:'2',Brooklyn:'3',Queens:'4','Staten Island':'5'}[props.borough] || '3',
+        numfloors: '2',
+        yearbuilt: '1950',
+        latitude: String(lat),
+        longitude: String(lon),
+      };
 
-  const lot={zone:zoneDistrict,area:lotArea,width:lotWidth,heightLimit:35,maxCov:65,existCov:30+Math.random()*15};
-  const fit=evalFeasibility(lot);
-  renderFeasibility(fit);
-  renderMaterials('standard');
-  renderCosts();
+      document.getElementById('zVal').textContent=zoneDistrict;
+      document.getElementById('lotVal').textContent=lotArea.toLocaleString()+' sf';
+      document.getElementById('farVal').textContent=far;
+      document.getElementById('bldgVal').textContent=props.pad_bbl?'R1':'—';
+      document.getElementById('overlayVal').textContent='None';
+      document.getElementById('boroVal').textContent=props.borough||'—';
 
-  document.getElementById('routeResults').innerHTML='';
-  document.getElementById('aiResult').innerHTML='';
-  clearRoutes();
-  renderFinancing();
+      const zoningRules = getZoningRules(zoneDistrict);
+      renderZoningDetail(zoningRules, zoneDistrict);
+
+      const lot={zone:zoneDistrict,area:lotArea,width:lotWidth,heightLimit:35,maxCov:65,existCov:30+Math.random()*15};
+      const fit=evalFeasibility(lot);
+      renderFeasibility(fit);
+      renderMaterials('standard');
+      renderCosts();
+
+      document.getElementById('routeResults').innerHTML='';
+      document.getElementById('aiResult').innerHTML='';
+      clearRoutes();
+      renderFinancing();
+    }
+  });
+}
+
+async function fetchNearbyPluto(lat, lon) {
+  try {
+    const url = `${PLUTO_API}?$where=within_circle(the_geom,${lat},${lon},50)&$limit=1&$select=bbl,borocode,address,zipcode,zonedist1,lotarea,lotfront,lotdepth,bldgclass,landuse,yearbuilt,numbldgs,numfloors,builtfar,residfar,overlay1,histdist,firm07_flag,irrlotcode,latitude,longitude`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && data.length > 0 ? data[0] : null;
+  } catch (e) {
+    console.error('PLUTO nearby fetch error:', e);
+    return null;
+  }
 }
 
 function guessZone(props){
@@ -5860,7 +5900,7 @@ function toggle3DEnvelope() {
 async function runAIDesignOptimizer() {
   if (!CLAUDE_API_KEY) {
     document.getElementById('threeDaiOverlay').style.display = 'block';
-    document.getElementById('threeDaiContent').innerHTML = '<div style="color:#6b6b6b;">Enter your Claude API key in the Analyze panel to enable AI recommendations.</div>';
+    document.getElementById('threeDaiContent').innerHTML = '<div style="color:#6b6b6b;">Add your Claude API key in <b>Settings</b> (gear icon, top right) to enable AI recommendations.</div>';
     return;
   }
 
