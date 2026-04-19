@@ -5144,6 +5144,8 @@ if (_origLoadSiteFromPluto) {
       bbl: plutoData?.bbl || props.pad_bbl || '',
       lat, lon,
     };
+    if (typeof renderProForma === 'function') renderProForma();
+    if (typeof showUnitMixSection === 'function') showUnitMixSection();
   };
 }
 
@@ -6893,20 +6895,14 @@ function renderProForma() {
 }
 
 // Hook renderProForma into calcCosts
-const _origCalcCosts = calcCosts;
-calcCosts = function() {
-  const result = _origCalcCosts();
-  if (typeof renderProForma === 'function') renderProForma();
-  return result;
-};
-
-// Hook into loadSiteFromPluto
-const _origLoadSiteFromPluto = loadSiteFromPluto;
-loadSiteFromPluto = function(lat, lon, props, plutoData) {
-  _origLoadSiteFromPluto(lat, lon, props, plutoData);
-  if (typeof renderProForma === 'function') renderProForma();
-  if (typeof showUnitMixSection === 'function') showUnitMixSection();
-};
+(function() {
+  var _prevCalcCosts = calcCosts;
+  calcCosts = function() {
+    var result = _prevCalcCosts();
+    if (typeof renderProForma === 'function') renderProForma();
+    return result;
+  };
+})();
 
 </script>
 </body>
