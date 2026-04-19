@@ -594,7 +594,33 @@
       3D View
     </button>
   </div>
+  <!-- Settings -->
+  <div style="position:relative;">
+    <button onclick="document.getElementById('settingsDropdown').classList.toggle('open')" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <div id="settingsDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:16px;z-index:500;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
+      <div style="margin-bottom:6px;">
+        <label style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">Claude API Key</label>
+        <div style="display:flex;gap:6px;">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-..." value="" oninput="setApiKey(this.value.trim())"
+            style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <button onclick="const inp=document.getElementById('apiKeyInput');inp.type=inp.type==='password'?'text':'password';this.textContent=inp.type==='password'?'Show':'Hide'"
+            style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:10px;font-family:inherit;cursor:pointer;background:var(--bg);color:var(--text-2);">Show</button>
+        </div>
+        <div id="apiKeyStatus" style="font-size:10px;margin-top:4px;color:var(--text-3);">Powers AI Design Advisor, Property Finder AI, and 3D Optimizer</div>
+      </div>
+    </div>
+  </div>
 </header>
+<style>
+  #settingsDropdown.open { display: block !important; }
+</style>
 
 <!-- App -->
 <div class="app">
@@ -656,19 +682,44 @@
           <div class="design-control">
             <div class="ctrl-label">Unit Size</div>
             <div class="ctrl-value"><span id="dSqftVal">800</span> <span style="font-size:12px;font-weight:400;color:var(--text-3)">sqft</span></div>
-            <input type="range" id="dSqft" min="400" max="1400" step="50" value="800"/>
+            <input type="range" id="dSqft" min="400" max="3000" step="50" value="800"/>
           </div>
           <div class="design-control">
             <div class="ctrl-label">Stories</div>
             <div class="ctrl-value" id="dStoriesVal">1</div>
             <div class="toggle-group">
-              <button class="toggle-btn active" data-group="stories" data-val="1">1 Story</button>
-              <button class="toggle-btn" data-group="stories" data-val="2">2 Story</button>
+              <button class="toggle-btn active" data-group="stories" data-val="1">1</button>
+              <button class="toggle-btn" data-group="stories" data-val="2">2</button>
+              <button class="toggle-btn" data-group="stories" data-val="3">3</button>
+              <button class="toggle-btn" data-group="stories" data-val="4">4</button>
             </div>
           </div>
         </div>
 
-        <!-- Roof + Bedrooms -->
+        <!-- Bedrooms + Baths -->
+        <div class="design-row">
+          <div class="design-control">
+            <div class="ctrl-label">Bedrooms</div>
+            <div class="toggle-group">
+              <button class="toggle-btn" data-group="beds" data-val="0">Studio</button>
+              <button class="toggle-btn active" data-group="beds" data-val="1">1</button>
+              <button class="toggle-btn" data-group="beds" data-val="2">2</button>
+              <button class="toggle-btn" data-group="beds" data-val="3">3</button>
+              <button class="toggle-btn" data-group="beds" data-val="4">4</button>
+            </div>
+          </div>
+          <div class="design-control">
+            <div class="ctrl-label">Bathrooms</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="baths" data-val="1">1</button>
+              <button class="toggle-btn" data-group="baths" data-val="1.5">1.5</button>
+              <button class="toggle-btn" data-group="baths" data-val="2">2</button>
+              <button class="toggle-btn" data-group="baths" data-val="3">3</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roof + Finish -->
         <div class="design-row">
           <div class="design-control">
             <div class="ctrl-label">Roof Type</div>
@@ -676,21 +727,9 @@
               <button class="toggle-btn active" data-group="roof" data-val="flat">Flat</button>
               <button class="toggle-btn" data-group="roof" data-val="shed">Shed</button>
               <button class="toggle-btn" data-group="roof" data-val="gable">Gable</button>
+              <button class="toggle-btn" data-group="roof" data-val="green">Green</button>
             </div>
           </div>
-          <div class="design-control">
-            <div class="ctrl-label">Bedrooms</div>
-            <div class="toggle-group">
-              <button class="toggle-btn" data-group="beds" data-val="0">Studio</button>
-              <button class="toggle-btn active" data-group="beds" data-val="1">1 BR</button>
-              <button class="toggle-btn" data-group="beds" data-val="2">2 BR</button>
-              <button class="toggle-btn" data-group="beds" data-val="3">3 BR</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Finish Level -->
-        <div class="design-row">
           <div class="design-control">
             <div class="ctrl-label">Finish Level</div>
             <div class="toggle-group">
@@ -699,12 +738,191 @@
               <button class="toggle-btn" data-group="finish" data-val="luxury">Luxury</button>
             </div>
           </div>
-          <div class="design-control">
-            <div class="ctrl-label">Climate Package</div>
-            <div class="toggle-group">
-              <button class="toggle-btn active" data-group="climate" data-val="standard">Standard</button>
-              <button class="toggle-btn" data-group="climate" data-val="coastal">Coastal</button>
-              <button class="toggle-btn" data-group="climate" data-val="fire">Fire</button>
+        </div>
+
+        <!-- STRUCTURAL SYSTEMS (collapsible) -->
+        <div style="margin-top:12px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.chevron').style.transform=this.nextElementSibling.style.display==='none'?'':'rotate(180deg)'"
+            style="padding:10px 12px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-2);">
+            <span>Structural Systems</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div style="padding:12px;display:none;">
+            <div class="design-row">
+              <div class="design-control">
+                <div class="ctrl-label">Foundation</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="foundation" data-val="slab">Slab</button>
+                  <button class="toggle-btn" data-group="foundation" data-val="crawl">Crawl</button>
+                  <button class="toggle-btn" data-group="foundation" data-val="helical">Helical</button>
+                  <button class="toggle-btn" data-group="foundation" data-val="pier">Raised Pier</button>
+                </div>
+              </div>
+              <div class="design-control">
+                <div class="ctrl-label">Wall System</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="wall" data-val="sip_6.5">SIP 6.5"</button>
+                  <button class="toggle-btn" data-group="wall" data-val="sip_8.25">SIP 8.25"</button>
+                  <button class="toggle-btn" data-group="wall" data-val="steel_18ga">Steel 18ga</button>
+                  <button class="toggle-btn" data-group="wall" data-val="clt_3ply">CLT 3-Ply</button>
+                </div>
+              </div>
+            </div>
+            <div class="design-row" style="margin-top:8px;">
+              <div class="design-control">
+                <div class="ctrl-label">Insulation</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="insulation" data-val="r23">R-23</button>
+                  <button class="toggle-btn" data-group="insulation" data-val="r30">R-30</button>
+                  <button class="toggle-btn" data-group="insulation" data-val="r40">R-40+</button>
+                </div>
+              </div>
+              <div class="design-control">
+                <div class="ctrl-label">Windows</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="windows" data-val="double">Double</button>
+                  <button class="toggle-btn" data-group="windows" data-val="triple">Triple</button>
+                  <button class="toggle-btn" data-group="windows" data-val="impact">Impact</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEP SYSTEMS (collapsible) -->
+        <div style="margin-top:8px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.chevron').style.transform=this.nextElementSibling.style.display==='none'?'':'rotate(180deg)'"
+            style="padding:10px 12px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-2);">
+            <span>MEP Systems</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div style="padding:12px;display:none;">
+            <div class="design-row">
+              <div class="design-control">
+                <div class="ctrl-label">HVAC</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="hvac" data-val="minisplit">Mini-Split</button>
+                  <button class="toggle-btn" data-group="hvac" data-val="heatpump">Heat Pump</button>
+                  <button class="toggle-btn" data-group="hvac" data-val="vrv">VRV</button>
+                  <button class="toggle-btn" data-group="hvac" data-val="geothermal">Geo</button>
+                </div>
+              </div>
+              <div class="design-control">
+                <div class="ctrl-label">Hot Water</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="hotwater" data-val="tankless">Tankless</button>
+                  <button class="toggle-btn" data-group="hotwater" data-val="hpwh">Heat Pump</button>
+                  <button class="toggle-btn" data-group="hotwater" data-val="solar">Solar</button>
+                </div>
+              </div>
+            </div>
+            <div class="design-row" style="margin-top:8px;">
+              <div class="design-control">
+                <div class="ctrl-label">Electrical</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="electrical" data-val="100a">100A</button>
+                  <button class="toggle-btn" data-group="electrical" data-val="200a">200A</button>
+                  <button class="toggle-btn" data-group="electrical" data-val="400a">400A</button>
+                </div>
+              </div>
+              <div class="design-control">
+                <div class="ctrl-label">Ventilation</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="ventilation" data-val="erv">ERV</button>
+                  <button class="toggle-btn" data-group="ventilation" data-val="hrv">HRV</button>
+                  <button class="toggle-btn" data-group="ventilation" data-val="passive">Passive</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLIMATE & RESILIENCE (collapsible) -->
+        <div style="margin-top:8px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.chevron').style.transform=this.nextElementSibling.style.display==='none'?'':'rotate(180deg)'"
+            style="padding:10px 12px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-2);">
+            <span>Climate & Resilience</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div style="padding:12px;display:none;">
+            <div class="design-row">
+              <div class="design-control" style="flex:1;">
+                <div class="ctrl-label">Climate Package</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="climate" data-val="standard">Standard</button>
+                  <button class="toggle-btn" data-group="climate" data-val="coastal">Coastal</button>
+                  <button class="toggle-btn" data-group="climate" data-val="fire">Fire</button>
+                  <button class="toggle-btn" data-group="climate" data-val="seismic">Seismic</button>
+                  <button class="toggle-btn" data-group="climate" data-val="flood">Flood</button>
+                </div>
+              </div>
+            </div>
+            <div class="design-row" style="margin-top:8px;">
+              <div class="design-control" style="flex:1;">
+                <div class="ctrl-label">Performance Target</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="performance" data-val="code">Code Min</button>
+                  <button class="toggle-btn" data-group="performance" data-val="energystar">ENERGY STAR</button>
+                  <button class="toggle-btn" data-group="performance" data-val="phius">Passive House</button>
+                  <button class="toggle-btn" data-group="performance" data-val="netzero">Net Zero</button>
+                </div>
+              </div>
+            </div>
+            <div class="design-row" style="margin-top:8px;">
+              <div class="design-control">
+                <div class="ctrl-label">Wind Rating</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="wind" data-val="90">90 mph</button>
+                  <button class="toggle-btn" data-group="wind" data-val="110">110 mph</button>
+                  <button class="toggle-btn" data-group="wind" data-val="130">130 mph</button>
+                  <button class="toggle-btn" data-group="wind" data-val="150">150+ mph</button>
+                </div>
+              </div>
+              <div class="design-control">
+                <div class="ctrl-label">Flood Mitigation</div>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-group="floodmit" data-val="none">None</button>
+                  <button class="toggle-btn" data-group="floodmit" data-val="elevated">Elevated</button>
+                  <button class="toggle-btn" data-group="floodmit" data-val="amphibious">Amphibious</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD-ONS (collapsible) -->
+        <div style="margin-top:8px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.chevron').style.transform=this.nextElementSibling.style.display==='none'?'':'rotate(180deg)'"
+            style="padding:10px 12px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-2);">
+            <span>Add-On Packages</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div style="padding:12px;display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="solar" onchange="renderCosts()"> <div><div style="font-weight:600;">Solar + Battery</div><div style="color:var(--text-3);font-size:9px;">+$8k + $8/sqft</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="ev" onchange="renderCosts()"> <div><div style="font-weight:600;">EV Charging</div><div style="color:var(--text-3);font-size:9px;">+$3,200</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="smart" onchange="renderCosts()"> <div><div style="font-weight:600;">Smart Home</div><div style="color:var(--text-3);font-size:9px;">+$4,800</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="greenroof" onchange="renderCosts()"> <div><div style="font-weight:600;">Green Roof</div><div style="color:var(--text-3);font-size:9px;">+$18/sqft</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="ada" onchange="renderCosts()"> <div><div style="font-weight:600;">ADA Accessible</div><div style="color:var(--text-3);font-size:9px;">+$8,500</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="sound" onchange="renderCosts()"> <div><div style="font-weight:600;">Acoustic Package</div><div style="color:var(--text-3);font-size:9px;">+$6/sqft</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="backup" onchange="renderCosts()"> <div><div style="font-weight:600;">Backup Generator</div><div style="color:var(--text-3);font-size:9px;">+$6,500</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;transition:all .2s;" onchange="renderCosts()">
+                <input type="checkbox" data-addon="water" onchange="renderCosts()"> <div><div style="font-weight:600;">Rainwater Harvest</div><div style="color:var(--text-3);font-size:9px;">+$4,200</div></div>
+              </label>
             </div>
           </div>
         </div>
@@ -734,6 +952,9 @@
           <div style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--accent);margin-bottom:4px;margin-top:10px;">Site Work</div>
           <div class="cost-line"><span class="cost-label">Excavation, Utilities, Landscape</span><span class="cost-val" id="cSite">$0</span></div>
 
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--accent);margin-bottom:4px;margin-top:10px;">Add-Ons</div>
+          <div class="cost-line"><span class="cost-label">Selected Add-On Packages</span><span class="cost-val" id="cAddons">$0</span></div>
+
           <div style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--accent);margin-bottom:4px;margin-top:10px;">Soft Costs</div>
           <div class="cost-line"><span class="cost-label">Architect &amp; Engineering</span><span class="cost-val" id="cArch">$0</span></div>
           <div class="cost-line"><span class="cost-label">NYC Permits &amp; Expediter</span><span class="cost-val" id="cPermits">$0</span></div>
@@ -757,17 +978,6 @@
           </div>
           <div style="font-size:11px;color:var(--text-2);margin-bottom:10px;">
             Get AI-powered recommendations to optimize your design for cost, compliance, and buildability.
-          </div>
-          <div style="margin-bottom:10px;">
-            <label style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">Claude API Key</label>
-            <div style="display:flex;gap:6px;">
-              <input type="password" id="apiKeyInput" placeholder="sk-ant-..." value="" oninput="setApiKey(this.value.trim())"
-                style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;transition:border .2s;"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
-              <button onclick="const inp=document.getElementById('apiKeyInput');inp.type=inp.type==='password'?'text':'password';this.textContent=inp.type==='password'?'Show':'Hide'"
-                style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:10px;font-family:inherit;cursor:pointer;background:var(--bg);color:var(--text-2);">Show</button>
-            </div>
-            <div id="apiKeyStatus" style="font-size:10px;margin-top:4px;color:var(--text-3);">Enables AI Design Advisor, Property Finder AI, and 3D Optimizer</div>
           </div>
           <button class="ai-btn" id="aiBtn" onclick="askAI()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4Z"/></svg>
@@ -1311,9 +1521,24 @@ const design = {
   stories: 1,
   roof: 'flat',
   beds: 1,
+  baths: 1,
   finish: 'standard',
   climate: 'standard',
-  material: 'sip',  // selected material
+  material: 'sip',
+  // Structural
+  foundation: 'slab',
+  wall: 'sip_6.5',
+  insulation: 'r23',
+  windows: 'double',
+  // MEP
+  hvac: 'minisplit',
+  hotwater: 'tankless',
+  electrical: '100a',
+  ventilation: 'erv',
+  // Climate
+  performance: 'code',
+  wind: '90',
+  floodmit: 'none',
 };
 
 // Cost multipliers — this is the design→cost linkage
@@ -1325,10 +1550,36 @@ const COST_MODEL = {
   // Carbon per sqft by material
   materialCarbon: { sip: 2.8, steel: 5.8, clt: -1.2 },
   baseMaterialPerSqft: 38, // default, overridden by selection
-  stories: { 1: 1.0, 2: 1.18 },
-  roof: { flat: 1.0, shed: 1.06, gable: 1.14 },
+  stories: { 1: 1.0, 2: 1.18, 3: 1.35, 4: 1.52 },
+  roof: { flat: 1.0, shed: 1.06, gable: 1.14, green: 1.22 },
   finish: { standard: 1.0, premium: 1.22, luxury: 1.48 },
-  climatePkg: { standard: 0, coastal: 6, fire: 8 },
+  climatePkg: { standard: 0, coastal: 6, fire: 8, seismic: 5, flood: 7 },
+  // New structural multipliers
+  foundationType: { slab: 1.0, crawl: 1.15, helical: 1.3, pier: 1.45 },
+  wallSystem: { 'sip_6.5': 1.0, 'sip_8.25': 1.12, steel_18ga: 0.92, clt_3ply: 1.25 },
+  insulationCost: { r23: 0, r30: 3, r40: 8 }, // $/sqft adder
+  windowsCost: { double: 0, triple: 4, impact: 9 }, // $/sqft adder
+  // MEP multipliers
+  hvacCost: { minisplit: 1.0, heatpump: 1.15, vrv: 1.45, geothermal: 2.2 },
+  hotwaterCost: { tankless: 0, hpwh: 1800, solar: 4500 }, // flat adder
+  electricalCost: { '100a': 0, '200a': 2400, '400a': 5800 }, // flat adder
+  ventilationCost: { erv: 0, hrv: 800, passive: 2200 }, // flat adder
+  // Performance targets
+  performanceCost: { code: 1.0, energystar: 1.05, phius: 1.18, netzero: 1.25 },
+  // Wind/flood
+  windCost: { '90': 0, '110': 2, '130': 5, '150': 9 }, // $/sqft adder
+  floodCost: { none: 0, elevated: 12, amphibious: 22 }, // $/sqft adder
+  // Add-on packages
+  addonCosts: {
+    solar: { base: 8000, perSqft: 8 },
+    ev: { base: 3200, perSqft: 0 },
+    smart: { base: 4800, perSqft: 0 },
+    greenroof: { base: 0, perSqft: 18 },
+    ada: { base: 8500, perSqft: 0 },
+    sound: { base: 0, perSqft: 6 },
+    backup: { base: 6500, perSqft: 0 },
+    water: { base: 4200, perSqft: 0 },
+  },
 
   // Fabrication & factory labor per sqft
   fabPerSqft: 45,
@@ -1361,8 +1612,8 @@ const COST_MODEL = {
   // NYC street closure / DOT coordination per delivery
   nycStreetPermit: 1800,
 
-  // Foundation per sqft (footprint)
-  foundationPerSqft: { 1: 24, 2: 32 },
+  // Foundation per sqft (footprint) — by story count
+  foundationPerSqft: { 1: 24, 2: 32, 3: 38, 4: 45 },
 
   // Crane & assembly
   craneCostBase: 3500,  // NYC crane rental is expensive
@@ -1404,28 +1655,33 @@ function calcCosts() {
   const C = COST_MODEL;
   const d = design;
 
-  const footprint = d.stories === 2 ? d.sqft / 2 : d.sqft;
+  const footprint = d.stories >= 2 ? d.sqft / d.stories : d.sqft;
   const moduleWidth = getModuleWidth(d.sqft, d.stories);
   const moduleCount = getModuleCount(d.sqft, d.stories);
-  const bathrooms = C.bathCount[d.beds] || 1;
+  const bathrooms = parseFloat(d.baths) || C.bathCount[d.beds] || 1;
 
   // === HARD COSTS ===
 
-  // Structural materials (shell, framing, insulation, exterior cladding)
+  // Structural materials — affected by wall system, insulation, windows, climate, performance
   const matCostPerSqft = C.materialCostPerSqft[d.material] || C.baseMaterialPerSqft;
+  const wallMult = C.wallSystem[d.wall] || 1.0;
+  const perfMult = C.performanceCost[d.performance] || 1.0;
   const materials = Math.round(
-    matCostPerSqft * d.sqft * C.roof[d.roof] * C.finish[d.finish]
-    + C.climatePkg[d.climate] * d.sqft
+    matCostPerSqft * d.sqft * C.roof[d.roof] * C.finish[d.finish] * wallMult * perfMult
+    + (C.climatePkg[d.climate] || 0) * d.sqft
+    + (C.insulationCost[d.insulation] || 0) * d.sqft
+    + (C.windowsCost[d.windows] || 0) * d.sqft
+    + (C.windCost[d.wind] || 0) * d.sqft
   );
 
   // Factory fabrication & labor
   const fab = Math.round(
-    C.fabPerSqft * d.sqft * C.stories[d.stories] * C.roof[d.roof]
+    C.fabPerSqft * d.sqft * (C.stories[d.stories] || 1.0) * C.roof[d.roof]
   );
 
   // Interior fit-out (drywall, paint, trim, doors) + bedroom complexity
   const interior = Math.round(
-    C.interiorPerSqft[d.finish] * d.sqft + C.bedroomCost[d.beds]
+    C.interiorPerSqft[d.finish] * d.sqft + (C.bedroomCost[d.beds] || C.bedroomCost[3] || 11000)
   );
 
   // Kitchen & bathrooms
@@ -1433,8 +1689,14 @@ function calcCosts() {
     C.kitchenCost[d.finish] + C.bathCost[d.finish] * bathrooms
   );
 
-  // MEP — Mechanical, Electrical, Plumbing
-  const mep = Math.round(C.mepPerSqft[d.finish] * d.sqft);
+  // MEP — affected by HVAC choice, hot water, electrical, ventilation
+  const hvacMult = C.hvacCost[d.hvac] || 1.0;
+  const mep = Math.round(
+    C.mepPerSqft[d.finish] * d.sqft * hvacMult
+    + (C.hotwaterCost[d.hotwater] || 0)
+    + (C.electricalCost[d.electrical] || 0)
+    + (C.ventilationCost[d.ventilation] || 0)
+  );
 
   // Fire protection (sprinklers — required in NYC)
   const fireProt = Math.round(C.sprinklerPerSqft * d.sqft);
@@ -1454,16 +1716,31 @@ function calcCosts() {
   }
   shipping = Math.round(shipping);
 
-  // Foundation
-  const foundation = Math.round(footprint * C.foundationPerSqft[d.stories]);
+  // Foundation — affected by foundation type and flood mitigation
+  const foundMult = C.foundationType[d.foundation] || 1.0;
+  const foundation = Math.round(
+    footprint * (C.foundationPerSqft[d.stories] || C.foundationPerSqft[2]) * foundMult
+    + (C.floodCost[d.floodmit] || 0) * footprint
+  );
 
   // Crane & assembly + NYC crane permit
   const assembly = Math.round(
-    C.craneCostBase * moduleCount + (d.stories === 2 ? C.cranePer2Story * moduleCount : 0) + C.cranePermit
+    C.craneCostBase * moduleCount + (d.stories >= 2 ? C.cranePer2Story * moduleCount * (d.stories - 1) : 0) + C.cranePermit
   );
 
   // === SITE WORK ===
   const siteWork = Math.round(C.siteWorkBase + C.utilityHookup + C.landscapeRestore);
+
+  // === ADD-ONS ===
+  let addonTotal = 0;
+  document.querySelectorAll('[data-addon]').forEach(cb => {
+    if (cb.checked) {
+      const key = cb.dataset.addon;
+      const addon = C.addonCosts[key];
+      if (addon) addonTotal += addon.base + addon.perSqft * d.sqft;
+    }
+  });
+  addonTotal = Math.round(addonTotal);
 
   // === SOFT COSTS ===
   const archSize = d.sqft <= 600 ? 'small' : d.sqft <= 1000 ? 'medium' : 'large';
@@ -1473,7 +1750,7 @@ function calcCosts() {
   const softCosts = Math.round(archEng + permits + preDev);
 
   // === CONTINGENCY ===
-  const hardCosts = materials + fab + interior + kitchenBath + mep + fireProt + ffa + shipping + foundation + assembly + siteWork;
+  const hardCosts = materials + fab + interior + kitchenBath + mep + fireProt + ffa + shipping + foundation + assembly + siteWork + addonTotal;
   const contingency = Math.round(hardCosts * C.contingencyPct);
 
   const total = hardCosts + softCosts + contingency;
@@ -1483,8 +1760,7 @@ function calcCosts() {
     materials, fab, interior, kitchenBath, mep, fireProt, ffa,
     shipping, foundation, assembly, siteWork, softCosts, contingency,
     total, perSqft, moduleWidth, moduleCount, shippingClass,
-    // Sub-totals for display
-    hardCosts, bathrooms,
+    hardCosts, bathrooms, addonTotal,
   };
 }
 
@@ -1505,6 +1781,7 @@ function renderCosts() {
   document.getElementById('cFoundation').textContent = fmt(costs.foundation);
   document.getElementById('cAssembly').textContent = fmt(costs.assembly);
   document.getElementById('cSite').textContent = fmt(costs.siteWork);
+  document.getElementById('cAddons').textContent = costs.addonTotal > 0 ? fmt(costs.addonTotal) : '—';
   // Soft costs breakdown
   const C = COST_MODEL;
   const archSize = design.sqft <= 600 ? 'small' : design.sqft <= 1000 ? 'medium' : 'large';
@@ -1553,10 +1830,25 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
     btn.classList.add('active');
     const val = btn.dataset.val;
     if (group === 'stories') { design.stories = +val; document.getElementById('dStoriesVal').textContent = val; }
-    if (group === 'roof') design.roof = val;
-    if (group === 'beds') design.beds = +val;
-    if (group === 'finish') design.finish = val;
-    if (group === 'climate') design.climate = val;
+    else if (group === 'roof') design.roof = val;
+    else if (group === 'beds') design.beds = +val;
+    else if (group === 'baths') design.baths = +val;
+    else if (group === 'finish') design.finish = val;
+    else if (group === 'climate') design.climate = val;
+    // Structural
+    else if (group === 'foundation') design.foundation = val;
+    else if (group === 'wall') design.wall = val;
+    else if (group === 'insulation') design.insulation = val;
+    else if (group === 'windows') design.windows = val;
+    // MEP
+    else if (group === 'hvac') design.hvac = val;
+    else if (group === 'hotwater') design.hotwater = val;
+    else if (group === 'electrical') design.electrical = val;
+    else if (group === 'ventilation') design.ventilation = val;
+    // Climate/resilience
+    else if (group === 'performance') design.performance = val;
+    else if (group === 'wind') design.wind = val;
+    else if (group === 'floodmit') design.floodmit = val;
     renderCosts();
   });
 });
@@ -1601,8 +1893,7 @@ async function askAI() {
   const resultEl = document.getElementById('aiResult');
 
   if (!CLAUDE_API_KEY) {
-    resultEl.innerHTML = '<div style="padding:12px;border-radius:var(--radius-sm);background:var(--amber-light);font-size:11px;color:#92400e;">Paste your Claude API key in the field above to enable AI features.</div>';
-    document.getElementById('apiKeyInput')?.focus();
+    resultEl.innerHTML = '<div style="padding:12px;border-radius:var(--radius-sm);background:var(--amber-light);font-size:11px;color:#92400e;">Add your Claude API key in <b>Settings</b> (gear icon, top right) to enable AI features.</div>';
     return;
   }
 
