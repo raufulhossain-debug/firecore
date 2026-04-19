@@ -271,6 +271,168 @@
     .mode-btn.active { background: var(--accent); color: white; }
     .mode-btn:hover:not(.active) { background: var(--accent-light); }
 
+    /* Design Catalog */
+    .catalog-panel { padding: 20px; }
+    .catalog-header { margin-bottom: 16px; }
+    .catalog-header h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .catalog-header p { font-size: 12px; color: var(--text-2); }
+    .catalog-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .catalog-filters select, .catalog-filters input {
+      padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px;
+      font-family: inherit; background: var(--surface); color: var(--text);
+    }
+    .sku-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all .2s;
+      position: relative; overflow: hidden;
+    }
+    .sku-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .sku-card.selected { border-color: var(--accent); background: var(--accent-light); }
+    .sku-id { font-size: 10px; font-family: monospace; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
+    .sku-name { font-size: 14px; font-weight: 700; margin: 4px 0 2px; }
+    .sku-desc { font-size: 11px; color: var(--text-2); margin-bottom: 10px; line-height: 1.5; }
+    .sku-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+    .sku-tag { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: .03em; }
+    .sku-tag-mat { background: #dbeafe; color: #1e40af; }
+    .sku-tag-type { background: #dcfce7; color: #166534; }
+    .sku-tag-zone { background: #fef3c7; color: #92400e; }
+    .sku-tag-flood { background: #fce7f3; color: #9d174d; }
+    .sku-tag-version { background: #f3e8ff; color: #7c3aed; }
+    .sku-specs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+    .sku-spec { background: var(--bg); border-radius: 6px; padding: 6px 8px; text-align: center; }
+    .sku-spec .val { font-size: 13px; font-weight: 700; }
+    .sku-spec .lbl { font-size: 9px; color: var(--text-3); text-transform: uppercase; margin-top: 1px; }
+    .sku-detail { display: none; }
+    .sku-card.expanded .sku-detail { display: block; }
+    .sku-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .sku-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; letter-spacing: .04em; }
+    .sku-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 11px; }
+    .sku-grid .label { color: var(--text-3); }
+    .sku-grid .value { font-weight: 600; text-align: right; }
+    .sku-license-bar {
+      display: flex; align-items: center; justify-content: space-between; margin-top: 12px;
+      padding: 10px 14px; background: linear-gradient(135deg, #f5f3ff, #eef2ff); border-radius: var(--radius-sm);
+      border: 1px solid #c7d2fe;
+    }
+    .sku-license-fee { font-size: 18px; font-weight: 800; color: var(--accent-dark); }
+    .sku-license-label { font-size: 10px; color: var(--text-2); }
+    .sku-license-btn {
+      padding: 8px 16px; background: var(--gradient-1); color: white; border: none; border-radius: 8px;
+      font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .sku-license-btn:hover { opacity: .9; }
+
+    /* Project Packager */
+    .packager-panel { padding: 20px; }
+    .pkg-step { margin-bottom: 16px; }
+    .pkg-step-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .pkg-step-num {
+      width: 22px; height: 22px; border-radius: 50%; background: var(--gradient-1); color: white;
+      font-size: 11px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0;
+    }
+    .pkg-step-num.done { background: var(--green); }
+    .pkg-step-title { font-size: 12px; font-weight: 700; }
+    .pkg-selected {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 10px 14px; font-size: 12px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .pkg-selected .name { font-weight: 600; }
+    .pkg-selected .change { color: var(--accent); cursor: pointer; font-size: 11px; font-weight: 600; }
+    .pkg-output { margin-top: 16px; }
+    .pkg-section {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 12px; overflow: hidden;
+    }
+    .pkg-section-head {
+      padding: 12px 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center;
+      justify-content: space-between; cursor: pointer; background: var(--bg);
+    }
+    .pkg-section-head:hover { background: var(--accent-light); }
+    .pkg-section-body { padding: 14px 16px; font-size: 12px; line-height: 1.7; }
+    .pkg-bom-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .pkg-bom-table th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 10px; text-transform: uppercase; padding: 6px 8px; border-bottom: 2px solid var(--border); }
+    .pkg-bom-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    .pkg-bom-table tr:last-child td { border-bottom: none; }
+    .pkg-bom-total { font-weight: 700; background: var(--accent-light); }
+    .pkg-timeline {
+      display: flex; gap: 0; margin: 10px 0; position: relative;
+    }
+    .pkg-tl-phase {
+      flex: 1; padding: 10px 8px; text-align: center; position: relative;
+      border-right: 2px solid white;
+    }
+    .pkg-tl-phase:last-child { border-right: none; }
+    .pkg-tl-phase .weeks { font-size: 16px; font-weight: 800; }
+    .pkg-tl-phase .name { font-size: 9px; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+    .pkg-tl-design { background: #dbeafe; color: #1e40af; border-radius: 8px 0 0 8px; }
+    .pkg-tl-permit { background: #fef3c7; color: #92400e; }
+    .pkg-tl-fab { background: #dcfce7; color: #166534; }
+    .pkg-tl-ship { background: #e0e7ff; color: #4338ca; }
+    .pkg-tl-install { background: #fce7f3; color: #9d174d; }
+    .pkg-tl-finish { background: #f3e8ff; color: #7c3aed; border-radius: 0 8px 8px 0; }
+    .pkg-checklist { list-style: none; }
+    .pkg-checklist li { padding: 4px 0; display: flex; align-items: center; gap: 6px; }
+    .pkg-checklist li::before { content: ''; width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .pkg-check-req::before { background: var(--green); background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 6l2 2 4-4' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E"); }
+    .pkg-check-warn::before { background: var(--amber); }
+    .pkg-check-info::before { background: var(--blue); }
+    .pkg-generate-btn {
+      width: 100%; padding: 14px; background: var(--gradient-1); color: white; border: none;
+      border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: inherit; margin-top: 12px;
+    }
+    .pkg-generate-btn:hover { opacity: .9; }
+    .pkg-generate-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Builder Portal */
+    .portal-panel { padding: 20px; }
+    .portal-header { text-align: center; padding: 20px 0 16px; }
+    .portal-header h2 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .portal-header p { font-size: 12px; color: var(--text-2); }
+    .tier-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .tier-card {
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+      position: relative; transition: all .2s; cursor: pointer;
+    }
+    .tier-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+    .tier-card.featured { border-color: var(--accent); background: linear-gradient(135deg, #faf5ff 0%, #eef2ff 100%); }
+    .tier-card.featured::before {
+      content: 'Most Popular'; position: absolute; top: -10px; right: 16px;
+      background: var(--gradient-1); color: white; font-size: 9px; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px; text-transform: uppercase; letter-spacing: .03em;
+    }
+    .tier-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .tier-price { font-size: 28px; font-weight: 800; color: var(--accent-dark); margin: 8px 0; }
+    .tier-price span { font-size: 12px; font-weight: 400; color: var(--text-2); }
+    .tier-desc { font-size: 11px; color: var(--text-2); margin-bottom: 12px; line-height: 1.5; }
+    .tier-features { font-size: 11px; line-height: 2; }
+    .tier-features div { display: flex; align-items: center; gap: 6px; }
+    .tier-features div::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+    .tier-btn {
+      width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit; margin-top: 14px;
+    }
+    .tier-btn-primary { background: var(--gradient-1); color: white; }
+    .tier-btn-outline { background: var(--surface); color: var(--accent-dark); border: 1px solid var(--accent); }
+    .tier-btn:hover { opacity: .9; }
+    .portal-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .portal-section h3 { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+    .portal-stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .portal-stat {
+      background: var(--bg); border-radius: var(--radius-sm); padding: 12px; text-align: center;
+    }
+    .portal-stat .val { font-size: 20px; font-weight: 800; color: var(--accent-dark); }
+    .portal-stat .lbl { font-size: 9px; color: var(--text-3); text-transform: uppercase; margin-top: 2px; }
+    .api-block {
+      background: #1e1e2e; color: #cdd6f4; border-radius: var(--radius-sm); padding: 14px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; line-height: 1.7;
+      overflow-x: auto; margin-top: 8px;
+    }
+    .api-block .comment { color: #6c7086; }
+    .api-block .string { color: #a6e3a1; }
+    .api-block .key { color: #89b4fa; }
+    .api-block .method { color: #f38ba8; }
+
     /* Property Finder Panel */
     .finder-panel { padding: 20px; }
     .finder-input-wrap {
@@ -386,11 +548,23 @@
   <div class="mode-toggle">
     <button class="mode-btn active" id="modeAnalyze" onclick="setMode('analyze')">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      Analyze Site
+      Analyze
     </button>
     <button class="mode-btn" id="modeFinder" onclick="setMode('finder')">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-      Find Properties
+      Find
+    </button>
+    <button class="mode-btn" id="modeCatalog" onclick="setMode('catalog')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      IP Catalog
+    </button>
+    <button class="mode-btn" id="modePackager" onclick="setMode('packager')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+      Packager
+    </button>
+    <button class="mode-btn" id="modePortal" onclick="setMode('portal')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Portal
     </button>
   </div>
 </header>
@@ -743,6 +917,201 @@
 
         <!-- Results -->
         <div id="finderResults" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- DESIGN CATALOG PANEL -->
+    <div id="catalogPanel" style="display:none;">
+      <div class="catalog-panel">
+        <div class="catalog-header">
+          <h2>IP Design Catalog</h2>
+          <p>Verified prefab configurations — each SKU is a licensable, permit-ready architecture with full structural, MEP, and code compliance specs.</p>
+        </div>
+        <div class="catalog-filters">
+          <select id="catFilterType" onchange="renderCatalog()">
+            <option value="">All Types</option>
+            <option value="adu">Backyard ADU</option>
+            <option value="addition">Home Addition</option>
+            <option value="infill">Infill Housing</option>
+            <option value="multifamily">Multi-Family</option>
+          </select>
+          <select id="catFilterMat" onchange="renderCatalog()">
+            <option value="">All Materials</option>
+            <option value="sip">SIP</option>
+            <option value="steel">Light-Gauge Steel</option>
+            <option value="clt">CLT / Mass Timber</option>
+          </select>
+          <select id="catFilterBeds" onchange="renderCatalog()">
+            <option value="">Any Beds</option>
+            <option value="0">Studio</option>
+            <option value="1">1 BR</option>
+            <option value="2">2 BR</option>
+            <option value="3">3 BR</option>
+          </select>
+        </div>
+        <div id="catalogList"></div>
+      </div>
+    </div>
+
+    <!-- PROJECT PACKAGER PANEL -->
+    <div id="packagerPanel" style="display:none;">
+      <div class="packager-panel">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Project Packager</div>
+          <div style="font-size:12px;color:var(--text-2);">Select a property + design SKU to generate a complete licensable project package: BOM, permits, timeline, financing, and supply chain routing.</div>
+        </div>
+
+        <!-- Step 1: Property -->
+        <div class="pkg-step">
+          <div class="pkg-step-header">
+            <div class="pkg-step-num" id="pkgStep1Num">1</div>
+            <div class="pkg-step-title">Select Property</div>
+          </div>
+          <div id="pkgPropertySlot">
+            <div style="font-size:12px;color:var(--text-3);padding:12px;background:var(--bg);border-radius:var(--radius-sm);text-align:center;">
+              Use <strong>Analyze</strong> or <strong>Find</strong> to select a property first, then return here.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Design SKU -->
+        <div class="pkg-step">
+          <div class="pkg-step-header">
+            <div class="pkg-step-num" id="pkgStep2Num">2</div>
+            <div class="pkg-step-title">Select Design SKU</div>
+          </div>
+          <div id="pkgSkuSlot">
+            <div style="font-size:12px;color:var(--text-3);padding:12px;background:var(--bg);border-radius:var(--radius-sm);text-align:center;">
+              Browse the <strong>IP Catalog</strong> and select a design, or choose one below.
+            </div>
+            <div id="pkgSkuQuickPicks" style="margin-top:8px;"></div>
+          </div>
+        </div>
+
+        <!-- Step 3: Generate -->
+        <div class="pkg-step">
+          <div class="pkg-step-header">
+            <div class="pkg-step-num" id="pkgStep3Num">3</div>
+            <div class="pkg-step-title">Generate Project Package</div>
+          </div>
+          <button class="pkg-generate-btn" id="pkgGenerateBtn" onclick="generateProjectPackage()" disabled>
+            Generate Licensable Project Package
+          </button>
+        </div>
+
+        <!-- Output -->
+        <div id="pkgOutput"></div>
+      </div>
+    </div>
+
+    <!-- BUILDER PORTAL PANEL -->
+    <div id="portalPanel" style="display:none;">
+      <div class="portal-panel">
+        <div class="portal-header">
+          <h2>Builder Portal</h2>
+          <p>License prefab IP, track projects, integrate via API</p>
+        </div>
+
+        <!-- Licensing Tiers -->
+        <div class="tier-cards">
+          <div class="tier-card" onclick="selectTier('explorer')">
+            <div class="tier-name">Explorer</div>
+            <div class="tier-price">Free <span>forever</span></div>
+            <div class="tier-desc">Browse the design catalog, analyze up to 5 sites/month, access cost estimates. Perfect for evaluating the platform.</div>
+            <div class="tier-features">
+              <div>5 site analyses / month</div>
+              <div>Browse full IP catalog</div>
+              <div>Cost estimates (ranges only)</div>
+              <div>Community support</div>
+            </div>
+            <button class="tier-btn tier-btn-outline">Current Plan</button>
+          </div>
+
+          <div class="tier-card featured" onclick="selectTier('pro')">
+            <div class="tier-name">Pro — Per Project</div>
+            <div class="tier-price">$4,500 <span>/ project license</span></div>
+            <div class="tier-desc">Full project packages with BOM, permit-ready specs, supply chain routing, and financing stack. One license per property address.</div>
+            <div class="tier-features">
+              <div>Unlimited site analyses</div>
+              <div>Full project packages with BOM</div>
+              <div>Permit-ready spec sheets</div>
+              <div>Supply chain routing + quotes</div>
+              <div>Financing stack optimization</div>
+              <div>Engineering stamp coordination</div>
+              <div>Priority support + Slack access</div>
+            </div>
+            <button class="tier-btn tier-btn-primary">License a Project</button>
+          </div>
+
+          <div class="tier-card" onclick="selectTier('enterprise')">
+            <div class="tier-name">Enterprise</div>
+            <div class="tier-price">$18,000 <span>/ year</span></div>
+            <div class="tier-desc">Unlimited project packages, API access for integrating PrefabOS intelligence into your own tools, white-label options, and dedicated support.</div>
+            <div class="tier-features">
+              <div>Unlimited project licenses</div>
+              <div>REST API access (design, cost, supply chain)</div>
+              <div>Bulk property screening</div>
+              <div>Custom SKU development</div>
+              <div>White-label reports</div>
+              <div>Dedicated account manager</div>
+              <div>SLA + phone support</div>
+            </div>
+            <button class="tier-btn tier-btn-outline">Contact Sales</button>
+          </div>
+        </div>
+
+        <!-- Dashboard (simulated) -->
+        <div class="portal-section">
+          <h3>Your Dashboard</h3>
+          <div class="portal-stat-row">
+            <div class="portal-stat">
+              <div class="val" id="portalProjects">0</div>
+              <div class="lbl">Projects</div>
+            </div>
+            <div class="portal-stat">
+              <div class="val" id="portalAnalyses">3</div>
+              <div class="lbl">Analyses</div>
+            </div>
+            <div class="portal-stat">
+              <div class="val" id="portalSaved">$0</div>
+              <div class="lbl">Est. Saved</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Access -->
+        <div class="portal-section">
+          <h3>API Access</h3>
+          <p style="font-size:11px;color:var(--text-2);margin-bottom:8px;">Integrate PrefabOS intelligence into your own tools. Available on Enterprise plan.</p>
+          <div class="api-block">
+<span class="comment">// Feasibility check for a property</span>
+<span class="method">POST</span> /api/v1/feasibility
+{
+  <span class="key">"address"</span>: <span class="string">"120 Broadway, Brooklyn"</span>,
+  <span class="key">"sku_id"</span>: <span class="string">"PFB-ADU-1BR-SIP-v2.1"</span>
+}
+
+<span class="comment">// Generate project package</span>
+<span class="method">POST</span> /api/v1/package
+{
+  <span class="key">"bbl"</span>: <span class="string">"3012340001"</span>,
+  <span class="key">"sku_id"</span>: <span class="string">"PFB-ADU-2BR-CLT-v1.3"</span>,
+  <span class="key">"include"</span>: [<span class="string">"bom"</span>, <span class="string">"permits"</span>, <span class="string">"financing"</span>, <span class="string">"timeline"</span>]
+}
+
+<span class="comment">// Cost model</span>
+<span class="method">GET</span> /api/v1/cost?sku=PFB-ADU-1BR-SIP-v2.1&sqft=600
+
+<span class="comment">// Supply chain routing</span>
+<span class="method">POST</span> /api/v1/supply-chain
+{
+  <span class="key">"sku_id"</span>: <span class="string">"PFB-ADU-2BR-SIP-v2.0"</span>,
+  <span class="key">"site_lat"</span>: 40.6782,
+  <span class="key">"site_lon"</span>: -73.9442,
+  <span class="key">"optimize"</span>: [<span class="string">"cost"</span>, <span class="string">"speed"</span>, <span class="string">"carbon"</span>]
+}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1570,28 +1939,55 @@ let finderMarkers = [];
 
 function setMode(mode) {
   currentMode = mode;
-  document.getElementById('modeAnalyze').classList.toggle('active', mode === 'analyze');
-  document.getElementById('modeFinder').classList.toggle('active', mode === 'finder');
+  ['Analyze','Finder','Catalog','Packager','Portal'].forEach(m => {
+    const btn = document.getElementById('mode' + m);
+    if (btn) btn.classList.toggle('active', mode === m.toLowerCase());
+  });
 
   // Toggle panels
   const searchWrap = document.getElementById('searchWrap');
   const emptyState = document.getElementById('emptyState');
   const filledPanel = document.getElementById('filledPanel');
   const finderPanel = document.getElementById('finderPanel');
+  const catalogPanel = document.getElementById('catalogPanel');
+  const packagerPanel = document.getElementById('packagerPanel');
+  const portalPanel = document.getElementById('portalPanel');
+
+  // Hide all
+  [finderPanel, catalogPanel, packagerPanel, portalPanel].forEach(p => { if(p) p.style.display = 'none'; });
 
   if (mode === 'analyze') {
     searchWrap.style.display = 'flex';
-    finderPanel.style.display = 'none';
     if (currentLat) { filledPanel.style.display = 'block'; emptyState.style.display = 'none'; }
     else { filledPanel.style.display = 'none'; emptyState.style.display = 'block'; }
     clearFinderMarkers();
-  } else {
+  } else if (mode === 'finder') {
     searchWrap.style.display = 'none';
     emptyState.style.display = 'none';
     filledPanel.style.display = 'none';
     finderPanel.style.display = 'block';
     document.getElementById('mapInstructions').style.display = 'none';
     map.setView([40.7128, -74.006], 11);
+  } else if (mode === 'catalog') {
+    searchWrap.style.display = 'none';
+    emptyState.style.display = 'none';
+    filledPanel.style.display = 'none';
+    catalogPanel.style.display = 'block';
+    document.getElementById('mapInstructions').style.display = 'none';
+    renderCatalog();
+  } else if (mode === 'packager') {
+    searchWrap.style.display = 'none';
+    emptyState.style.display = 'none';
+    filledPanel.style.display = 'none';
+    packagerPanel.style.display = 'block';
+    document.getElementById('mapInstructions').style.display = 'none';
+    updatePackagerState();
+  } else if (mode === 'portal') {
+    searchWrap.style.display = 'none';
+    emptyState.style.display = 'none';
+    filledPanel.style.display = 'none';
+    portalPanel.style.display = 'block';
+    document.getElementById('mapInstructions').style.display = 'none';
   }
 }
 
@@ -2255,8 +2651,662 @@ renderCosts = function() {
   if (currentLat) renderFinancing();
 };
 
+// =============================================
+// DESIGN CATALOG — VERIFIED PREFAB SKUs (the IP)
+// =============================================
+
+const DESIGN_CATALOG = [
+  {
+    id: 'PFB-ADU-1BR-SIP-v2.1',
+    name: '1BR Backyard ADU',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'sip', materialName: 'SIP',
+    desc: 'Compact, energy-efficient 1-bedroom ADU optimized for typical NYC residential lots. SIP construction delivers R-23+ walls with rapid 1-day crane set. Ideal for R1-R6 zones.',
+    sqftRange: [400, 650], defaultSqft: 550,
+    stories: 1, beds: 1, baths: 1,
+    zoningCompat: ['R1','R2','R3','R4','R5','R6','R7'],
+    floodReady: true, coastalPkg: true,
+    structural: {
+      foundation: 'Slab-on-grade or helical piles (flood: raised pier)',
+      wallSystem: '6.5" SIP panel — R-23 continuous',
+      roofSystem: '10.25" SIP panel — R-40',
+      floorSystem: '8" SIP panel — R-30',
+      loadPath: 'Continuous load path to foundation',
+      windRating: '130 mph (coastal)',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mitsubishi mini-split (1-ton, SEER 20+)',
+      plumbing: 'PEX manifold, tankless water heater',
+      electrical: '100A panel, LED throughout',
+      solar: 'Pre-wired for rooftop solar (3kW)',
+      erv: 'Energy recovery ventilator',
+    },
+    modules: 2, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 25, minLotDepth: 60,
+    setbacks: { front: 20, rear: 20, side: 5 },
+    permitPath: 'DOB Alt-1 (existing lot) or NB (vacant)',
+    codeCompliance: ['NYC Energy Code 2024', 'IRC 2021', 'FEMA P-55 (flood)', 'ASCE 7-22 wind'],
+    timelineWeeks: { design: 2, permit: 6, fab: 8, ship: 1, install: 1, finish: 3 },
+    costRange: [180000, 240000],
+    costPerSqft: [327, 370],
+    licenseFee: 4500,
+    version: '2.1',
+    lastUpdated: '2026-03-15',
+    changeLog: ['v2.1: Coastal package added', 'v2.0: NYC Energy Code 2024 compliance', 'v1.0: Initial release'],
+  },
+  {
+    id: 'PFB-ADU-2BR-SIP-v2.0',
+    name: '2BR Family ADU',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'sip', materialName: 'SIP',
+    desc: 'Spacious 2-bedroom ADU with full kitchen and accessible bath option. 3-module design fits lots ≥30ft wide. Verified for R3-R7 zones with ADU overlay.',
+    sqftRange: [650, 900], defaultSqft: 800,
+    stories: 1, beds: 2, baths: 1,
+    zoningCompat: ['R3','R4','R5','R6','R7'],
+    floodReady: true, coastalPkg: true,
+    structural: {
+      foundation: 'Slab-on-grade or helical piles',
+      wallSystem: '6.5" SIP panel — R-23 continuous',
+      roofSystem: '10.25" SIP panel — R-40',
+      floorSystem: '8" SIP panel — R-30',
+      loadPath: 'Continuous load path',
+      windRating: '130 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mitsubishi mini-split (1.5-ton)',
+      plumbing: 'PEX manifold, tankless WH',
+      electrical: '125A panel, LED, USB-C outlets',
+      solar: 'Pre-wired 4kW',
+      erv: 'Energy recovery ventilator',
+    },
+    modules: 3, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 30, minLotDepth: 70,
+    setbacks: { front: 20, rear: 20, side: 5 },
+    permitPath: 'DOB Alt-1',
+    codeCompliance: ['NYC Energy Code 2024', 'IRC 2021', 'ADA optional'],
+    timelineWeeks: { design: 2, permit: 6, fab: 10, ship: 1, install: 1, finish: 4 },
+    costRange: [240000, 310000],
+    costPerSqft: [310, 345],
+    licenseFee: 4500,
+    version: '2.0', lastUpdated: '2026-02-20',
+    changeLog: ['v2.0: ADA-accessible bath option', 'v1.0: Initial release'],
+  },
+  {
+    id: 'PFB-ADU-2BR-CLT-v1.3',
+    name: '2BR Mass Timber ADU',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'clt', materialName: 'CLT',
+    desc: 'Premium CLT (cross-laminated timber) ADU with exposed wood interiors and carbon-negative structure. Biophilic design maximizes natural light. Ideal for sustainability-focused projects.',
+    sqftRange: [700, 950], defaultSqft: 850,
+    stories: 1, beds: 2, baths: 1,
+    zoningCompat: ['R3','R4','R5','R6','R7','R8'],
+    floodReady: false, coastalPkg: false,
+    structural: {
+      foundation: 'Concrete slab or screw piles',
+      wallSystem: '5-ply CLT 5.3" — R-24 (with insulation)',
+      roofSystem: '5-ply CLT — R-38',
+      floorSystem: '3-ply CLT — R-28',
+      loadPath: 'CLT panel-to-panel connections',
+      windRating: '110 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Air-source heat pump (COP 4.0)',
+      plumbing: 'PEX-A manifold, heat pump WH',
+      electrical: '125A panel, smart home pre-wire',
+      solar: 'Integrated roof solar (5kW)',
+      erv: 'Zehnder ERV',
+    },
+    modules: 2, transportWidth: '13ft', craneRequired: true,
+    minLotWidth: 30, minLotDepth: 65,
+    setbacks: { front: 20, rear: 20, side: 5 },
+    permitPath: 'DOB Alt-1',
+    codeCompliance: ['NYC Energy Code 2024', 'Passive House optional', 'FSC certified'],
+    timelineWeeks: { design: 3, permit: 6, fab: 12, ship: 1, install: 1, finish: 4 },
+    costRange: [290000, 370000],
+    costPerSqft: [345, 390],
+    licenseFee: 5500,
+    version: '1.3', lastUpdated: '2026-01-10',
+    changeLog: ['v1.3: Passive House option', 'v1.2: Exposed CLT interior standard', 'v1.0: Initial release'],
+  },
+  {
+    id: 'PFB-ADD-1BR-STEEL-v1.5',
+    name: '1BR Rooftop Addition',
+    type: 'addition', typeName: 'Home Addition',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: 'Lightweight steel-frame addition designed for rooftop or rear extension on existing buildings. 40% lighter than wood frame — ideal where structural capacity is limited.',
+    sqftRange: [350, 550], defaultSqft: 450,
+    stories: 1, beds: 1, baths: 1,
+    zoningCompat: ['R5','R6','R7','R8','R9'],
+    floodReady: false, coastalPkg: false,
+    structural: {
+      foundation: 'Steel bearing on existing structure',
+      wallSystem: 'Light-gauge steel 6" — R-21 spray foam',
+      roofSystem: 'Steel truss — R-38 insulation',
+      floorSystem: 'Steel joists on existing bearing walls',
+      loadPath: 'Point loads to existing structure',
+      windRating: '120 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mini-split (0.75-ton)',
+      plumbing: 'PEX to existing risers',
+      electrical: 'Sub-panel from existing 200A service',
+      solar: 'Optional rooftop',
+      erv: 'Bathroom exhaust HRV',
+    },
+    modules: 1, transportWidth: '12ft', craneRequired: true,
+    minLotWidth: 18, minLotDepth: 40,
+    setbacks: { front: 0, rear: 10, side: 0 },
+    permitPath: 'DOB Alt-2 (addition to existing)',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'Structural peer review req.'],
+    timelineWeeks: { design: 3, permit: 8, fab: 6, ship: 1, install: 1, finish: 3 },
+    costRange: [150000, 210000],
+    costPerSqft: [340, 380],
+    licenseFee: 4500,
+    version: '1.5', lastUpdated: '2026-03-01',
+    changeLog: ['v1.5: Structural calc templates for common brownstone types', 'v1.0: Initial release'],
+  },
+  {
+    id: 'PFB-INF-3BR-SIP-v1.2',
+    name: '3BR Infill House',
+    type: 'infill', typeName: 'Infill Housing',
+    material: 'sip', materialName: 'SIP',
+    desc: '2-story, 3-bedroom infill house for vacant urban lots. Designed for narrow lots (25ft+). Full DOB new-building permit package included. Net-zero ready.',
+    sqftRange: [1100, 1600], defaultSqft: 1400,
+    stories: 2, beds: 3, baths: 2,
+    zoningCompat: ['R5','R6','R7','R8'],
+    floodReady: true, coastalPkg: true,
+    structural: {
+      foundation: 'Full basement or raised slab',
+      wallSystem: '8.25" SIP — R-30 continuous',
+      roofSystem: '12.25" SIP — R-50',
+      floorSystem: '2nd floor: engineered I-joists 14" OC',
+      loadPath: 'Continuous to foundation/piles',
+      windRating: '130 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Ducted mini-split multi-zone (3-ton)',
+      plumbing: 'PEX manifold, 2 wet walls, tankless combo',
+      electrical: '200A panel, EV charger pre-wire',
+      solar: 'Roof-integrated 8kW array',
+      erv: 'Whole-house ERV',
+    },
+    modules: 6, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 25, minLotDepth: 80,
+    setbacks: { front: 15, rear: 30, side: 4 },
+    permitPath: 'DOB New Building (NB)',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'FEMA P-55', 'Net-zero ready'],
+    timelineWeeks: { design: 4, permit: 10, fab: 14, ship: 2, install: 2, finish: 6 },
+    costRange: [410000, 560000],
+    costPerSqft: [310, 355],
+    licenseFee: 6500,
+    version: '1.2', lastUpdated: '2026-02-15',
+    changeLog: ['v1.2: Flood zone raised foundation option', 'v1.1: Net-zero energy package', 'v1.0: Initial release'],
+  },
+  {
+    id: 'PFB-MF-6U-STEEL-v1.0',
+    name: '6-Unit Multifamily',
+    type: 'multifamily', typeName: 'Multi-Family',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: '3-story, 6-unit apartment building using modular steel-frame construction. Each unit is a stackable module. Designed for R6-R8 zones with 0.8+ FAR available.',
+    sqftRange: [4200, 5400], defaultSqft: 4800,
+    stories: 3, beds: 1, baths: 1,
+    zoningCompat: ['R6','R7','R8','R9','R10'],
+    floodReady: false, coastalPkg: false,
+    structural: {
+      foundation: 'Reinforced concrete mat foundation',
+      wallSystem: 'Light-gauge steel modules — R-21',
+      roofSystem: 'Steel frame — R-38',
+      floorSystem: 'Concrete-topped steel deck',
+      loadPath: 'Module-to-module stack with steel connectors',
+      windRating: '120 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'VRF system (central), per-unit cassettes',
+      plumbing: 'Central risers, per-unit PEX manifolds',
+      electrical: 'CT metering, 800A building service',
+      solar: 'Common roof array (15kW)',
+      erv: 'Per-unit ERV',
+    },
+    modules: 6, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 40, minLotDepth: 80,
+    setbacks: { front: 15, rear: 30, side: 8 },
+    permitPath: 'DOB New Building (NB) — Class 2',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'ADA (ground floor)', 'Sprinkler NFPA 13R'],
+    timelineWeeks: { design: 6, permit: 12, fab: 16, ship: 2, install: 3, finish: 8 },
+    costRange: [1800000, 2400000],
+    costPerSqft: [375, 445],
+    licenseFee: 12000,
+    version: '1.0', lastUpdated: '2026-01-30',
+    changeLog: ['v1.0: Initial release — 6-unit prototype'],
+  },
+  {
+    id: 'PFB-ADU-STUDIO-STEEL-v1.1',
+    name: 'Studio Micro-ADU',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: 'Ultra-compact studio ADU (under 400sf) designed for tight lots. Single-module delivery — no crane needed for 1-story. Lowest cost entry point for ADU.',
+    sqftRange: [280, 400], defaultSqft: 350,
+    stories: 1, beds: 0, baths: 1,
+    zoningCompat: ['R1','R2','R3','R4','R5','R6'],
+    floodReady: true, coastalPkg: false,
+    structural: {
+      foundation: 'Concrete piers or helical piles',
+      wallSystem: 'Light-gauge steel 4" — R-15 spray foam',
+      roofSystem: 'Steel — R-30',
+      floorSystem: 'Steel on piers — R-19',
+      loadPath: 'Direct to piers',
+      windRating: '120 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mini-split (0.5-ton, SEER 22)',
+      plumbing: 'PEX, point-of-use WH',
+      electrical: '60A sub-panel',
+      solar: 'Roof-ready (1.5kW)',
+      erv: 'Bathroom exhaust',
+    },
+    modules: 1, transportWidth: '12ft', craneRequired: false,
+    minLotWidth: 20, minLotDepth: 45,
+    setbacks: { front: 20, rear: 15, side: 3 },
+    permitPath: 'DOB Alt-1 (may qualify for expedited ADU)',
+    codeCompliance: ['NYC Energy Code 2024', 'IRC 2021'],
+    timelineWeeks: { design: 1, permit: 4, fab: 5, ship: 1, install: 1, finish: 2 },
+    costRange: [95000, 135000],
+    costPerSqft: [270, 340],
+    licenseFee: 3000,
+    version: '1.1', lastUpdated: '2026-03-20',
+    changeLog: ['v1.1: No-crane delivery option', 'v1.0: Initial release'],
+  },
+];
+
+// Selected SKU for packager
+let selectedSku = null;
+let selectedProperty = null;
+
+function renderCatalog() {
+  const typeFilter = document.getElementById('catFilterType').value;
+  const matFilter = document.getElementById('catFilterMat').value;
+  const bedsFilter = document.getElementById('catFilterBeds').value;
+
+  let skus = DESIGN_CATALOG.filter(s => {
+    if (typeFilter && s.type !== typeFilter) return false;
+    if (matFilter && s.material !== matFilter) return false;
+    if (bedsFilter !== '' && String(s.beds) !== bedsFilter) return false;
+    return true;
+  });
+
+  const el = document.getElementById('catalogList');
+  if (skus.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-3);font-size:12px;">No SKUs match your filters.</div>';
+    return;
+  }
+
+  el.innerHTML = skus.map(s => {
+    const totalWeeks = Object.values(s.timelineWeeks).reduce((a,b) => a+b, 0);
+    const isSelected = selectedSku && selectedSku.id === s.id;
+    return `
+    <div class="sku-card ${isSelected ? 'selected' : ''}" id="sku-${s.id}" onclick="toggleSkuDetail('${s.id}')">
+      <div class="sku-id">${s.id}</div>
+      <div class="sku-name">${s.name}</div>
+      <div class="sku-desc">${s.desc}</div>
+      <div class="sku-tags">
+        <span class="sku-tag sku-tag-type">${s.typeName}</span>
+        <span class="sku-tag sku-tag-mat">${s.materialName}</span>
+        <span class="sku-tag sku-tag-zone">${s.zoningCompat.join(' ')}</span>
+        ${s.floodReady ? '<span class="sku-tag sku-tag-flood">Flood-Ready</span>' : ''}
+        <span class="sku-tag sku-tag-version">v${s.version}</span>
+      </div>
+      <div class="sku-specs">
+        <div class="sku-spec"><div class="val">${s.sqftRange[0]}-${s.sqftRange[1]}</div><div class="lbl">Sq Ft Range</div></div>
+        <div class="sku-spec"><div class="val">${s.beds === 0 ? 'Studio' : s.beds + 'BR'} / ${s.baths}BA</div><div class="lbl">Layout</div></div>
+        <div class="sku-spec"><div class="val">${s.modules} mod</div><div class="lbl">Modules</div></div>
+        <div class="sku-spec"><div class="val">${totalWeeks} wks</div><div class="lbl">Timeline</div></div>
+        <div class="sku-spec"><div class="val">$${(s.costRange[0]/1000).toFixed(0)}-${(s.costRange[1]/1000).toFixed(0)}k</div><div class="lbl">Cost Range</div></div>
+        <div class="sku-spec"><div class="val">${s.stories}</div><div class="lbl">Stories</div></div>
+      </div>
+
+      <!-- Expandable Detail -->
+      <div class="sku-detail" id="skuDetail-${s.id}">
+        <div class="sku-section">
+          <div class="sku-section-title">Structural System</div>
+          <div class="sku-grid">
+            ${Object.entries(s.structural).map(([k,v]) => `<div class="label">${k.replace(/([A-Z])/g,' $1').trim()}</div><div class="value">${v}</div>`).join('')}
+          </div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">MEP Systems</div>
+          <div class="sku-grid">
+            ${Object.entries(s.mep).map(([k,v]) => `<div class="label">${k.toUpperCase()}</div><div class="value">${v}</div>`).join('')}
+          </div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">Site Requirements</div>
+          <div class="sku-grid">
+            <div class="label">Min Lot Width</div><div class="value">${s.minLotWidth}ft</div>
+            <div class="label">Min Lot Depth</div><div class="value">${s.minLotDepth}ft</div>
+            <div class="label">Transport Width</div><div class="value">${s.transportWidth}</div>
+            <div class="label">Crane Required</div><div class="value">${s.craneRequired ? 'Yes' : 'No'}</div>
+            <div class="label">Permit Path</div><div class="value">${s.permitPath}</div>
+          </div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">Code Compliance</div>
+          <div style="font-size:11px;">${s.codeCompliance.map(c => `<div style="padding:2px 0;">• ${c}</div>`).join('')}</div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">Version History</div>
+          <div style="font-size:11px;color:var(--text-2);">${s.changeLog.map(c => `<div style="padding:2px 0;">${c}</div>`).join('')}</div>
+        </div>
+        <div class="sku-license-bar">
+          <div>
+            <div class="sku-license-fee">$${s.licenseFee.toLocaleString()}</div>
+            <div class="sku-license-label">per-project license</div>
+          </div>
+          <button class="sku-license-btn" onclick="event.stopPropagation(); selectSkuForPackager('${s.id}')">
+            Select for Project →
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSkuDetail(id) {
+  const detail = document.getElementById('skuDetail-' + id);
+  const card = document.getElementById('sku-' + id);
+  if (!detail || !card) return;
+  const isExpanded = card.classList.contains('expanded');
+  // Collapse all others
+  document.querySelectorAll('.sku-card.expanded').forEach(c => c.classList.remove('expanded'));
+  if (!isExpanded) card.classList.add('expanded');
+}
+
+function selectSkuForPackager(id) {
+  selectedSku = DESIGN_CATALOG.find(s => s.id === id);
+  renderCatalog(); // Re-render to show selected state
+  setMode('packager');
+}
+
+// =============================================
+// PROJECT PACKAGER ENGINE
+// =============================================
+
+function updatePackagerState() {
+  // Property slot
+  const propSlot = document.getElementById('pkgPropertySlot');
+  const step1 = document.getElementById('pkgStep1Num');
+  if (selectedProperty) {
+    step1.classList.add('done');
+    propSlot.innerHTML = `<div class="pkg-selected"><div><span class="name">${selectedProperty.address}</span><br><span style="font-size:10px;color:var(--text-3);">${selectedProperty.borough} · ${selectedProperty.zone} · ${selectedProperty.lotArea.toLocaleString()} sf lot</span></div><span class="change" onclick="setMode('finder')">Change</span></div>`;
+  } else if (currentLat) {
+    // Use current analyzed site
+    const addr = document.getElementById('heroAddress')?.textContent || 'Selected Site';
+    const zone = document.getElementById('zVal')?.textContent || '—';
+    const lot = document.getElementById('lotVal')?.textContent || '—';
+    selectedProperty = { address: addr, borough: document.getElementById('boroVal')?.textContent || '', zone, lotArea: parseInt(lot) || 0, lat: currentLat, lon: currentLon };
+    step1.classList.add('done');
+    propSlot.innerHTML = `<div class="pkg-selected"><div><span class="name">${addr}</span><br><span style="font-size:10px;color:var(--text-3);">${zone} · ${lot}</span></div><span class="change" onclick="setMode('analyze')">Change</span></div>`;
+  }
+
+  // SKU slot
+  const skuSlot = document.getElementById('pkgSkuSlot');
+  const step2 = document.getElementById('pkgStep2Num');
+  if (selectedSku) {
+    step2.classList.add('done');
+    skuSlot.innerHTML = `<div class="pkg-selected"><div><span class="name">${selectedSku.name}</span><br><span style="font-size:10px;color:var(--text-3);">${selectedSku.id} · ${selectedSku.materialName} · ${selectedSku.beds === 0 ? 'Studio' : selectedSku.beds + 'BR'}</span></div><span class="change" onclick="setMode('catalog')">Change</span></div>`;
+  } else {
+    // Show quick picks
+    const picks = document.getElementById('pkgSkuQuickPicks');
+    if (picks) {
+      picks.innerHTML = DESIGN_CATALOG.slice(0, 4).map(s => `
+        <div style="display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:4px;cursor:pointer;font-size:11px;transition:all .15s;" onclick="selectSkuForPackager('${s.id}')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-weight:700;">${s.name}</div>
+          <div style="font-size:10px;color:var(--text-3);">${s.materialName} · $${(s.costRange[0]/1000).toFixed(0)}-${(s.costRange[1]/1000).toFixed(0)}k</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Enable generate button
+  const btn = document.getElementById('pkgGenerateBtn');
+  btn.disabled = !(selectedProperty && selectedSku);
+}
+
+function generateProjectPackage() {
+  if (!selectedProperty || !selectedSku) return;
+
+  const btn = document.getElementById('pkgGenerateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating package...';
+
+  const s = selectedSku;
+  const p = selectedProperty;
+  const sqft = s.defaultSqft;
+  const fmt = v => '$' + Math.round(v).toLocaleString();
+
+  // === BOM (Bill of Materials) ===
+  const matCostPerSqft = { sip: 38, steel: 32, clt: 52 }[s.material] || 38;
+  const fabPerSqft = 45;
+  const bom = [
+    { item: `${s.materialName} panels/framing`, qty: `${sqft} sqft`, unit: fmt(matCostPerSqft), total: matCostPerSqft * sqft },
+    { item: 'Factory fabrication', qty: `${s.modules} modules`, unit: fmt(fabPerSqft * sqft / s.modules), total: fabPerSqft * sqft },
+    { item: 'Interior fit-out (finishes, fixtures)', qty: `${sqft} sqft`, unit: '$28', total: 28 * sqft },
+    { item: 'Kitchen package', qty: '1', unit: '$15,000', total: 15000 },
+    { item: s.baths > 0 ? `Bathroom package (×${s.baths})` : 'Bathroom package', qty: String(s.baths), unit: '$8,000', total: 8000 * s.baths },
+    { item: 'MEP rough-in + fixtures', qty: `${sqft} sqft`, unit: '$35', total: 35 * sqft },
+    { item: 'Foundation', qty: `${sqft} sqft`, unit: `$${s.stories > 1 ? 32 : 24}`, total: (s.stories > 1 ? 32 : 24) * sqft },
+    { item: 'Transport + delivery', qty: `${s.modules} modules`, unit: '$5,400', total: 5400 * s.modules },
+    { item: 'Crane + setting', qty: s.craneRequired ? '1 day' : 'N/A', unit: s.craneRequired ? '$6,200' : '$0', total: s.craneRequired ? 6200 : 0 },
+    { item: 'Site work + utility hookup', qty: '1', unit: '$24,000', total: 24000 },
+    { item: 'Architect + engineering', qty: '1', unit: '$22,000', total: 22000 },
+    { item: 'DOB permits + expediter', qty: '1', unit: '$12,000', total: 12000 },
+    { item: 'Survey + geotech + insurance', qty: '1', unit: '$11,700', total: 11700 },
+  ];
+  const bomSubtotal = bom.reduce((a,b) => a + b.total, 0);
+  const contingency = Math.round(bomSubtotal * 0.12);
+  const projectTotal = bomSubtotal + contingency;
+
+  // === Timeline ===
+  const tl = s.timelineWeeks;
+  const totalWeeks = Object.values(tl).reduce((a,b) => a+b, 0);
+
+  // === Permit Checklist ===
+  const permits = [
+    { text: `${s.permitPath} application`, status: 'req' },
+    { text: 'NYC DOB plan review', status: 'req' },
+    { text: 'Structural engineering stamp', status: 'req' },
+    { text: 'Energy code compliance (ComCheck)', status: 'req' },
+    { text: 'Zoning analysis — ' + (p.zone || 'TBD'), status: 'req' },
+  ];
+  if (s.floodReady) permits.push({ text: 'FEMA elevation certificate', status: 'warn' });
+  if (s.stories > 1) permits.push({ text: 'Fire sprinkler plan (NFPA 13R)', status: 'req' });
+  if (s.type === 'multifamily') permits.push({ text: 'ADA compliance plan', status: 'req' });
+  permits.push({ text: 'DOB inspections (foundation, framing, final)', status: 'info' });
+  permits.push({ text: 'Certificate of Occupancy', status: 'info' });
+
+  // === Financing Estimate ===
+  const finEst = [];
+  const cpace = Math.round(projectTotal * 0.35);
+  finEst.push({ name: 'C-PACE', amount: cpace, note: '35% of eligible energy improvements' });
+  finEst.push({ name: 'NYSERDA', amount: 3500, note: 'Clean energy rebate' });
+  finEst.push({ name: '45L Tax Credit', amount: 5000 * (s.type === 'multifamily' ? 6 : 1), note: '$5,000/unit for energy-efficient new construction' });
+  finEst.push({ name: 'IRA Heat Pump', amount: 2000, note: 'Federal rebate for qualifying HVAC' });
+  const finTotal = finEst.reduce((a,b) => a + b.amount, 0);
+
+  // === Supply Chain ===
+  const suppliers = [
+    { name: s.material === 'clt' ? 'Nordic Structures (QC)' : s.material === 'steel' ? 'Nucor Building Systems (IN)' : 'Premier SIPs (VT)', role: 'Primary structure', leadTime: `${tl.fab} weeks`, distance: s.material === 'clt' ? '380 mi' : s.material === 'steel' ? '720 mi' : '290 mi' },
+    { name: 'Brooklyn Navy Yard Fab Shop', role: 'Module assembly', leadTime: `${Math.ceil(tl.fab/2)} weeks`, distance: 'On-site NYC' },
+    { name: 'FergusonDERA (NJ)', role: 'MEP + fixtures', leadTime: '3 weeks', distance: '15 mi' },
+    { name: 'ABC Supply (Bronx)', role: 'Roofing + siding', leadTime: '1 week', distance: '12 mi' },
+  ];
+
+  // === RENDER OUTPUT ===
+  const output = document.getElementById('pkgOutput');
+  output.innerHTML = `
+    <div style="margin-top:20px;padding:16px;background:linear-gradient(135deg,#f5f3ff,#eef2ff);border-radius:var(--radius);border:1px solid #c7d2fe;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;">Licensed Project Package</div>
+          <div style="font-size:16px;font-weight:800;margin-top:4px;">${s.name} → ${p.address}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:2px;">${s.id} · ${p.zone} · ${sqft} sqft</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:22px;font-weight:800;color:var(--accent-dark);">${fmt(projectTotal)}</div>
+          <div style="font-size:10px;color:var(--text-2);">${fmt(Math.round(projectTotal/sqft))}/sqft all-in</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOM -->
+    <div class="pkg-section">
+      <div class="pkg-section-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span>Bill of Materials</span><span style="font-size:10px;color:var(--text-3);">${bom.length} items · ${fmt(projectTotal)}</span>
+      </div>
+      <div class="pkg-section-body">
+        <table class="pkg-bom-table">
+          <tr><th>Item</th><th>Qty</th><th>Unit</th><th style="text-align:right;">Total</th></tr>
+          ${bom.map(b => `<tr><td>${b.item}</td><td>${b.qty}</td><td>${b.unit}</td><td style="text-align:right;">${fmt(b.total)}</td></tr>`).join('')}
+          <tr style="border-top:2px solid var(--border);"><td colspan="3" style="font-weight:700;">Subtotal</td><td style="text-align:right;font-weight:700;">${fmt(bomSubtotal)}</td></tr>
+          <tr><td colspan="3">Contingency (12%)</td><td style="text-align:right;">${fmt(contingency)}</td></tr>
+          <tr class="pkg-bom-total"><td colspan="3" style="font-weight:800;font-size:12px;">PROJECT TOTAL</td><td style="text-align:right;font-weight:800;font-size:13px;color:var(--accent-dark);">${fmt(projectTotal)}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="pkg-section">
+      <div class="pkg-section-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span>Construction Timeline</span><span style="font-size:10px;color:var(--text-3);">${totalWeeks} weeks total</span>
+      </div>
+      <div class="pkg-section-body">
+        <div class="pkg-timeline">
+          <div class="pkg-tl-phase pkg-tl-design"><div class="weeks">${tl.design}</div><div class="name">Design</div></div>
+          <div class="pkg-tl-phase pkg-tl-permit"><div class="weeks">${tl.permit}</div><div class="name">Permit</div></div>
+          <div class="pkg-tl-phase pkg-tl-fab"><div class="weeks">${tl.fab}</div><div class="name">Fabrication</div></div>
+          <div class="pkg-tl-phase pkg-tl-ship"><div class="weeks">${tl.ship}</div><div class="name">Ship</div></div>
+          <div class="pkg-tl-phase pkg-tl-install"><div class="weeks">${tl.install}</div><div class="name">Install</div></div>
+          <div class="pkg-tl-phase pkg-tl-finish"><div class="weeks">${tl.finish}</div><div class="name">Finish</div></div>
+        </div>
+        <div style="text-align:center;font-size:11px;color:var(--text-2);margin-top:8px;">
+          Est. completion: <strong>${totalWeeks} weeks</strong> from contract (${Math.ceil(totalWeeks/4.3)} months)
+        </div>
+      </div>
+    </div>
+
+    <!-- Permits -->
+    <div class="pkg-section">
+      <div class="pkg-section-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span>Permit Checklist</span><span style="font-size:10px;color:var(--text-3);">${permits.length} items</span>
+      </div>
+      <div class="pkg-section-body">
+        <ul class="pkg-checklist">
+          ${permits.map(p => `<li class="pkg-check-${p.status}">${p.text}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Supply Chain -->
+    <div class="pkg-section">
+      <div class="pkg-section-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span>Supply Chain</span><span style="font-size:10px;color:var(--text-3);">${suppliers.length} vendors</span>
+      </div>
+      <div class="pkg-section-body">
+        ${suppliers.map(sup => `
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;">
+            <div><div style="font-weight:600;">${sup.name}</div><div style="color:var(--text-3);font-size:10px;">${sup.role}</div></div>
+            <div style="text-align:right;"><div>${sup.leadTime}</div><div style="color:var(--text-3);font-size:10px;">${sup.distance}</div></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Financing -->
+    <div class="pkg-section">
+      <div class="pkg-section-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span>Financing Stack</span><span style="font-size:10px;color:var(--text-3);">${fmt(finTotal)} available (${Math.round(finTotal/projectTotal*100)}%)</span>
+      </div>
+      <div class="pkg-section-body">
+        ${finEst.map(f => `
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;">
+            <div><div style="font-weight:600;">${f.name}</div><div style="color:var(--text-3);font-size:10px;">${f.note}</div></div>
+            <div style="font-weight:700;color:var(--green-dark);">${fmt(f.amount)}</div>
+          </div>
+        `).join('')}
+        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:12px;font-weight:700;">
+          <span>Your estimated out-of-pocket</span>
+          <span style="color:var(--accent-dark);">${fmt(projectTotal - finTotal)}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- License CTA -->
+    <div style="margin-top:16px;padding:16px;background:var(--gradient-1);border-radius:var(--radius);text-align:center;color:white;">
+      <div style="font-size:14px;font-weight:800;margin-bottom:4px;">License This Project Package</div>
+      <div style="font-size:11px;opacity:.85;margin-bottom:12px;">Includes: BOM, engineering specs, permit-ready drawings, supply chain routing, financing analysis</div>
+      <div style="font-size:24px;font-weight:800;margin-bottom:4px;">$${s.licenseFee.toLocaleString()}</div>
+      <div style="font-size:10px;opacity:.7;margin-bottom:12px;">One-time fee per property address</div>
+      <button onclick="alert('Coming soon — licensing portal in development. Contact hello@prefabos.com')" style="padding:10px 32px;background:white;color:var(--accent-dark);border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">License Now →</button>
+    </div>
+  `;
+
+  btn.disabled = false;
+  btn.textContent = 'Regenerate Package';
+  document.getElementById('pkgStep3Num').classList.add('done');
+
+  // Scroll to output
+  setTimeout(() => output.scrollIntoView({ behavior: 'smooth' }), 100);
+}
+
+// Portal helpers
+function selectTier(tier) {
+  // Just highlight for now
+  document.querySelectorAll('.tier-card').forEach(c => c.style.borderColor = '');
+  event.currentTarget.style.borderColor = 'var(--accent)';
+}
+
+// Wire up: when a property is analyzed, store it for packager
+const _origLoadSiteFromPluto = typeof loadSiteFromPluto === 'function' ? loadSiteFromPluto : null;
+if (_origLoadSiteFromPluto) {
+  const __orig = loadSiteFromPluto;
+  loadSiteFromPluto = function(lat, lon, props, plutoData) {
+    __orig(lat, lon, props, plutoData);
+    selectedProperty = {
+      address: props.label || `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+      borough: props.borough || '',
+      zone: plutoData?.zonedist1 || '',
+      lotArea: parseFloat(plutoData?.lotarea) || 0,
+      lotWidth: parseFloat(plutoData?.lotfront) || 0,
+      lotDepth: parseFloat(plutoData?.lotdepth) || 0,
+      bbl: plutoData?.bbl || props.pad_bbl || '',
+      lat, lon,
+    };
+  };
+}
+
+// Also wire up the simulated loadSite
+const _origLoadSite = loadSite;
+loadSite = function(lat, lon, props) {
+  _origLoadSite(lat, lon, props);
+  selectedProperty = {
+    address: props.label || `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+    borough: props.borough || '',
+    zone: document.getElementById('zVal')?.textContent || '',
+    lotArea: parseInt(document.getElementById('lotVal')?.textContent) || 0,
+    lat, lon,
+  };
+};
+
 // Init cost display
 renderCosts();
 </script>
+</body>
+</html>
 </body>
 </html>
