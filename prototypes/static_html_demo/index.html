@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -585,6 +586,10 @@
     <button class="mode-btn" id="modePortal" onclick="setMode('portal')">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Portal
+    </button>
+    <button class="mode-btn" id="mode3d" onclick="setMode('3d')" style="background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);color:white;font-weight:700;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      3D View
     </button>
   </div>
 </header>
@@ -1180,6 +1185,58 @@
   <span class="key">"optimize"</span>: [<span class="string">"cost"</span>, <span class="string">"speed"</span>, <span class="string">"carbon"</span>]
 }
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D VIEWER PANEL -->
+    <div id="threeDPanel" style="display:none;height:100%;position:relative;">
+      <!-- 3D Canvas fills the panel -->
+      <canvas id="threeDCanvas" style="width:100%;height:100%;display:block;"></canvas>
+
+      <!-- Floating Controls -->
+      <div style="position:absolute;top:12px;left:12px;right:12px;z-index:10;">
+        <div style="background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-radius:12px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="font-weight:700;font-size:14px;letter-spacing:-.01em;">3D Site Viewer</div>
+            <div id="threeDStatus" style="font-size:10px;color:#6b6b6b;">Select a property first</div>
+          </div>
+
+          <!-- SKU Selector for 3D -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+            <select id="threeDSkuSelect" onchange="update3DScene()" style="flex:1;padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:11px;font-family:inherit;background:white;">
+              <option value="">— Select a Design —</option>
+            </select>
+            <button onclick="toggle3DSetbacks()" id="btnToggleSetbacks" style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:10px;font-family:inherit;cursor:pointer;background:#eef2ff;color:#4f46e5;font-weight:600;">Setbacks</button>
+            <button onclick="toggle3DEnvelope()" id="btnToggleEnvelope" style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:10px;font-family:inherit;cursor:pointer;background:#ecfdf5;color:#059669;font-weight:600;">Envelope</button>
+          </div>
+
+          <!-- AI Optimizer Button -->
+          <button onclick="runAIDesignOptimizer()" id="btnAIOptimize" style="width:100%;padding:8px;border:none;border-radius:8px;font-size:11px;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4c0 4 4 6 4 6s4-2 4-6a4 4 0 0 0-4-4z"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>
+            AI Design Optimizer — Analyze Placement
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Info Card -->
+      <div id="threeDInfoCard" style="position:absolute;bottom:12px;left:12px;right:12px;z-index:10;display:none;">
+        <div style="background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-radius:12px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.06);">
+          <div id="threeDInfoContent" style="font-size:11px;color:#1a1a1a;"></div>
+        </div>
+      </div>
+
+      <!-- AI Recommendation Overlay -->
+      <div id="threeDaiOverlay" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;display:none;max-width:380px;width:90%;">
+        <div style="background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-radius:16px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid rgba(99,102,241,.2);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:grid;place-items:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4c0 4 4 6 4 6s4-2 4-6a4 4 0 0 0-4-4z"/><path d="M12 18v4"/></svg>
+            </div>
+            <div style="font-weight:700;font-size:14px;">AI Design Recommendation</div>
+          </div>
+          <div id="threeDaiContent" style="font-size:12px;line-height:1.6;color:#374151;"></div>
+          <button onclick="document.getElementById('threeDaiOverlay').style.display='none'" style="margin-top:12px;padding:6px 14px;border:1px solid #e8e8e8;border-radius:8px;font-size:11px;font-family:inherit;cursor:pointer;background:white;color:#6b6b6b;">Dismiss</button>
         </div>
       </div>
     </div>
@@ -2008,7 +2065,7 @@ let finderMarkers = [];
 
 function setMode(mode) {
   currentMode = mode;
-  ['Analyze','Finder','Catalog','Packager','Portal'].forEach(m => {
+  ['Analyze','Finder','Catalog','Packager','Portal','3d'].forEach(m => {
     const btn = document.getElementById('mode' + m);
     if (btn) btn.classList.toggle('active', mode === m.toLowerCase());
   });
@@ -2021,9 +2078,10 @@ function setMode(mode) {
   const catalogPanel = document.getElementById('catalogPanel');
   const packagerPanel = document.getElementById('packagerPanel');
   const portalPanel = document.getElementById('portalPanel');
+  const threeDPanel = document.getElementById('threeDPanel');
 
   // Hide all
-  [finderPanel, catalogPanel, packagerPanel, portalPanel].forEach(p => { if(p) p.style.display = 'none'; });
+  [finderPanel, catalogPanel, packagerPanel, portalPanel, threeDPanel].forEach(p => { if(p) p.style.display = 'none'; });
 
   if (mode === 'analyze') {
     searchWrap.style.display = 'flex';
@@ -2057,6 +2115,13 @@ function setMode(mode) {
     filledPanel.style.display = 'none';
     portalPanel.style.display = 'block';
     document.getElementById('mapInstructions').style.display = 'none';
+  } else if (mode === '3d') {
+    searchWrap.style.display = 'none';
+    emptyState.style.display = 'none';
+    filledPanel.style.display = 'none';
+    threeDPanel.style.display = 'block';
+    document.getElementById('mapInstructions').style.display = 'none';
+    init3DViewer();
   }
 }
 
@@ -4812,8 +4877,736 @@ async function fetchHpdViolations(boroCode) {
 
 // Init cost display
 renderCosts();
+
+// =============================================
+// 3D VIEWER ENGINE (Three.js)
+// =============================================
+
+let scene3D, camera3D, renderer3D, controls3D;
+let lotMesh, buildingMeshes = [], setbackLines = [], envelopeMesh;
+let show3DSetbacks = true, show3DEnvelope = true;
+let threeDInitialized = false;
+let current3DLot = null, current3DSku = null;
+let animationFrameId = null;
+
+function init3DViewer() {
+  const canvas = document.getElementById('threeDCanvas');
+  const panel = document.getElementById('threeDPanel');
+  if (!panel || !canvas) return;
+
+  // Populate SKU selector
+  const select = document.getElementById('threeDSkuSelect');
+  if (select && select.options.length <= 1) {
+    DESIGN_CATALOG.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = `${s.name} — ${s.typeName} (${s.beds}BR/${s.stories}F, $${(s.costRange[0]/1000).toFixed(0)}-${(s.costRange[1]/1000).toFixed(0)}k)`;
+      select.appendChild(opt);
+    });
+  }
+
+  // If already selected a SKU globally, pre-select it
+  if (selectedSku) {
+    select.value = selectedSku.id;
+  }
+
+  // Check if we have a property selected
+  if (window._currentPlutoData) {
+    document.getElementById('threeDStatus').textContent = window._currentPlutoData.address || 'Property loaded';
+    document.getElementById('threeDStatus').style.color = '#10b981';
+  } else {
+    document.getElementById('threeDStatus').textContent = 'Select a property in Analyze or Find mode first';
+    document.getElementById('threeDStatus').style.color = '#f59e0b';
+  }
+
+  if (threeDInitialized) {
+    // Just resize and re-render
+    resize3D();
+    update3DScene();
+    return;
+  }
+
+  // Setup Three.js
+  const w = panel.clientWidth || 480;
+  const h = panel.clientHeight || 600;
+
+  scene3D = new THREE.Scene();
+  scene3D.background = new THREE.Color(0xf0f4f8);
+  scene3D.fog = new THREE.Fog(0xf0f4f8, 200, 500);
+
+  camera3D = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+  camera3D.position.set(80, 60, 80);
+  camera3D.lookAt(0, 0, 0);
+
+  renderer3D = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer3D.setSize(w, h);
+  renderer3D.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer3D.shadowMap.enabled = true;
+  renderer3D.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene3D.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(50, 80, 50);
+  dirLight.castShadow = true;
+  dirLight.shadow.camera.near = 0.1;
+  dirLight.shadow.camera.far = 300;
+  dirLight.shadow.camera.left = -100;
+  dirLight.shadow.camera.right = 100;
+  dirLight.shadow.camera.top = 100;
+  dirLight.shadow.camera.bottom = -100;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
+  scene3D.add(dirLight);
+
+  const fillLight = new THREE.DirectionalLight(0x8ecae6, 0.3);
+  fillLight.position.set(-30, 20, -30);
+  scene3D.add(fillLight);
+
+  // Ground plane
+  const groundGeo = new THREE.PlaneGeometry(400, 400);
+  const groundMat = new THREE.MeshLambertMaterial({ color: 0xe8ede5 });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.1;
+  ground.receiveShadow = true;
+  scene3D.add(ground);
+
+  // Grid helper
+  const grid = new THREE.GridHelper(200, 40, 0xcccccc, 0xe0e0e0);
+  grid.position.y = 0;
+  scene3D.add(grid);
+
+  // Compass / North arrow
+  const arrowGeo = new THREE.CylinderGeometry(0, 1.5, 4, 4);
+  const arrowMat = new THREE.MeshLambertMaterial({ color: 0xef4444 });
+  const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+  arrow.position.set(90, 2, -90);
+  scene3D.add(arrow);
+  const arrowLabel = makeTextSprite('N', { fontSize: 16, fontColor: '#ef4444' });
+  arrowLabel.position.set(90, 6, -90);
+  scene3D.add(arrowLabel);
+
+  // Simple orbit controls (manual implementation since OrbitControls isn't in r128 CDN)
+  setupManualOrbit(canvas);
+
+  threeDInitialized = true;
+  animate3D();
+  update3DScene();
+}
+
+function makeTextSprite(text, opts = {}) {
+  const fontSize = opts.fontSize || 12;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 128;
+  canvas.height = 64;
+  ctx.font = `bold ${fontSize * 2}px Inter, sans-serif`;
+  ctx.fillStyle = opts.fontColor || '#333';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 64, 32);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(8, 4, 1);
+  return sprite;
+}
+
+// Manual orbit controls
+let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+let orbitTheta = Math.PI / 4, orbitPhi = Math.PI / 4, orbitRadius = 120, orbitTarget = new THREE.Vector3(0, 5, 0);
+
+function setupManualOrbit(canvas) {
+  canvas.addEventListener('mousedown', e => { isDragging = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
+  canvas.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastMouseX;
+    const dy = e.clientY - lastMouseY;
+    orbitTheta -= dx * 0.01;
+    orbitPhi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, orbitPhi - dy * 0.01));
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    updateCameraOrbit();
+  });
+  canvas.addEventListener('mouseup', () => isDragging = false);
+  canvas.addEventListener('mouseleave', () => isDragging = false);
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    orbitRadius = Math.max(30, Math.min(300, orbitRadius + e.deltaY * 0.1));
+    updateCameraOrbit();
+  }, { passive: false });
+
+  // Touch support
+  let lastTouch = null;
+  canvas.addEventListener('touchstart', e => { if (e.touches.length === 1) { lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY }; } });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!lastTouch || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - lastTouch.x;
+    const dy = e.touches[0].clientY - lastTouch.y;
+    orbitTheta -= dx * 0.01;
+    orbitPhi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, orbitPhi - dy * 0.01));
+    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    updateCameraOrbit();
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => lastTouch = null);
+
+  updateCameraOrbit();
+}
+
+function updateCameraOrbit() {
+  if (!camera3D) return;
+  camera3D.position.x = orbitTarget.x + orbitRadius * Math.sin(orbitPhi) * Math.cos(orbitTheta);
+  camera3D.position.y = orbitTarget.y + orbitRadius * Math.cos(orbitPhi);
+  camera3D.position.z = orbitTarget.z + orbitRadius * Math.sin(orbitPhi) * Math.sin(orbitTheta);
+  camera3D.lookAt(orbitTarget);
+}
+
+function resize3D() {
+  const panel = document.getElementById('threeDPanel');
+  if (!panel || !renderer3D) return;
+  const w = panel.clientWidth || 480;
+  const h = panel.clientHeight || 600;
+  camera3D.aspect = w / h;
+  camera3D.updateProjectionMatrix();
+  renderer3D.setSize(w, h);
+}
+
+function animate3D() {
+  animationFrameId = requestAnimationFrame(animate3D);
+  if (renderer3D && scene3D && camera3D) {
+    renderer3D.render(scene3D, camera3D);
+  }
+}
+
+function clearBuildingMeshes() {
+  buildingMeshes.forEach(m => scene3D.remove(m));
+  buildingMeshes = [];
+  setbackLines.forEach(l => scene3D.remove(l));
+  setbackLines = [];
+  if (envelopeMesh) { scene3D.remove(envelopeMesh); envelopeMesh = null; }
+  if (lotMesh) { scene3D.remove(lotMesh); lotMesh = null; }
+}
+
+function update3DScene() {
+  if (!threeDInitialized || !scene3D) return;
+  clearBuildingMeshes();
+
+  // Get lot data
+  const plutoData = window._currentPlutoData;
+  const lotWidth = plutoData ? parseFloat(plutoData.lotfront) || 40 : 40;
+  const lotDepth = plutoData ? parseFloat(plutoData.lotdepth) || 100 : 100;
+  const zone = plutoData ? plutoData.zonedist1 || 'R6' : 'R6';
+  const rules = getZoningRules(zone);
+
+  current3DLot = { width: lotWidth, depth: lotDepth, zone, rules, plutoData };
+
+  // Get selected SKU
+  const skuId = document.getElementById('threeDSkuSelect').value;
+  const sku = DESIGN_CATALOG.find(s => s.id === skuId);
+  current3DSku = sku;
+
+  // 1. Draw lot boundary
+  const lotGeo = new THREE.PlaneGeometry(lotWidth, lotDepth);
+  const lotMat = new THREE.MeshLambertMaterial({ color: 0xd4e6d4, transparent: true, opacity: 0.7 });
+  lotMesh = new THREE.Mesh(lotGeo, lotMat);
+  lotMesh.rotation.x = -Math.PI / 2;
+  lotMesh.position.set(0, 0.05, 0);
+  lotMesh.receiveShadow = true;
+  scene3D.add(lotMesh);
+  buildingMeshes.push(lotMesh);
+
+  // Lot border
+  const borderGeo = new THREE.EdgesGeometry(lotGeo);
+  const borderMat = new THREE.LineBasicMaterial({ color: 0x2d6a4f, linewidth: 2 });
+  const border = new THREE.LineSegments(borderGeo, borderMat);
+  border.rotation.x = -Math.PI / 2;
+  border.position.set(0, 0.1, 0);
+  scene3D.add(border);
+  buildingMeshes.push(border);
+
+  // Lot dimension labels
+  const wLabel = makeTextSprite(`${lotWidth}ft`, { fontSize: 11, fontColor: '#2d6a4f' });
+  wLabel.position.set(0, 2, lotDepth / 2 + 3);
+  scene3D.add(wLabel);
+  buildingMeshes.push(wLabel);
+
+  const dLabel = makeTextSprite(`${lotDepth}ft`, { fontSize: 11, fontColor: '#2d6a4f' });
+  dLabel.position.set(lotWidth / 2 + 5, 2, 0);
+  scene3D.add(dLabel);
+  buildingMeshes.push(dLabel);
+
+  // 2. Draw setback lines
+  if (show3DSetbacks) {
+    drawSetbacks(lotWidth, lotDepth, rules);
+  }
+
+  // 3. Draw height envelope
+  if (show3DEnvelope) {
+    drawHeightEnvelope(lotWidth, lotDepth, rules);
+  }
+
+  // 4. Draw existing building (placeholder)
+  if (plutoData) {
+    const existFloors = parseInt(plutoData.numfloors) || 1;
+    const existH = existFloors * 10;
+    const existW = lotWidth * 0.5;
+    const existD = lotDepth * 0.3;
+    const existGeo = new THREE.BoxGeometry(existW, existH, existD);
+    const existMat = new THREE.MeshLambertMaterial({ color: 0xc4b5a0, transparent: true, opacity: 0.5 });
+    const existMesh = new THREE.Mesh(existGeo, existMat);
+    existMesh.position.set(0, existH / 2, -lotDepth / 2 + (rules.yards.front || 10) + existD / 2);
+    existMesh.castShadow = true;
+    scene3D.add(existMesh);
+    buildingMeshes.push(existMesh);
+
+    const existLabel = makeTextSprite('Existing', { fontSize: 9, fontColor: '#8b7355' });
+    existLabel.position.set(0, existH + 3, -lotDepth / 2 + (rules.yards.front || 10) + existD / 2);
+    scene3D.add(existLabel);
+    buildingMeshes.push(existLabel);
+  }
+
+  // 5. Draw selected SKU
+  if (sku) {
+    drawPrefabModule(sku, lotWidth, lotDepth, rules);
+  }
+
+  // 6. Update info card
+  updateInfoCard(rules, sku, lotWidth, lotDepth);
+
+  // Center camera on lot
+  orbitTarget.set(0, 5, 0);
+  orbitRadius = Math.max(lotWidth, lotDepth) * 1.3;
+  updateCameraOrbit();
+}
+
+function drawSetbacks(lotW, lotD, rules) {
+  const front = rules.yards.front || 0;
+  const rear = rules.yards.rear || 20;
+  const sideStr = rules.yards.side || '0';
+  const sideVal = parseInt(sideStr) || 5;
+
+  // Calculate setback box
+  const innerW = lotW - sideVal * 2;
+  const innerD = lotD - front - rear;
+  const offsetZ = -lotD / 2 + front + innerD / 2;
+
+  if (innerW > 0 && innerD > 0) {
+    const setbackGeo = new THREE.PlaneGeometry(innerW, innerD);
+    const setbackMat = new THREE.MeshLambertMaterial({ color: 0x6366f1, transparent: true, opacity: 0.12 });
+    const setbackMesh = new THREE.Mesh(setbackGeo, setbackMat);
+    setbackMesh.rotation.x = -Math.PI / 2;
+    setbackMesh.position.set(0, 0.15, offsetZ);
+    scene3D.add(setbackMesh);
+    setbackLines.push(setbackMesh);
+
+    // Dashed border for setback
+    const edgeGeo = new THREE.EdgesGeometry(setbackGeo);
+    const edgeMat = new THREE.LineDashedMaterial({ color: 0x6366f1, dashSize: 2, gapSize: 1 });
+    const edgeLine = new THREE.LineSegments(edgeGeo, edgeMat);
+    edgeLine.computeLineDistances();
+    edgeLine.rotation.x = -Math.PI / 2;
+    edgeLine.position.set(0, 0.2, offsetZ);
+    scene3D.add(edgeLine);
+    setbackLines.push(edgeLine);
+
+    // Setback labels
+    if (front > 0) {
+      const fl = makeTextSprite(`Front: ${front}ft`, { fontSize: 9, fontColor: '#6366f1' });
+      fl.position.set(0, 1.5, -lotD / 2 + front / 2);
+      scene3D.add(fl);
+      setbackLines.push(fl);
+    }
+    const rl = makeTextSprite(`Rear: ${rear}ft`, { fontSize: 9, fontColor: '#6366f1' });
+    rl.position.set(0, 1.5, lotD / 2 - rear / 2);
+    scene3D.add(rl);
+    setbackLines.push(rl);
+
+    if (sideVal > 0) {
+      const sl = makeTextSprite(`Side: ${sideVal}ft`, { fontSize: 9, fontColor: '#6366f1' });
+      sl.position.set(-lotW / 2 + sideVal / 2, 1.5, 0);
+      scene3D.add(sl);
+      setbackLines.push(sl);
+    }
+  }
+}
+
+function drawHeightEnvelope(lotW, lotD, rules) {
+  const maxH = rules.height.maxHeight || 35;
+  const front = rules.yards.front || 0;
+  const rear = rules.yards.rear || 20;
+  const sideStr = rules.yards.side || '0';
+  const sideVal = parseInt(sideStr) || 0;
+
+  const innerW = lotW - sideVal * 2;
+  const innerD = lotD - front - rear;
+  const offsetZ = -lotD / 2 + front + innerD / 2;
+
+  if (innerW > 0 && innerD > 0) {
+    // Height envelope wireframe box
+    const envGeo = new THREE.BoxGeometry(innerW, maxH, innerD);
+    const envEdges = new THREE.EdgesGeometry(envGeo);
+    const envMat = new THREE.LineDashedMaterial({ color: 0x10b981, dashSize: 3, gapSize: 2, linewidth: 1 });
+    envelopeMesh = new THREE.LineSegments(envEdges, envMat);
+    envelopeMesh.computeLineDistances();
+    envelopeMesh.position.set(0, maxH / 2, offsetZ);
+    scene3D.add(envelopeMesh);
+
+    // Semi-transparent top cap
+    const capGeo = new THREE.PlaneGeometry(innerW, innerD);
+    const capMat = new THREE.MeshLambertMaterial({ color: 0x10b981, transparent: true, opacity: 0.08, side: THREE.DoubleSide });
+    const cap = new THREE.Mesh(capGeo, capMat);
+    cap.rotation.x = -Math.PI / 2;
+    cap.position.set(0, maxH, offsetZ);
+    scene3D.add(cap);
+    buildingMeshes.push(cap);
+
+    // Height label
+    const hLabel = makeTextSprite(`Max: ${maxH}ft`, { fontSize: 10, fontColor: '#059669' });
+    hLabel.position.set(innerW / 2 + 5, maxH, offsetZ);
+    scene3D.add(hLabel);
+    buildingMeshes.push(hLabel);
+
+    // Base height if available
+    if (rules.height.maxBase) {
+      const baseH = rules.height.maxBase;
+      const baseLine = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-innerW / 2, baseH, offsetZ - innerD / 2),
+        new THREE.Vector3(innerW / 2, baseH, offsetZ - innerD / 2),
+        new THREE.Vector3(innerW / 2, baseH, offsetZ + innerD / 2),
+        new THREE.Vector3(-innerW / 2, baseH, offsetZ + innerD / 2),
+        new THREE.Vector3(-innerW / 2, baseH, offsetZ - innerD / 2),
+      ]);
+      const baseLineMat = new THREE.LineDashedMaterial({ color: 0xf59e0b, dashSize: 2, gapSize: 1 });
+      const baseLineM = new THREE.Line(baseLine, baseLineMat);
+      baseLineM.computeLineDistances();
+      scene3D.add(baseLineM);
+      buildingMeshes.push(baseLineM);
+
+      const bLabel = makeTextSprite(`Base: ${baseH}ft`, { fontSize: 9, fontColor: '#d97706' });
+      bLabel.position.set(innerW / 2 + 5, baseH, offsetZ);
+      scene3D.add(bLabel);
+      buildingMeshes.push(bLabel);
+    }
+  }
+}
+
+function drawPrefabModule(sku, lotW, lotD, rules) {
+  const rear = rules.yards.rear || 20;
+  const front = rules.yards.front || 0;
+  const sideStr = rules.yards.side || '0';
+  const sideVal = parseInt(sideStr) || 0;
+
+  // Calculate module dimensions from SKU
+  const sqft = sku.defaultSqft || 550;
+  const stories = sku.stories || 1;
+  const footprint = sqft / stories;
+  // Aspect ratio based on module width constraints
+  const modW = Math.min(sku.minLotWidth || 24, Math.sqrt(footprint) * 1.2);
+  const modD = footprint / modW;
+  const modH = stories * 10; // 10ft per story
+
+  // Place in rear yard for ADUs, front-center for infill/multifamily
+  let posX = 0, posZ = 0;
+  const isADU = sku.type === 'adu' || sku.type === 'conversion';
+  if (isADU) {
+    // Place in rear portion of lot, respecting rear setback
+    posZ = lotD / 2 - rear - modD / 2 - 2;
+  } else {
+    // Place centered, respecting front setback
+    posZ = -lotD / 2 + front + modD / 2 + 2;
+  }
+
+  // Module colors by material
+  const matColors = {
+    sip: 0xf4e4c1, // warm wood tone
+    clt: 0xd4a373, // timber
+    steel: 0xb0c4de, // steel blue
+    hybrid: 0xc8b8a0, // mixed
+  };
+  const modColor = matColors[sku.material] || 0xc8c8c8;
+
+  // Draw modules
+  const moduleCount = sku.modules || 2;
+  const moduleWidth = modW / moduleCount - 0.5;
+
+  for (let i = 0; i < moduleCount; i++) {
+    const offsetX = (i - (moduleCount - 1) / 2) * (moduleWidth + 0.5);
+
+    // Main module box
+    const mGeo = new THREE.BoxGeometry(moduleWidth, modH, modD);
+    const mMat = new THREE.MeshPhongMaterial({
+      color: modColor,
+      transparent: true,
+      opacity: 0.85,
+      shininess: 30,
+    });
+    const mMesh = new THREE.Mesh(mGeo, mMat);
+    mMesh.position.set(posX + offsetX, modH / 2, posZ);
+    mMesh.castShadow = true;
+    mMesh.receiveShadow = true;
+    scene3D.add(mMesh);
+    buildingMeshes.push(mMesh);
+
+    // Module edges
+    const mEdges = new THREE.EdgesGeometry(mGeo);
+    const mLineMat = new THREE.LineBasicMaterial({ color: 0x666666 });
+    const mLine = new THREE.LineSegments(mEdges, mLineMat);
+    mLine.position.copy(mMesh.position);
+    scene3D.add(mLine);
+    buildingMeshes.push(mLine);
+
+    // Window indents (simple rectangles on front face)
+    for (let f = 0; f < stories; f++) {
+      const winGeo = new THREE.PlaneGeometry(moduleWidth * 0.5, 4);
+      const winMat = new THREE.MeshPhongMaterial({ color: 0x87ceeb, transparent: true, opacity: 0.7 });
+      const win = new THREE.Mesh(winGeo, winMat);
+      win.position.set(posX + offsetX, 5 + f * 10, posZ - modD / 2 - 0.05);
+      scene3D.add(win);
+      buildingMeshes.push(win);
+    }
+  }
+
+  // Roof
+  const roofGeo = new THREE.BoxGeometry(modW + 1, 0.5, modD + 1);
+  const roofMat = new THREE.MeshPhongMaterial({ color: 0x555555 });
+  const roof = new THREE.Mesh(roofGeo, roofMat);
+  roof.position.set(posX, modH + 0.25, posZ);
+  roof.castShadow = true;
+  scene3D.add(roof);
+  buildingMeshes.push(roof);
+
+  // Solar panels (if SKU has solar)
+  if (sku.mep && sku.mep.solar && sku.mep.solar.includes('solar')) {
+    const solarGeo = new THREE.PlaneGeometry(modW * 0.7, modD * 0.6);
+    const solarMat = new THREE.MeshPhongMaterial({ color: 0x1a237e, shininess: 80 });
+    const solar = new THREE.Mesh(solarGeo, solarMat);
+    solar.rotation.x = -Math.PI / 2 + 0.15; // slight tilt
+    solar.position.set(posX, modH + 0.8, posZ);
+    scene3D.add(solar);
+    buildingMeshes.push(solar);
+  }
+
+  // Label
+  const skuLabel = makeTextSprite(sku.name, { fontSize: 10, fontColor: '#4f46e5' });
+  skuLabel.position.set(posX, modH + 5, posZ);
+  scene3D.add(skuLabel);
+  buildingMeshes.push(skuLabel);
+
+  // Foundation indicator
+  if (sku.structural && sku.structural.foundation) {
+    const foundType = sku.structural.foundation.toLowerCase();
+    let foundColor = 0x888888;
+    if (foundType.includes('pier') || foundType.includes('raised')) foundColor = 0xd4a373;
+    else if (foundType.includes('helical')) foundColor = 0x4a90d9;
+
+    const fGeo = new THREE.BoxGeometry(modW + 2, 0.8, modD + 2);
+    const fMat = new THREE.MeshLambertMaterial({ color: foundColor });
+    const fMesh = new THREE.Mesh(fGeo, fMat);
+    fMesh.position.set(posX, -0.4, posZ);
+    scene3D.add(fMesh);
+    buildingMeshes.push(fMesh);
+  }
+
+  // Crane access indicator
+  if (sku.craneRequired) {
+    const craneBaseGeo = new THREE.CylinderGeometry(0.5, 0.5, 40, 8);
+    const craneMat = new THREE.MeshLambertMaterial({ color: 0xffa500 });
+    const craneBase = new THREE.Mesh(craneBaseGeo, craneMat);
+    craneBase.position.set(-lotW / 2 - 5, 20, posZ);
+    scene3D.add(craneBase);
+    buildingMeshes.push(craneBase);
+
+    const craneBoomGeo = new THREE.CylinderGeometry(0.3, 0.3, lotW * 0.6, 6);
+    const craneBoom = new THREE.Mesh(craneBoomGeo, craneMat);
+    craneBoom.rotation.z = Math.PI / 2;
+    craneBoom.position.set(-lotW / 2 - 5 + lotW * 0.3, 40, posZ);
+    scene3D.add(craneBoom);
+    buildingMeshes.push(craneBoom);
+
+    const craneLabel = makeTextSprite('Crane', { fontSize: 8, fontColor: '#c2410c' });
+    craneLabel.position.set(-lotW / 2 - 5, 43, posZ);
+    scene3D.add(craneLabel);
+    buildingMeshes.push(craneLabel);
+  }
+}
+
+function updateInfoCard(rules, sku, lotW, lotD) {
+  const card = document.getElementById('threeDInfoCard');
+  const content = document.getElementById('threeDInfoContent');
+  if (!card || !content) return;
+
+  if (!sku) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  const totalWeeks = Object.values(sku.timelineWeeks).reduce((a, b) => a + b, 0);
+  const farUsed = (sku.defaultSqft / (lotW * lotD * rules.far.standard) * 100).toFixed(0);
+
+  content.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:100px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;color:#4f46e5;">${sku.name}</div>
+        <div style="color:#6b6b6b;font-size:10px;">${sku.id} · v${sku.version}</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div style="text-align:center;"><div style="font-weight:700;font-size:14px;">${sku.defaultSqft}</div><div style="font-size:9px;color:#6b6b6b;">sq ft</div></div>
+        <div style="text-align:center;"><div style="font-weight:700;font-size:14px;">${sku.modules}</div><div style="font-size:9px;color:#6b6b6b;">modules</div></div>
+        <div style="text-align:center;"><div style="font-weight:700;font-size:14px;">${totalWeeks}w</div><div style="font-size:9px;color:#6b6b6b;">timeline</div></div>
+        <div style="text-align:center;"><div style="font-weight:700;font-size:14px;">${farUsed}%</div><div style="font-size:9px;color:#6b6b6b;">FAR used</div></div>
+      </div>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+      <span style="padding:2px 8px;border-radius:20px;font-size:9px;font-weight:600;background:#eef2ff;color:#4f46e5;">${sku.materialName}</span>
+      <span style="padding:2px 8px;border-radius:20px;font-size:9px;font-weight:600;background:#ecfdf5;color:#059669;">${sku.typeName}</span>
+      <span style="padding:2px 8px;border-radius:20px;font-size:9px;font-weight:600;background:#fffbeb;color:#92400e;">$${(sku.costRange[0]/1000).toFixed(0)}-${(sku.costRange[1]/1000).toFixed(0)}k</span>
+      ${sku.craneRequired ? '<span style="padding:2px 8px;border-radius:20px;font-size:9px;font-weight:600;background:#fef2f2;color:#991b1b;">Crane Required</span>' : ''}
+    </div>`;
+}
+
+function toggle3DSetbacks() {
+  show3DSetbacks = !show3DSetbacks;
+  const btn = document.getElementById('btnToggleSetbacks');
+  btn.style.opacity = show3DSetbacks ? 1 : 0.4;
+  update3DScene();
+}
+
+function toggle3DEnvelope() {
+  show3DEnvelope = !show3DEnvelope;
+  const btn = document.getElementById('btnToggleEnvelope');
+  btn.style.opacity = show3DEnvelope ? 1 : 0.4;
+  update3DScene();
+}
+
+// =============================================
+// AI DESIGN OPTIMIZER
+// =============================================
+
+async function runAIDesignOptimizer() {
+  if (!CLAUDE_API_KEY) {
+    document.getElementById('threeDaiOverlay').style.display = 'block';
+    document.getElementById('threeDaiContent').innerHTML = '<div style="color:#6b6b6b;">Enter your Claude API key in the Analyze panel to enable AI recommendations.</div>';
+    return;
+  }
+
+  const plutoData = window._currentPlutoData;
+  const skuId = document.getElementById('threeDSkuSelect').value;
+  const sku = DESIGN_CATALOG.find(s => s.id === skuId);
+
+  if (!plutoData || !sku) {
+    document.getElementById('threeDaiOverlay').style.display = 'block';
+    document.getElementById('threeDaiContent').innerHTML = '<div style="color:#f59e0b;">Select a property and a design SKU first.</div>';
+    return;
+  }
+
+  const zone = plutoData.zonedist1 || 'R6';
+  const rules = getZoningRules(zone);
+  const lotW = parseFloat(plutoData.lotfront) || 40;
+  const lotD = parseFloat(plutoData.lotdepth) || 100;
+  const lotArea = parseFloat(plutoData.lotarea) || 3000;
+
+  // Show loading
+  document.getElementById('threeDaiOverlay').style.display = 'block';
+  document.getElementById('threeDaiContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;color:#6366f1;">
+      <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
+      <span>Analyzing lot constraints and optimizing design placement...</span>
+    </div>`;
+
+  const prompt = `You are a NYC prefab housing architect advisor. Analyze this site and give a placement recommendation.
+
+LOT DATA:
+- Address: ${plutoData.address || 'Unknown'}
+- Zone: ${zone} (${rules.label})
+- Lot: ${lotW}ft wide × ${lotD}ft deep = ${lotArea.toLocaleString()} sqft
+- FAR: ${rules.far.standard} (standard)${rules.far.qrs ? ', ' + rules.far.qrs + ' (QRS)' : ''}${rules.far.uap ? ', ' + rules.far.uap + ' (UAP)' : ''}
+- Setbacks: Front ${rules.yards.front}ft, Rear ${rules.yards.rear}ft, Side ${rules.yards.side || 'none'}
+- Height: ${rules.height.maxHeight}ft max${rules.height.maxBase ? ', ' + rules.height.maxBase + 'ft base' : ''}
+- Coverage: ${rules.coverage.standard}%
+- ADU eligible: ${rules.adu.eligible ? 'Yes (max ' + rules.adu.maxSqft + ' sqft)' : 'No'}
+- Existing building: ${plutoData.numfloors || 1} floors, built ${plutoData.yearbuilt || 'unknown'}
+- Flood zone: ${plutoData.firm07_flag === '1' ? 'YES' : 'No'}
+
+SELECTED SKU:
+- ${sku.name} (${sku.id})
+- ${sku.defaultSqft} sqft, ${sku.stories} stories, ${sku.modules} modules
+- Material: ${sku.materialName}
+- Min lot: ${sku.minLotWidth}ft × ${sku.minLotDepth}ft
+- Foundation: ${sku.structural.foundation}
+- Cost: $${sku.costRange[0].toLocaleString()}-${sku.costRange[1].toLocaleString()}
+
+Give a concise recommendation covering:
+1. PLACEMENT: Where on the lot (rear/front/side), optimal orientation for solar/access
+2. FEASIBILITY: Pass/fail on zoning gates, any variances needed
+3. OPPORTUNITIES: QRS/UAP bonus FAR, add-on packages worth considering
+4. RISKS: Crane access, flood mitigation, neighbor setback conflicts
+5. COST OPTIMIZATION: Any ways to reduce cost based on site conditions
+
+Keep it under 200 words. Be specific with numbers.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const data = await res.json();
+    const text = data.content[0].text;
+
+    // Parse and render
+    document.getElementById('threeDaiContent').innerHTML = text.split('\n').map(line => {
+      if (line.match(/^\d\./)) {
+        const parts = line.split(':');
+        return `<div style="margin-top:8px;"><span style="font-weight:700;color:#4f46e5;">${parts[0]}:</span>${parts.slice(1).join(':')}</div>`;
+      }
+      return `<div>${line}</div>`;
+    }).join('');
+
+  } catch (e) {
+    console.error('AI Optimizer error:', e);
+    document.getElementById('threeDaiContent').innerHTML = `<div style="color:#ef4444;">AI analysis unavailable: ${e.message}</div>`;
+  }
+}
+
+// Store pluto data globally when a property is loaded (for 3D viewer)
+// Patch selectFinderProperty to store pluto data for 3D
+(function() {
+  var _prevSelectFinder = selectFinderProperty;
+  selectFinderProperty = function(idx) {
+    var lot = window._finderResults && window._finderResults[idx];
+    if (lot) window._currentPlutoData = lot;
+    _prevSelectFinder(idx);
+  };
+})();
+
+// Also store pluto data in the geocoder/click flow
+(function() {
+  var _prevLoadSite = loadSiteFromPluto;
+  loadSiteFromPluto = function(lat, lon, props, plutoData) {
+    window._currentPlutoData = plutoData;
+    _prevLoadSite(lat, lon, props, plutoData);
+  };
+})();
+
+window.addEventListener('resize', resize3D);
+
 </script>
-</body>
-</html>
 </body>
 </html>
