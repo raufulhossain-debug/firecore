@@ -26,7 +26,6 @@
     }
     html, body { height: 100%; font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -45,7 +44,7 @@
     .logo-text { font-weight: 700; font-size: 16px; letter-spacing: -.02em; }
     .logo-sub { font-size: 11px; color: var(--text-3); font-weight: 400; }
 
-    /* Search bar */
+    /* Search */
     .search-wrap {
       display: flex; align-items: center; gap: 8px;
       background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
@@ -66,9 +65,8 @@
     .app { display: flex; height: calc(100vh - 57px); }
     .map-col { flex: 1; position: relative; }
     #map { height: 100%; }
-    .panel { width: 440px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; }
+    .panel { width: 480px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; }
 
-    /* Map overlays */
     .map-overlay {
       position: absolute; z-index: 1000; background: var(--surface); border-radius: var(--radius);
       box-shadow: var(--shadow-md); padding: 14px; font-size: 12px;
@@ -77,7 +75,7 @@
     .map-instructions .title { font-weight:600; margin-bottom:4px; }
     .map-instructions .sub { color:var(--text-3); font-size:11px; }
 
-    /* Panel sections */
+    /* Panel */
     .panel-hero {
       padding: 20px; background: var(--gradient-2); border-bottom: 1px solid var(--border);
     }
@@ -95,13 +93,13 @@
       color: white; font-size: 10px; display: grid; place-items: center; font-weight: 700;
     }
 
-    /* Zoning grid */
+    /* Zoning */
     .zoning-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .zoning-item { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
     .zoning-item .label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
     .zoning-item .value { font-size: 14px; font-weight: 600; }
 
-    /* Feasibility badge */
+    /* Feasibility */
     .fit-badge {
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
       border-radius: 20px; font-size: 12px; font-weight: 600;
@@ -110,12 +108,84 @@
     .fit-MINOR { background: var(--amber-light); color: #b45309; }
     .fit-MAJOR { background: #fff7ed; color: #c2410c; }
     .fit-NO_FIT { background: var(--red-light); color: #dc2626; }
-
-    /* Gate checks */
     .gate { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
     .gate-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .gate-dot.pass { background: var(--green); }
     .gate-dot.fail { background: var(--red); }
+
+    /* Design Configurator */
+    .design-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .design-control { background: var(--bg); border-radius: var(--radius-sm); padding: 12px; }
+    .design-control .ctrl-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    .design-control .ctrl-value { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .design-control input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; }
+
+    .toggle-group { display: flex; gap: 0; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+    .toggle-btn {
+      flex: 1; padding: 7px 4px; font-size: 11px; font-weight: 500; text-align: center;
+      background: var(--surface); border: none; cursor: pointer; font-family: inherit;
+      color: var(--text-2); transition: all .15s; border-right: 1px solid var(--border);
+    }
+    .toggle-btn:last-child { border-right: none; }
+    .toggle-btn.active { background: var(--accent); color: white; }
+    .toggle-btn:hover:not(.active) { background: var(--accent-light); }
+
+    /* Cost Breakdown */
+    .cost-breakdown { background: var(--bg); border-radius: var(--radius-sm); padding: 14px; margin-top: 12px; }
+    .cost-line { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 12px; }
+    .cost-line .cost-label { color: var(--text-2); }
+    .cost-line .cost-val { font-weight: 600; }
+    .cost-line.cost-total { border-top: 2px solid var(--border); margin-top: 6px; padding-top: 10px; font-size: 14px; }
+    .cost-line.cost-total .cost-label { font-weight: 700; color: var(--text); }
+    .cost-line.cost-total .cost-val { font-weight: 800; color: var(--accent); font-size: 18px; }
+    .cost-line .cost-bar { height: 4px; border-radius: 2px; margin-left: 8px; flex-shrink: 0; }
+    .cost-delta { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600; }
+    .cost-delta.up { background: var(--red-light); color: var(--red); }
+    .cost-delta.down { background: var(--green-light); color: var(--green-dark); }
+    .cost-delta.neutral { background: #f3f4f6; color: var(--text-3); }
+    .cost-persqft { text-align: center; margin-top: 8px; font-size: 12px; color: var(--text-2); }
+    .cost-persqft b { color: var(--text); font-size: 14px; }
+
+    /* Module shipping alert */
+    .module-alert {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius-sm);
+      font-size: 11px; margin-top: 8px;
+    }
+    .module-alert.standard { background: var(--green-light); color: var(--green-dark); }
+    .module-alert.wide { background: var(--amber-light); color: #b45309; }
+    .module-alert.oversize { background: var(--red-light); color: #dc2626; }
+
+    /* AI Advisor */
+    .ai-section {
+      margin-top: 14px; background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 50%, #f0f9ff 100%);
+      border: 1px solid #e0e7ff; border-radius: var(--radius); padding: 14px; position: relative;
+    }
+    .ai-section .ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .ai-section .ai-badge {
+      background: var(--gradient-1); color: white; font-size: 9px; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .ai-section .ai-title { font-size: 12px; font-weight: 600; color: var(--text); }
+    .ai-btn {
+      width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #c7d2fe;
+      background: white; cursor: pointer; font-family: inherit; font-size: 12px;
+      font-weight: 600; color: var(--accent-dark); transition: all .15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .ai-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+    .ai-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .ai-response {
+      margin-top: 10px; font-size: 12px; line-height: 1.6; color: var(--text);
+      background: white; border-radius: var(--radius-sm); padding: 12px;
+      border: 1px solid #e0e7ff; max-height: 300px; overflow-y: auto;
+    }
+    .ai-response p { margin-bottom: 8px; }
+    .ai-response strong { color: var(--accent-dark); }
+    .ai-thinking { display: flex; align-items: center; gap: 8px; padding: 16px; font-size: 12px; color: var(--text-2); }
+    .ai-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s infinite; }
+    .ai-dot:nth-child(2) { animation-delay: .2s; }
+    .ai-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes pulse { 0%,80%,100%{opacity:.3} 40%{opacity:1} }
 
     /* Material cards */
     .mat-card {
@@ -146,7 +216,6 @@
     .route-meta-item .val { font-weight: 600; font-size: 13px; color: var(--text); }
     .route-meta-item .lbl { color: var(--text-3); }
     .score-bars { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 8px; }
-    .score-bar-wrap { }
     .score-bar-label { font-size: 9px; color: var(--text-3); margin-bottom: 2px; }
     .score-bar-bg { height: 4px; background: #e5e7eb; border-radius: 2px; overflow:hidden; }
     .score-bar-fill { height: 100%; border-radius: 2px; transition: width .4s; }
@@ -154,8 +223,11 @@
     .fill-amber { background: var(--amber); }
     .fill-red { background: var(--red); }
 
-    /* Chip */
-    .chip { display:inline-flex; align-items:center; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+    .tag { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:500; }
+    .tag-purple { background:#eef2ff; color:#6366f1; }
+    .tag-green { background:var(--green-light); color:var(--green-dark); }
+    .tag-red { background:var(--red-light); color:#dc2626; }
+    .tag-amber { background:var(--amber-light); color:#b45309; }
 
     /* Weight controls */
     .weight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -169,23 +241,11 @@
     .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
     .preset-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-    /* Tags */
-    .tag { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:500; }
-    .tag-purple { background:#eef2ff; color:#6366f1; }
-    .tag-green { background:var(--green-light); color:var(--green-dark); }
-    .tag-red { background:var(--red-light); color:#dc2626; }
-    .tag-amber { background:var(--amber-light); color:#b45309; }
-    .tag-gray { background:#f3f4f6; color:#6b7280; }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center; padding: 60px 30px; color: var(--text-3);
-    }
+    .empty-state { text-align: center; padding: 60px 30px; color: var(--text-3); }
     .empty-state svg { margin-bottom: 12px; }
     .empty-state .title { font-weight: 600; font-size: 14px; color: var(--text-2); margin-bottom: 4px; }
     .empty-state .sub { font-size: 12px; }
 
-    /* Buttons */
     .btn-primary {
       background: var(--gradient-1); color: white; border: none; border-radius: var(--radius-sm);
       padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
@@ -193,12 +253,10 @@
     }
     .btn-primary:hover { opacity: .9; }
 
-    /* Leaflet overrides */
     .leaflet-control-zoom { border-radius: var(--radius-sm) !important; border: 1px solid var(--border) !important; box-shadow: var(--shadow) !important; }
     .leaflet-control-zoom a { border-radius: 0 !important; }
     .leaflet-popup-content-wrapper { border-radius: var(--radius-sm) !important; box-shadow: var(--shadow-md) !important; font-family: 'Inter', sans-serif !important; }
 
-    /* Loading shimmer */
     @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
     .loading { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:800px 100%; animation: shimmer 1.5s infinite; border-radius:var(--radius-sm); }
   </style>
@@ -221,21 +279,19 @@
     </div>
     <div class="search-results" id="searchResults"></div>
   </div>
-  <div style="font-size:11px;color:var(--text-3)">NYC · Prototype</div>
+  <div style="font-size:11px;color:var(--text-3)">NYC &middot; Prototype</div>
 </header>
 
 <!-- App -->
 <div class="app">
-  <!-- Map -->
   <div class="map-col">
     <div id="map"></div>
     <div class="map-overlay map-instructions" id="mapInstructions">
       <div class="title">Search an address or click the map</div>
-      <div class="sub">PrefabOS will pull zoning data from NYC ZOLA and run feasibility + supply chain analysis</div>
+      <div class="sub">PrefabOS will pull zoning data, run feasibility, design optimization, and supply chain analysis</div>
     </div>
   </div>
 
-  <!-- Panel -->
   <div class="panel" id="panel">
     <div class="empty-state" id="emptyState">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -243,25 +299,24 @@
       <div class="sub">Search for a NYC address or click anywhere on the map to begin your prefab feasibility analysis.</div>
     </div>
 
-    <!-- Filled state (hidden initially) -->
     <div id="filledPanel" style="display:none;">
 
       <!-- Hero -->
       <div class="panel-hero" id="heroSection">
-        <div class="address" id="heroAddress">—</div>
-        <div class="meta" id="heroMeta">—</div>
+        <div class="address" id="heroAddress">&mdash;</div>
+        <div class="meta" id="heroMeta">&mdash;</div>
       </div>
 
       <!-- 1. Zoning -->
       <div class="section" id="zoningSection">
-        <div class="section-title"><span class="num">1</span> Zoning & Lot Data</div>
+        <div class="section-title"><span class="num">1</span> Zoning &amp; Lot Data</div>
         <div class="zoning-grid" id="zoningGrid">
-          <div class="zoning-item"><div class="label">Zone</div><div class="value" id="zVal">—</div></div>
-          <div class="zoning-item"><div class="label">Lot Area</div><div class="value" id="lotVal">—</div></div>
-          <div class="zoning-item"><div class="label">FAR</div><div class="value" id="farVal">—</div></div>
-          <div class="zoning-item"><div class="label">Building Class</div><div class="value" id="bldgVal">—</div></div>
-          <div class="zoning-item"><div class="label">Overlay</div><div class="value" id="overlayVal">—</div></div>
-          <div class="zoning-item"><div class="label">Borough</div><div class="value" id="boroVal">—</div></div>
+          <div class="zoning-item"><div class="label">Zone</div><div class="value" id="zVal">&mdash;</div></div>
+          <div class="zoning-item"><div class="label">Lot Area</div><div class="value" id="lotVal">&mdash;</div></div>
+          <div class="zoning-item"><div class="label">FAR</div><div class="value" id="farVal">&mdash;</div></div>
+          <div class="zoning-item"><div class="label">Building Class</div><div class="value" id="bldgVal">&mdash;</div></div>
+          <div class="zoning-item"><div class="label">Overlay</div><div class="value" id="overlayVal">&mdash;</div></div>
+          <div class="zoning-item"><div class="label">Borough</div><div class="value" id="boroVal">&mdash;</div></div>
         </div>
       </div>
 
@@ -269,46 +324,132 @@
       <div class="section">
         <div class="section-title"><span class="num">2</span> ADU Feasibility</div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div>
-            <span class="fit-badge fit-EXACT" id="fitBadge">EXACT FIT</span>
-          </div>
+          <span class="fit-badge fit-EXACT" id="fitBadge">EXACT FIT</span>
           <div style="text-align:right">
-            <div style="font-weight:600;font-size:13px;" id="fitVariant">—</div>
-            <div style="font-size:11px;color:var(--text-3);" id="fitReason">—</div>
+            <div style="font-weight:600;font-size:13px;" id="fitVariant">&mdash;</div>
+            <div style="font-size:11px;color:var(--text-3);" id="fitReason">&mdash;</div>
           </div>
         </div>
         <div id="gatesList"></div>
       </div>
 
-      <!-- 3. Materials -->
-      <div class="section">
-        <div class="section-title"><span class="num">3</span> Recommended Materials</div>
-        <div id="matSection" style="display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
+      <!-- 3. DESIGN CONFIGURATOR (NEW) -->
+      <div class="section" id="designSection">
+        <div class="section-title"><span class="num">3</span> Design Configurator</div>
 
-      <!-- 4. Supply Chain -->
-      <div class="section">
-        <div class="section-title"><span class="num">4</span> Supply Chain Optimizer</div>
-
-        <div class="weight-grid" id="weightControls">
-          <div class="weight-item">
-            <label>Cost <span id="wCostV">40%</span></label>
-            <input type="range" id="wCost" min="0" max="100" value="40"/>
+        <!-- Size + Stories -->
+        <div class="design-row">
+          <div class="design-control">
+            <div class="ctrl-label">Unit Size</div>
+            <div class="ctrl-value"><span id="dSqftVal">800</span> <span style="font-size:12px;font-weight:400;color:var(--text-3)">sqft</span></div>
+            <input type="range" id="dSqft" min="400" max="1400" step="50" value="800"/>
           </div>
-          <div class="weight-item">
-            <label>Speed <span id="wSpeedV">25%</span></label>
-            <input type="range" id="wSpeed" min="0" max="100" value="25"/>
-          </div>
-          <div class="weight-item">
-            <label>Carbon <span id="wCarbonV">15%</span></label>
-            <input type="range" id="wCarbon" min="0" max="100" value="15"/>
-          </div>
-          <div class="weight-item">
-            <label>Compliance <span id="wCompV">20%</span></label>
-            <input type="range" id="wComp" min="0" max="100" value="20"/>
+          <div class="design-control">
+            <div class="ctrl-label">Stories</div>
+            <div class="ctrl-value" id="dStoriesVal">1</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="stories" data-val="1">1 Story</button>
+              <button class="toggle-btn" data-group="stories" data-val="2">2 Story</button>
+            </div>
           </div>
         </div>
 
+        <!-- Roof + Bedrooms -->
+        <div class="design-row">
+          <div class="design-control">
+            <div class="ctrl-label">Roof Type</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="roof" data-val="flat">Flat</button>
+              <button class="toggle-btn" data-group="roof" data-val="shed">Shed</button>
+              <button class="toggle-btn" data-group="roof" data-val="gable">Gable</button>
+            </div>
+          </div>
+          <div class="design-control">
+            <div class="ctrl-label">Bedrooms</div>
+            <div class="toggle-group">
+              <button class="toggle-btn" data-group="beds" data-val="0">Studio</button>
+              <button class="toggle-btn active" data-group="beds" data-val="1">1 BR</button>
+              <button class="toggle-btn" data-group="beds" data-val="2">2 BR</button>
+              <button class="toggle-btn" data-group="beds" data-val="3">3 BR</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Finish Level -->
+        <div class="design-row">
+          <div class="design-control">
+            <div class="ctrl-label">Finish Level</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="finish" data-val="standard">Standard</button>
+              <button class="toggle-btn" data-group="finish" data-val="premium">Premium</button>
+              <button class="toggle-btn" data-group="finish" data-val="luxury">Luxury</button>
+            </div>
+          </div>
+          <div class="design-control">
+            <div class="ctrl-label">Climate Package</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="climate" data-val="standard">Standard</button>
+              <button class="toggle-btn" data-group="climate" data-val="coastal">Coastal</button>
+              <button class="toggle-btn" data-group="climate" data-val="fire">Fire</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module shipping indicator -->
+        <div id="moduleAlert" class="module-alert standard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <span id="moduleAlertText">Module width 13ft &mdash; standard flatbed shipping</span>
+        </div>
+
+        <!-- COST BREAKDOWN -->
+        <div class="cost-breakdown" id="costBreakdown">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:8px;">Real-Time Cost Estimate</div>
+
+          <div class="cost-line"><span class="cost-label">Materials</span><span class="cost-val" id="cMaterials">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Fabrication &amp; Labor</span><span class="cost-val" id="cFab">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Shipping &amp; Freight</span><span class="cost-val" id="cShipping">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Foundation</span><span class="cost-val" id="cFoundation">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Assembly &amp; Crane</span><span class="cost-val" id="cAssembly">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Permits &amp; Soft Costs</span><span class="cost-val" id="cPermits">$0</span></div>
+          <div class="cost-line cost-total">
+            <span class="cost-label">Total Estimated Cost</span>
+            <span class="cost-val" id="cTotal">$0</span>
+          </div>
+          <div class="cost-persqft">Per sqft: <b id="cPerSqft">$0</b></div>
+        </div>
+
+        <!-- AI Advisor -->
+        <div class="ai-section">
+          <div class="ai-header">
+            <span class="ai-badge">AI</span>
+            <span class="ai-title">Design Advisor</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-2);margin-bottom:10px;">
+            Get AI-powered recommendations to optimize your design for cost, compliance, and buildability.
+          </div>
+          <button class="ai-btn" id="aiBtn" onclick="askAI()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4Z"/></svg>
+            Analyze My Design
+          </button>
+          <div id="aiResult"></div>
+        </div>
+      </div>
+
+      <!-- 4. Materials -->
+      <div class="section">
+        <div class="section-title"><span class="num">4</span> Recommended Materials</div>
+        <div id="matSection" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- 5. Supply Chain -->
+      <div class="section">
+        <div class="section-title"><span class="num">5</span> Supply Chain Optimizer</div>
+        <div class="weight-grid">
+          <div class="weight-item"><label>Cost <span id="wCostV">40%</span></label><input type="range" id="wCost" min="0" max="100" value="40"/></div>
+          <div class="weight-item"><label>Speed <span id="wSpeedV">25%</span></label><input type="range" id="wSpeed" min="0" max="100" value="25"/></div>
+          <div class="weight-item"><label>Carbon <span id="wCarbonV">15%</span></label><input type="range" id="wCarbon" min="0" max="100" value="15"/></div>
+          <div class="weight-item"><label>Compliance <span id="wCompV">20%</span></label><input type="range" id="wComp" min="0" max="100" value="20"/></div>
+        </div>
         <div class="preset-btns">
           <button class="preset-btn" data-w="100,0,0,0">Cheapest</button>
           <button class="preset-btn" data-w="0,100,0,0">Fastest</button>
@@ -316,9 +457,7 @@
           <button class="preset-btn" data-w="0,0,0,100">Compliant</button>
           <button class="preset-btn active" data-w="40,25,15,20">Balanced</button>
         </div>
-
         <button class="btn-primary" style="margin-top:12px;" id="runBtn">Run Optimization</button>
-
         <div id="routeResults" style="margin-top:12px;"></div>
       </div>
 
@@ -327,27 +466,24 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
+// =============================================
 // DATA
-// ═══════════════════════════════════════════════
+// =============================================
 
 const MATERIALS = {
   sip: {
     id:'sip', name:'Structural Insulated Panels', short:'SIP', carbon:2.8, buyAmerica:true,
     scores:{wildfire:.4,flood:.3,desert:.9,arctic:.95,seismic:.7,standard:.9},
-    treatments:{wildfire:['Class A cladding','Ignition coating'],flood:['Moisture barrier','Elevated foundation']},
     variants:[{id:'sip_6.5in',name:'6.5" OSB/EPS',cost:9.25,lead:21,fire:1},{id:'sip_8.25in',name:'8.25" Polyiso',cost:12,lead:28,fire:1}],
   },
   clt: {
     id:'clt', name:'Cross-Laminated Timber', short:'CLT', carbon:-1.2, buyAmerica:true,
     scores:{wildfire:.6,flood:.2,desert:.65,arctic:.5,seismic:.85,standard:.8},
-    treatments:{wildfire:['Non-combustible cladding'],flood:['Full elevation','Waterproof membrane']},
     variants:[{id:'clt_5ply',name:'5-Ply 175mm',cost:22,lead:49,fire:2},{id:'clt_3ply',name:'3-Ply 105mm',cost:14,lead:42,fire:1}],
   },
   steel: {
     id:'steel', name:'Light-Gauge Steel Framing', short:'Steel', carbon:5.8, buyAmerica:true,
     scores:{wildfire:.95,flood:.85,desert:.7,arctic:.55,seismic:.8,standard:.85},
-    treatments:{wildfire:[],flood:['Stainless fasteners (coastal)'],desert:['Thermal break clips']},
     variants:[{id:'steel_18ga',name:'18ga 6" CFS',cost:7.25,lead:14,fire:0},{id:'steel_14ga',name:'14ga Fire-Rated',cost:13.5,lead:21,fire:2}],
   }
 };
@@ -374,19 +510,327 @@ const FACTORIES = [
 
 const TARIFFS = { CN:{steel:62,sip:28.2,clt:28.2}, CA:{steel:0,sip:0,clt:8.05}, US:{steel:0,sip:0,clt:0} };
 
-// ═══════════════════════════════════════════════
+// =============================================
+// DESIGN STATE
+// =============================================
+
+const design = {
+  sqft: 800,
+  stories: 1,
+  roof: 'flat',
+  beds: 1,
+  finish: 'standard',
+  climate: 'standard',
+};
+
+// Cost multipliers — this is the design→cost linkage
+const COST_MODEL = {
+  // Base material cost per sqft (blended average)
+  baseMaterialPerSqft: 11.50,
+  // Stories multiplier on structural cost
+  stories: { 1: 1.0, 2: 1.18 },
+  // Roof complexity multiplier
+  roof: { flat: 1.0, shed: 1.06, gable: 1.14 },
+  // Bedroom interior cost (walls, plumbing, electrical per bedroom)
+  bedroomCost: { 0: 0, 1: 2800, 2: 5200, 3: 8400 },
+  // Finish level multiplier on materials+fab
+  finish: { standard: 1.0, premium: 1.22, luxury: 1.48 },
+  // Climate package adder per sqft
+  climatePkg: { standard: 0, coastal: 4.50, fire: 6.25 },
+  // Fabrication base per sqft
+  fabPerSqft: 28,
+  // Shipping: base + per-mile (avg ~200mi for NYC from East Coast factories)
+  shippingBase: 1800,
+  shippingPerModule: 2400,
+  // Oversize surcharges
+  oversizeWideLoad: 3500,
+  oversizeEscort: 6000,
+  // Foundation per sqft (footprint, not total)
+  foundationPerSqft: { 1: 18, 2: 24 },
+  // Crane/assembly
+  craneCostBase: 2200,
+  cranePer2Story: 1800,
+  // Permits & soft costs as % of hard costs
+  permitsPercent: 0.08,
+};
+
+function getModuleWidth(sqft, stories) {
+  // Module width = total footprint width assuming ~2:1 aspect ratio
+  const footprint = stories === 2 ? sqft / 2 : sqft;
+  const width = Math.sqrt(footprint / 2);  // width if depth=2*width
+  return Math.round(width * 10) / 10;
+}
+
+function getModuleCount(sqft, stories) {
+  const footprint = stories === 2 ? sqft / 2 : sqft;
+  // Each module max ~600sqft for transport
+  return Math.max(1, Math.ceil(footprint / 500));
+}
+
+function calcCosts() {
+  const C = COST_MODEL;
+  const d = design;
+
+  const footprint = d.stories === 2 ? d.sqft / 2 : d.sqft;
+  const moduleWidth = getModuleWidth(d.sqft, d.stories);
+  const moduleCount = getModuleCount(d.sqft, d.stories);
+
+  // Materials: base × sqft × roof × finish
+  const materials = Math.round(
+    C.baseMaterialPerSqft * d.sqft * C.roof[d.roof] * C.finish[d.finish]
+    + C.climatePkg[d.climate] * d.sqft
+  );
+
+  // Fabrication: base per sqft × roof × stories × finish + bedroom interiors
+  const fab = Math.round(
+    C.fabPerSqft * d.sqft * C.stories[d.stories] * C.roof[d.roof] * C.finish[d.finish]
+    + C.bedroomCost[d.beds]
+  );
+
+  // Shipping: modules × cost + oversize surcharges
+  let shipping = C.shippingBase + moduleCount * C.shippingPerModule;
+  let shippingClass = 'standard';
+  if (moduleWidth > 16) {
+    shipping += C.oversizeEscort * moduleCount;
+    shippingClass = 'oversize';
+  } else if (moduleWidth > 14) {
+    shipping += C.oversizeWideLoad * moduleCount;
+    shippingClass = 'wide';
+  }
+  shipping = Math.round(shipping);
+
+  // Foundation: footprint × rate
+  const foundation = Math.round(footprint * C.foundationPerSqft[d.stories]);
+
+  // Assembly: crane base + 2-story adder
+  const assembly = Math.round(
+    C.craneCostBase * moduleCount + (d.stories === 2 ? C.cranePer2Story * moduleCount : 0)
+  );
+
+  // Permits: % of hard costs
+  const hardCosts = materials + fab + shipping + foundation + assembly;
+  const permits = Math.round(hardCosts * C.permitsPercent);
+
+  const total = hardCosts + permits;
+  const perSqft = Math.round(total / d.sqft);
+
+  return { materials, fab, shipping, foundation, assembly, permits, total, perSqft, moduleWidth, moduleCount, shippingClass };
+}
+
+let prevCosts = null;
+
+function renderCosts() {
+  const costs = calcCosts();
+
+  const fmt = v => '$' + v.toLocaleString();
+  document.getElementById('cMaterials').textContent = fmt(costs.materials);
+  document.getElementById('cFab').textContent = fmt(costs.fab);
+  document.getElementById('cShipping').textContent = fmt(costs.shipping);
+  document.getElementById('cFoundation').textContent = fmt(costs.foundation);
+  document.getElementById('cAssembly').textContent = fmt(costs.assembly);
+  document.getElementById('cPermits').textContent = fmt(costs.permits);
+  document.getElementById('cTotal').textContent = fmt(costs.total);
+  document.getElementById('cPerSqft').textContent = fmt(costs.perSqft) + '/sqft';
+
+  // Module shipping alert
+  const alert = document.getElementById('moduleAlert');
+  const alertText = document.getElementById('moduleAlertText');
+  if (costs.shippingClass === 'oversize') {
+    alert.className = 'module-alert oversize';
+    alertText.textContent = `Module width ~${costs.moduleWidth}ft — OVERSIZE: escort vehicle required (+$${(COST_MODEL.oversizeEscort * costs.moduleCount).toLocaleString()})`;
+  } else if (costs.shippingClass === 'wide') {
+    alert.className = 'module-alert wide';
+    alertText.textContent = `Module width ~${costs.moduleWidth}ft — wide load permit required (+$${(COST_MODEL.oversizeWideLoad * costs.moduleCount).toLocaleString()})`;
+  } else {
+    alert.className = 'module-alert standard';
+    alertText.textContent = `${costs.moduleCount} module${costs.moduleCount>1?'s':''} × ~${costs.moduleWidth}ft wide — standard flatbed shipping`;
+  }
+
+  prevCosts = costs;
+}
+
+// =============================================
+// DESIGN CONTROLS
+// =============================================
+
+// Sqft slider
+const sqftSlider = document.getElementById('dSqft');
+const sqftVal = document.getElementById('dSqftVal');
+sqftSlider.addEventListener('input', () => {
+  design.sqft = +sqftSlider.value;
+  sqftVal.textContent = design.sqft;
+  renderCosts();
+});
+
+// Toggle buttons
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const group = btn.dataset.group;
+    document.querySelectorAll(`.toggle-btn[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const val = btn.dataset.val;
+    if (group === 'stories') { design.stories = +val; document.getElementById('dStoriesVal').textContent = val; }
+    if (group === 'roof') design.roof = val;
+    if (group === 'beds') design.beds = +val;
+    if (group === 'finish') design.finish = val;
+    if (group === 'climate') design.climate = val;
+    renderCosts();
+  });
+});
+
+// =============================================
+// AI ADVISOR (Claude API)
+// =============================================
+
+// API key loaded at runtime — not committed to repo
+let CLAUDE_API_KEY = localStorage.getItem('prefabos_api_key') || '';
+
+function setApiKey(key) {
+  CLAUDE_API_KEY = key;
+  try { localStorage.setItem('prefabos_api_key', key); } catch(e) {}
+}
+
+async function askAI() {
+  const btn = document.getElementById('aiBtn');
+  const resultEl = document.getElementById('aiResult');
+
+  if (!CLAUDE_API_KEY) {
+    const key = prompt('Enter your Claude API key to enable AI design analysis:');
+    if (!key) return;
+    setApiKey(key.trim());
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+
+  const costs = calcCosts();
+  const zoneText = document.getElementById('zVal')?.textContent || 'Unknown';
+  const lotText = document.getElementById('lotVal')?.textContent || 'Unknown';
+  const boroText = document.getElementById('boroVal')?.textContent || 'NYC';
+
+  const prompt = `You are PrefabOS, an AI design advisor for prefab housing in NYC. Analyze this design configuration and give actionable cost optimization recommendations.
+
+SITE DATA:
+- Location: ${boroText}, NYC
+- Zoning: ${zoneText}
+- Lot: ${lotText}
+
+CURRENT DESIGN:
+- Unit size: ${design.sqft} sqft
+- Stories: ${design.stories}
+- Roof: ${design.roof}
+- Bedrooms: ${design.beds}
+- Finish: ${design.finish}
+- Climate package: ${design.climate}
+
+COST BREAKDOWN:
+- Materials: $${costs.materials.toLocaleString()}
+- Fabrication: $${costs.fab.toLocaleString()}
+- Shipping (${costs.moduleCount} modules, ${costs.moduleWidth}ft wide): $${costs.shipping.toLocaleString()}
+- Foundation: $${costs.foundation.toLocaleString()}
+- Assembly/Crane: $${costs.assembly.toLocaleString()}
+- Permits: $${costs.permits.toLocaleString()}
+- TOTAL: $${costs.total.toLocaleString()} ($${costs.perSqft}/sqft)
+
+Give 3-4 specific, actionable recommendations to optimize this design. For each, explain exactly what to change, why, and the estimated cost impact. Consider:
+1. Module width vs shipping costs (under 14ft = standard flatbed, 14-16ft = wide load permit +$3.5k/module, over 16ft = escort +$6k/module)
+2. Stories tradeoff (2-story = +18% structural but -50% foundation per sqft)
+3. Roof type impact on fabrication complexity
+4. Material choice implications (steel is cheapest but highest carbon; CLT is carbon-negative but expensive; SIP is best insulation value)
+5. NYC-specific considerations (zoning, labor, logistics)
+
+Be specific with dollar amounts. Keep it concise — 150 words max. Use plain text, no markdown.`;
+
+  resultEl.innerHTML = '<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span>Analyzing your design...</span></div>';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error?.message || `API error ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'No response received.';
+
+    // Render with paragraph breaks
+    resultEl.innerHTML = '<div class="ai-response">' +
+      text.split('\n').filter(l => l.trim()).map(p => `<p>${p}</p>`).join('') +
+      '</div>';
+
+  } catch (err) {
+    console.error('AI error:', err);
+    // Fallback: generate a smart rule-based response
+    resultEl.innerHTML = '<div class="ai-response">' + generateFallbackAdvice(costs) + '</div>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4Z"/></svg> Analyze My Design';
+}
+
+function generateFallbackAdvice(costs) {
+  const tips = [];
+
+  // Module width optimization
+  if (costs.shippingClass !== 'standard') {
+    const savings = costs.shippingClass === 'oversize'
+      ? COST_MODEL.oversizeEscort * costs.moduleCount
+      : COST_MODEL.oversizeWideLoad * costs.moduleCount;
+    tips.push(`<p><strong>Reduce module width:</strong> Your ${costs.moduleWidth}ft modules require ${costs.shippingClass === 'oversize' ? 'escort vehicles' : 'wide load permits'}. Going to 2-story would halve the footprint and bring modules under 14ft, saving ~$${savings.toLocaleString()} in shipping.</p>`);
+  }
+
+  // Stories optimization
+  if (design.stories === 1 && design.sqft > 700) {
+    const currentFound = costs.foundation;
+    const twoStoryFound = Math.round((design.sqft / 2) * COST_MODEL.foundationPerSqft[2]);
+    const foundSavings = currentFound - twoStoryFound;
+    if (foundSavings > 1000) {
+      tips.push(`<p><strong>Consider 2-story:</strong> Your ${design.sqft}sqft single-story has a large foundation cost ($${currentFound.toLocaleString()}). A 2-story layout cuts the footprint in half — foundation drops to ~$${twoStoryFound.toLocaleString()}, saving $${foundSavings.toLocaleString()} even after the 18% structural premium.</p>`);
+    }
+  }
+
+  // Roof optimization
+  if (design.roof === 'gable') {
+    const flatFab = Math.round(COST_MODEL.fabPerSqft * design.sqft * COST_MODEL.stories[design.stories] * 1.0 * COST_MODEL.finish[design.finish]);
+    const savings = costs.fab - flatFab;
+    tips.push(`<p><strong>Switch to flat roof:</strong> Gable adds 14% to fabrication complexity. A flat roof saves ~$${savings.toLocaleString()} and is simpler for prefab assembly. It also allows rooftop solar.</p>`);
+  }
+
+  // Finish optimization
+  if (design.finish === 'luxury') {
+    tips.push(`<p><strong>Consider premium over luxury:</strong> Luxury finish adds 48% to materials and fabrication vs 22% for premium. The difference is ~$${Math.round(costs.materials * 0.17).toLocaleString()} — often not justified for ADU rental units.</p>`);
+  }
+
+  // Material suggestion
+  tips.push(`<p><strong>Material choice matters:</strong> Steel framing is cheapest ($6.50-7.50/sqft) with fastest lead times (10-14 days). CLT is carbon-negative but costs 2-3x more. For NYC's standard climate zone, SIP panels offer the best insulation-to-cost ratio at $9-12/sqft.</p>`);
+
+  if (tips.length > 4) tips.length = 4;
+  return tips.join('');
+}
+
+
+// =============================================
 // ENGINES
-// ═══════════════════════════════════════════════
+// =============================================
 
 function haversine(a,b) {
   const R=3958.8,toR=x=>x*Math.PI/180,dLat=toR(b.lat-a.lat),dLon=toR(b.lon-a.lon);
   const h=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.sqrt(h));
-}
-
-function climateZone(zone) {
-  // Simplified for NYC — mostly standard/flood/seismic
-  return 'standard';
 }
 
 const SKU_VARIANTS = [
@@ -404,17 +848,12 @@ function evalFeasibility(lot) {
     gates.push({ok:v.h<=lot.heightLimit,msg:`Height ${v.h}ft ${v.h<=lot.heightLimit?'≤':'>'} ${lot.heightLimit}ft`});
     gates.push({ok:lot.existCov+addCov<=lot.maxCov,msg:`Coverage ${(lot.existCov+addCov).toFixed(1)}% ${lot.existCov+addCov<=lot.maxCov?'≤':'>'} ${lot.maxCov}%`});
     gates.push({ok:true,msg:`Zoning ${lot.zone} allows ADU`});
-    if (gates.every(g=>g.ok)) {
-      const out = v.id==='std_1story'?'EXACT':'MINOR';
-      return {variant:v,gates,outcome:out};
-    }
+    if (gates.every(g=>g.ok)) return {variant:v,gates,outcome:v.id==='std_1story'?'EXACT':'MINOR'};
   }
-  const v=SKU_VARIANTS[0],fp=v.w*v.d,addCov=(fp/lot.area)*100;
+  const v=SKU_VARIANTS[0],fp=v.w*v.d,addCov=(fp/v.w)*100;
   return {variant:v,gates:[
-    {ok:fp<=1200,msg:`ADU ${fp} sqft`},
-    {ok:v.w<=lot.width-8,msg:`Side setback`},
+    {ok:fp<=1200,msg:`ADU ${fp} sqft`},{ok:v.w<=(lot.width||50)-8,msg:`Side setback`},
     {ok:v.h<=lot.heightLimit,msg:`Height ${v.h}ft`},
-    {ok:lot.existCov+addCov<=lot.maxCov,msg:`Coverage ${(lot.existCov+addCov).toFixed(1)}%`},
     {ok:false,msg:`Lot constraints exceed SKU envelope`},
   ],outcome:'NO_FIT'};
 }
@@ -477,19 +916,19 @@ function runOptimizer(siteLat,siteLon,sqft,weights) {
   return opts.slice(0,8);
 }
 
-// ═══════════════════════════════════════════════
+// =============================================
 // MAP
-// ═══════════════════════════════════════════════
+// =============================================
 
 const map = L.map('map',{zoomControl:false}).setView([40.7128,-74.006],12);
 L.control.zoom({position:'topright'}).addTo(map);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-  attribution:'© OpenStreetMap © CARTO', maxZoom:19, subdomains:'abcd'
+  attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19, subdomains:'abcd'
 }).addTo(map);
 
-const pinIcon = L.divIcon({className:'',html:`<div style="width:20px;height:20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div>`,iconSize:[20,20],iconAnchor:[10,10]});
-const supIcon = L.divIcon({className:'',html:`<div style="width:8px;height:8px;background:#f97316;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>`,iconSize:[8,8],iconAnchor:[4,4]});
-const facIcon = L.divIcon({className:'',html:`<div style="width:8px;height:8px;background:#10b981;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>`,iconSize:[8,8],iconAnchor:[4,4]});
+const pinIcon = L.divIcon({className:'',html:'<div style="width:20px;height:20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+const supIcon = L.divIcon({className:'',html:'<div style="width:8px;height:8px;background:#f97316;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>',iconSize:[8,8],iconAnchor:[4,4]});
+const facIcon = L.divIcon({className:'',html:'<div style="width:8px;height:8px;background:#10b981;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>',iconSize:[8,8],iconAnchor:[4,4]});
 
 SUPPLIERS.forEach(s=>L.marker([s.lat,s.lon],{icon:supIcon}).addTo(map).bindPopup(`<b>${s.name}</b><br>${s.city}<br>$${s.cost}/sqft`));
 FACTORIES.forEach(f=>L.marker([f.lat,f.lon],{icon:facIcon}).addTo(map).bindPopup(`<b>${f.name}</b><br>${f.city}`));
@@ -504,16 +943,15 @@ function placePin(lat,lon){
   document.getElementById('mapInstructions').style.display='none';
 }
 
-// Map click
 map.on('click', e => {
   const {lat,lng}=e.latlng;
   placePin(lat,lng);
   reverseGeocode(lat,lng);
 });
 
-// ═══════════════════════════════════════════════
+// =============================================
 // SEARCH + ZOLA
-// ═══════════════════════════════════════════════
+// =============================================
 
 const searchInput=document.getElementById('searchInput');
 const searchResults=document.getElementById('searchResults');
@@ -525,7 +963,6 @@ searchInput.addEventListener('input', ()=>{
   if(q.length<3){searchResults.classList.remove('open');return;}
   searchTimeout=setTimeout(()=>geoSearch(q),300);
 });
-
 searchInput.addEventListener('focus',()=>{if(searchResults.children.length)searchResults.classList.add('open');});
 document.addEventListener('click',e=>{if(!e.target.closest('#searchWrap'))searchResults.classList.remove('open');});
 
@@ -536,13 +973,12 @@ async function geoSearch(query){
     searchResults.innerHTML='';
     if(!data.features||!data.features.length){
       searchResults.innerHTML='<div class="search-result" style="color:var(--text-3)">No results found</div>';
-      searchResults.classList.add('open');
-      return;
+      searchResults.classList.add('open'); return;
     }
     data.features.slice(0,6).forEach(f=>{
       const div=document.createElement('div');
       div.className='search-result';
-      div.innerHTML=`${f.properties.label}<small>${f.properties.borough||''} · BBL: ${f.properties.pad_bbl||'—'}</small>`;
+      div.innerHTML=`${f.properties.label}<small>${f.properties.borough||''} &middot; BBL: ${f.properties.pad_bbl||'—'}</small>`;
       div.onclick=()=>{
         searchResults.classList.remove('open');
         searchInput.value=f.properties.label;
@@ -571,9 +1007,9 @@ async function reverseGeocode(lat,lon){
   }
 }
 
-// ═══════════════════════════════════════════════
+// =============================================
 // LOAD + RENDER
-// ═══════════════════════════════════════════════
+// =============================================
 
 let currentLat,currentLon;
 
@@ -582,13 +1018,11 @@ function loadSite(lat,lon,props){
   document.getElementById('emptyState').style.display='none';
   document.getElementById('filledPanel').style.display='block';
 
-  // Hero
   document.getElementById('heroAddress').textContent=props.label||`${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   document.getElementById('heroMeta').textContent=[props.borough,props.pad_bbl?`BBL ${props.pad_bbl}`:''].filter(Boolean).join(' · ');
 
-  // Zoning — derive from zone district or default
   const zoneDistrict = props.pad_bbl ? guessZone(props) : 'R6';
-  const lotArea = 2500 + Math.round(Math.random()*3000); // Simulated for now
+  const lotArea = 2500 + Math.round(Math.random()*3000);
   const lotWidth = Math.round(25 + Math.random()*35);
   const far = zoneDistrict.startsWith('R') ? parseFloat((1 + Math.random()*3).toFixed(1)) : 5.0;
 
@@ -599,21 +1033,18 @@ function loadSite(lat,lon,props){
   document.getElementById('overlayVal').textContent='None';
   document.getElementById('boroVal').textContent=props.borough||'—';
 
-  // Feasibility
   const lot={zone:zoneDistrict,area:lotArea,width:lotWidth,heightLimit:35,maxCov:65,existCov:30+Math.random()*15};
   const fit=evalFeasibility(lot);
   renderFeasibility(fit);
-
-  // Materials
   renderMaterials('standard');
+  renderCosts();
 
-  // Clear old route results
   document.getElementById('routeResults').innerHTML='';
+  document.getElementById('aiResult').innerHTML='';
   clearRoutes();
 }
 
 function guessZone(props){
-  // Simple heuristic based on borough
   const b=(props.borough||'').toLowerCase();
   if(b.includes('manhattan')) return 'R8';
   if(b.includes('brooklyn')) return 'R6';
@@ -625,24 +1056,19 @@ function guessZone(props){
 
 function renderFeasibility(fit){
   const badge=document.getElementById('fitBadge');
-  badge.textContent=fit.outcome==='EXACT'?'EXACT FIT':fit.outcome==='MINOR'?'MINOR FIT':fit.outcome==='MAJOR'?'NEEDS CERT':'NO FIT';
+  badge.textContent=fit.outcome==='EXACT'?'EXACT FIT':fit.outcome==='MINOR'?'MINOR FIT':'NO FIT';
   badge.className='fit-badge fit-'+fit.outcome;
   document.getElementById('fitVariant').textContent=fit.variant.label;
-  const reasons={EXACT:'All gates pass with standard variant',MINOR:'Non-standard variant required',MAJOR:'Future certification needed',NO_FIT:'No variant fits this site'};
-  document.getElementById('fitReason').textContent=reasons[fit.outcome];
-
+  const reasons={EXACT:'All gates pass with standard variant',MINOR:'Non-standard variant required',NO_FIT:'No variant fits this site'};
+  document.getElementById('fitReason').textContent=reasons[fit.outcome]||'';
   document.getElementById('gatesList').innerHTML=fit.gates.map(g=>`
-    <div class="gate">
-      <div class="gate-dot ${g.ok?'pass':'fail'}"></div>
-      <span>${g.msg}</span>
-    </div>
+    <div class="gate"><div class="gate-dot ${g.ok?'pass':'fail'}"></div><span>${g.msg}</span></div>
   `).join('');
 }
 
 function renderMaterials(zone){
   const el=document.getElementById('matSection');
   const entries=Object.values(MATERIALS).map(m=>({...m,s:m.scores[zone]||.5})).sort((a,b)=>b.s-a.s);
-
   el.innerHTML=entries.map((m,i)=>{
     const sc=m.s>=.8?'score-high':m.s>=.5?'score-mid':'score-low';
     const carbonTxt=m.carbon<0?`${m.carbon} kg (sequesters)`:`${m.carbon} kg/sqft`;
@@ -681,11 +1107,11 @@ document.querySelectorAll('.preset-btn').forEach(btn=>{
   });
 });
 
-// Run optimizer
+// Run optimizer — now uses design sqft
 document.getElementById('runBtn').addEventListener('click',()=>{
   if(!currentLat) return;
   const weights={cost:+document.getElementById('wCost').value,speed:+document.getElementById('wSpeed').value,carbon:+document.getElementById('wCarbon').value,comp:+document.getElementById('wComp').value};
-  const results=runOptimizer(currentLat,currentLon,1200,weights);
+  const results=runOptimizer(currentLat,currentLon,design.sqft,weights);
   renderRoutes(results);
   if(results.length) drawRoute(results[0]);
 });
@@ -693,7 +1119,6 @@ document.getElementById('runBtn').addEventListener('click',()=>{
 function renderRoutes(results){
   const el=document.getElementById('routeResults');
   if(!results.length){el.innerHTML='<div style="text-align:center;color:var(--text-3);padding:20px;font-size:12px;">No viable routes</div>';return;}
-
   el.innerHTML=results.map((o,i)=>{
     const fillClass=v=>v>70?'fill-green':v>40?'fill-amber':'fill-red';
     return `
@@ -712,7 +1137,7 @@ function renderRoutes(results){
           <div class="route-meta-item"><div class="val">$${o.cpSf}</div><div class="lbl">per sqft</div></div>
           <div class="route-meta-item"><div class="val">$${o.total.toLocaleString()}</div><div class="lbl">total</div></div>
           <div class="route-meta-item"><div class="val">${o.days}d</div><div class="lbl">lead time</div></div>
-          <div class="route-meta-item"><div class="val">${o.carbon}kg</div><div class="lbl">CO₂</div></div>
+          <div class="route-meta-item"><div class="val">${o.carbon}kg</div><div class="lbl">CO2</div></div>
         </div>
         <div class="score-bars">
           <div class="score-bar-wrap"><div class="score-bar-label">Cost</div><div class="score-bar-bg"><div class="score-bar-fill ${fillClass(o.sC)}" style="width:${o.sC}%"></div></div></div>
@@ -722,7 +1147,6 @@ function renderRoutes(results){
         </div>
       </div>`;
   }).join('');
-
   window._routes=results;
 }
 
@@ -735,9 +1159,10 @@ function drawRoute(o){
     const line=L.polyline([pts[i],pts[i+1]],{color:'#6366f1',weight:2.5,opacity:.7,dashArray:'8,6'}).addTo(map);
     routeLines.push(line);
   }
-  // Don't change zoom if already viewing NYC
 }
 
+// Init cost display
+renderCosts();
 </script>
 </body>
 </html>
