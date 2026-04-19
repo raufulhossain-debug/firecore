@@ -516,16 +516,33 @@
 
         <!-- COST BREAKDOWN -->
         <div class="cost-breakdown" id="costBreakdown">
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:8px;">Real-Time Cost Estimate</div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:8px;">Real-Time Cost Estimate (NYC)</div>
 
-          <div class="cost-line"><span class="cost-label">Materials</span><span class="cost-val" id="cMaterials">$0</span></div>
-          <div class="cost-line"><span class="cost-label">Fabrication &amp; Labor</span><span class="cost-val" id="cFab">$0</span></div>
-          <div class="cost-line"><span class="cost-label">Shipping &amp; Freight</span><span class="cost-val" id="cShipping">$0</span></div>
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--accent);margin-bottom:4px;margin-top:8px;">Hard Costs</div>
+          <div class="cost-line"><span class="cost-label">Structural Materials</span><span class="cost-val" id="cMaterials">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Factory Fabrication</span><span class="cost-val" id="cFab">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Interior Fit-Out</span><span class="cost-val" id="cInterior">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Kitchen &amp; Bath</span><span class="cost-val" id="cKB">$0</span></div>
+          <div class="cost-line"><span class="cost-label">MEP (HVAC/Elec/Plumb)</span><span class="cost-val" id="cMEP">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Fire Protection</span><span class="cost-val" id="cFire">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Flooring &amp; Fixtures</span><span class="cost-val" id="cFFA">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Shipping &amp; Logistics</span><span class="cost-val" id="cShipping">$0</span></div>
           <div class="cost-line"><span class="cost-label">Foundation</span><span class="cost-val" id="cFoundation">$0</span></div>
-          <div class="cost-line"><span class="cost-label">Assembly &amp; Crane</span><span class="cost-val" id="cAssembly">$0</span></div>
-          <div class="cost-line"><span class="cost-label">Permits &amp; Soft Costs</span><span class="cost-val" id="cPermits">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Crane &amp; Assembly</span><span class="cost-val" id="cAssembly">$0</span></div>
+
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--accent);margin-bottom:4px;margin-top:10px;">Site Work</div>
+          <div class="cost-line"><span class="cost-label">Excavation, Utilities, Landscape</span><span class="cost-val" id="cSite">$0</span></div>
+
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--accent);margin-bottom:4px;margin-top:10px;">Soft Costs</div>
+          <div class="cost-line"><span class="cost-label">Architect &amp; Engineering</span><span class="cost-val" id="cArch">$0</span></div>
+          <div class="cost-line"><span class="cost-label">NYC Permits &amp; Expediter</span><span class="cost-val" id="cPermits">$0</span></div>
+          <div class="cost-line"><span class="cost-label">Survey, Insurance, Legal</span><span class="cost-val" id="cPreDev">$0</span></div>
+
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;color:var(--amber);margin-bottom:4px;margin-top:10px;">Contingency (12%)</div>
+          <div class="cost-line"><span class="cost-label">Contingency Reserve</span><span class="cost-val" id="cContingency">$0</span></div>
+
           <div class="cost-line cost-total">
-            <span class="cost-label">Total Estimated Cost</span>
+            <span class="cost-label">Total All-In Cost</span>
             <span class="cost-val" id="cTotal">$0</span>
           </div>
           <div class="cost-persqft">Per sqft: <b id="cPerSqft">$0</b></div>
@@ -741,34 +758,71 @@ const design = {
 };
 
 // Cost multipliers — this is the design→cost linkage
+// Based on NYC market rates (2024-2026 data)
 const COST_MODEL = {
-  // Base material cost per sqft (blended average)
-  baseMaterialPerSqft: 11.50,
-  // Stories multiplier on structural cost
+  // === HARD COSTS ===
+  // Structural materials per sqft (framing, sheathing, insulation, exterior)
+  baseMaterialPerSqft: 38,
   stories: { 1: 1.0, 2: 1.18 },
-  // Roof complexity multiplier
   roof: { flat: 1.0, shed: 1.06, gable: 1.14 },
-  // Bedroom interior cost (walls, plumbing, electrical per bedroom)
-  bedroomCost: { 0: 0, 1: 2800, 2: 5200, 3: 8400 },
-  // Finish level multiplier on materials+fab
   finish: { standard: 1.0, premium: 1.22, luxury: 1.48 },
-  // Climate package adder per sqft
-  climatePkg: { standard: 0, coastal: 4.50, fire: 6.25 },
-  // Fabrication base per sqft
-  fabPerSqft: 28,
-  // Shipping: base + per-mile (avg ~200mi for NYC from East Coast factories)
-  shippingBase: 1800,
-  shippingPerModule: 2400,
-  // Oversize surcharges
-  oversizeWideLoad: 3500,
-  oversizeEscort: 6000,
-  // Foundation per sqft (footprint, not total)
-  foundationPerSqft: { 1: 18, 2: 24 },
-  // Crane/assembly
-  craneCostBase: 2200,
-  cranePer2Story: 1800,
-  // Permits & soft costs as % of hard costs
-  permitsPercent: 0.08,
+  climatePkg: { standard: 0, coastal: 6, fire: 8 },
+
+  // Fabrication & factory labor per sqft
+  fabPerSqft: 45,
+
+  // Interior fit-out per sqft (drywall, paint, trim, doors)
+  interiorPerSqft: { standard: 22, premium: 35, luxury: 52 },
+
+  // Kitchen & bath (fixed costs per unit)
+  kitchenCost: { standard: 12000, premium: 22000, luxury: 38000 },
+  bathCost: { standard: 6000, premium: 12000, luxury: 20000 },
+  bathCount: { 0: 1, 1: 1, 2: 1.5, 3: 2 }, // bedrooms → bathrooms
+
+  // MEP (Mechanical, Electrical, Plumbing) per sqft
+  mepPerSqft: { standard: 32, premium: 38, luxury: 48 },
+
+  // Fire protection (NYC requires sprinklers)
+  sprinklerPerSqft: 6,
+
+  // Flooring, fixtures, appliances per sqft
+  ffaPerSqft: { standard: 14, premium: 22, luxury: 35 },
+
+  // Bedroom interior complexity (walls, closets, electrical per BR)
+  bedroomCost: { 0: 0, 1: 3500, 2: 6800, 3: 11000 },
+
+  // Shipping: base + per module
+  shippingBase: 2200,
+  shippingPerModule: 3200,
+  oversizeWideLoad: 4500,
+  oversizeEscort: 7500,
+  // NYC street closure / DOT coordination per delivery
+  nycStreetPermit: 1800,
+
+  // Foundation per sqft (footprint)
+  foundationPerSqft: { 1: 24, 2: 32 },
+
+  // Crane & assembly
+  craneCostBase: 3500,  // NYC crane rental is expensive
+  cranePer2Story: 2500,
+  // NYC crane permit
+  cranePermit: 2200,
+
+  // === SITE WORK ===
+  siteWorkBase: 8000,     // Excavation, grading
+  utilityHookup: 12000,   // ConEd, DEP water/sewer tap
+  landscapeRestore: 4000, // Post-construction site restoration
+
+  // === SOFT COSTS ===
+  architectEngineer: { small: 18000, medium: 25000, large: 35000 }, // <600, 600-1000, >1000 sqft
+  nycDobPermits: 8500,    // DOB filing, plan review
+  expediterFee: 3500,     // NYC expediter (practically required)
+  surveyGeotech: 6000,    // Alta survey + geotechnical report
+  insuranceBuilder: 3200, // Builder's risk insurance
+  legalTitle: 2500,       // Legal, title search
+
+  // Contingency as % of hard costs
+  contingencyPct: 0.12,
 };
 
 function getModuleWidth(sqft, stories) {
@@ -791,21 +845,42 @@ function calcCosts() {
   const footprint = d.stories === 2 ? d.sqft / 2 : d.sqft;
   const moduleWidth = getModuleWidth(d.sqft, d.stories);
   const moduleCount = getModuleCount(d.sqft, d.stories);
+  const bathrooms = C.bathCount[d.beds] || 1;
 
-  // Materials: base × sqft × roof × finish
+  // === HARD COSTS ===
+
+  // Structural materials (shell, framing, insulation, exterior cladding)
   const materials = Math.round(
     C.baseMaterialPerSqft * d.sqft * C.roof[d.roof] * C.finish[d.finish]
     + C.climatePkg[d.climate] * d.sqft
   );
 
-  // Fabrication: base per sqft × roof × stories × finish + bedroom interiors
+  // Factory fabrication & labor
   const fab = Math.round(
-    C.fabPerSqft * d.sqft * C.stories[d.stories] * C.roof[d.roof] * C.finish[d.finish]
-    + C.bedroomCost[d.beds]
+    C.fabPerSqft * d.sqft * C.stories[d.stories] * C.roof[d.roof]
   );
 
-  // Shipping: modules × cost + oversize surcharges
-  let shipping = C.shippingBase + moduleCount * C.shippingPerModule;
+  // Interior fit-out (drywall, paint, trim, doors) + bedroom complexity
+  const interior = Math.round(
+    C.interiorPerSqft[d.finish] * d.sqft + C.bedroomCost[d.beds]
+  );
+
+  // Kitchen & bathrooms
+  const kitchenBath = Math.round(
+    C.kitchenCost[d.finish] + C.bathCost[d.finish] * bathrooms
+  );
+
+  // MEP — Mechanical, Electrical, Plumbing
+  const mep = Math.round(C.mepPerSqft[d.finish] * d.sqft);
+
+  // Fire protection (sprinklers — required in NYC)
+  const fireProt = Math.round(C.sprinklerPerSqft * d.sqft);
+
+  // Flooring, fixtures, appliances
+  const ffa = Math.round(C.ffaPerSqft[d.finish] * d.sqft);
+
+  // Shipping & logistics
+  let shipping = C.shippingBase + moduleCount * C.shippingPerModule + C.nycStreetPermit;
   let shippingClass = 'standard';
   if (moduleWidth > 16) {
     shipping += C.oversizeEscort * moduleCount;
@@ -816,22 +891,38 @@ function calcCosts() {
   }
   shipping = Math.round(shipping);
 
-  // Foundation: footprint × rate
+  // Foundation
   const foundation = Math.round(footprint * C.foundationPerSqft[d.stories]);
 
-  // Assembly: crane base + 2-story adder
+  // Crane & assembly + NYC crane permit
   const assembly = Math.round(
-    C.craneCostBase * moduleCount + (d.stories === 2 ? C.cranePer2Story * moduleCount : 0)
+    C.craneCostBase * moduleCount + (d.stories === 2 ? C.cranePer2Story * moduleCount : 0) + C.cranePermit
   );
 
-  // Permits: % of hard costs
-  const hardCosts = materials + fab + shipping + foundation + assembly;
-  const permits = Math.round(hardCosts * C.permitsPercent);
+  // === SITE WORK ===
+  const siteWork = Math.round(C.siteWorkBase + C.utilityHookup + C.landscapeRestore);
 
-  const total = hardCosts + permits;
+  // === SOFT COSTS ===
+  const archSize = d.sqft <= 600 ? 'small' : d.sqft <= 1000 ? 'medium' : 'large';
+  const archEng = C.architectEngineer[archSize];
+  const permits = C.nycDobPermits + C.expediterFee;
+  const preDev = C.surveyGeotech + C.insuranceBuilder + C.legalTitle;
+  const softCosts = Math.round(archEng + permits + preDev);
+
+  // === CONTINGENCY ===
+  const hardCosts = materials + fab + interior + kitchenBath + mep + fireProt + ffa + shipping + foundation + assembly + siteWork;
+  const contingency = Math.round(hardCosts * C.contingencyPct);
+
+  const total = hardCosts + softCosts + contingency;
   const perSqft = Math.round(total / d.sqft);
 
-  return { materials, fab, shipping, foundation, assembly, permits, total, perSqft, moduleWidth, moduleCount, shippingClass };
+  return {
+    materials, fab, interior, kitchenBath, mep, fireProt, ffa,
+    shipping, foundation, assembly, siteWork, softCosts, contingency,
+    total, perSqft, moduleWidth, moduleCount, shippingClass,
+    // Sub-totals for display
+    hardCosts, bathrooms,
+  };
 }
 
 let prevCosts = null;
@@ -842,10 +933,22 @@ function renderCosts() {
   const fmt = v => '$' + v.toLocaleString();
   document.getElementById('cMaterials').textContent = fmt(costs.materials);
   document.getElementById('cFab').textContent = fmt(costs.fab);
+  document.getElementById('cInterior').textContent = fmt(costs.interior);
+  document.getElementById('cKB').textContent = fmt(costs.kitchenBath);
+  document.getElementById('cMEP').textContent = fmt(costs.mep);
+  document.getElementById('cFire').textContent = fmt(costs.fireProt);
+  document.getElementById('cFFA').textContent = fmt(costs.ffa);
   document.getElementById('cShipping').textContent = fmt(costs.shipping);
   document.getElementById('cFoundation').textContent = fmt(costs.foundation);
   document.getElementById('cAssembly').textContent = fmt(costs.assembly);
-  document.getElementById('cPermits').textContent = fmt(costs.permits);
+  document.getElementById('cSite').textContent = fmt(costs.siteWork);
+  // Soft costs breakdown
+  const C = COST_MODEL;
+  const archSize = design.sqft <= 600 ? 'small' : design.sqft <= 1000 ? 'medium' : 'large';
+  document.getElementById('cArch').textContent = fmt(C.architectEngineer[archSize]);
+  document.getElementById('cPermits').textContent = fmt(C.nycDobPermits + C.expediterFee);
+  document.getElementById('cPreDev').textContent = fmt(C.surveyGeotech + C.insuranceBuilder + C.legalTitle);
+  document.getElementById('cContingency').textContent = fmt(costs.contingency);
   document.getElementById('cTotal').textContent = fmt(costs.total);
   document.getElementById('cPerSqft').textContent = fmt(costs.perSqft) + '/sqft';
 
