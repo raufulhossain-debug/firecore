@@ -34,8 +34,8 @@
     /* Header */
     .header {
       background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 100;
+      padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      position: sticky; top: 0; z-index: 1050;
     }
     .logo { display:flex; align-items:center; gap:10px; }
     .logo-mark {
@@ -49,13 +49,13 @@
     .search-wrap {
       display: flex; align-items: center; gap: 8px;
       background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-      padding: 8px 14px; width: 420px; transition: all .2s;
+      padding: 8px 14px; width: 340px; transition: all .2s; flex-shrink: 1; min-width: 200px;
     }
     .search-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
     .search-wrap svg { color: var(--text-3); flex-shrink: 0; }
     .search-wrap input { border:none; background:none; outline:none; width:100%; font-size:13px; font-family:inherit; color:var(--text); }
     .search-wrap input::placeholder { color: var(--text-3); }
-    .search-results { position:absolute; top:100%; left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:var(--shadow-md); max-height:240px; overflow-y:auto; display:none; z-index:200; }
+    .search-results { position:absolute; top:100%; left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:var(--shadow-md); max-height:240px; overflow-y:auto; display:none; z-index:1100; }
     .search-results.open { display:block; }
     .search-result { padding:10px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--border); }
     .search-result:hover { background:var(--accent-light); }
@@ -1432,6 +1432,8 @@
             </select>
             <button onclick="toggle3DSetbacks()" id="btnToggleSetbacks" style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:10px;font-family:inherit;cursor:pointer;background:#eef2ff;color:#4f46e5;font-weight:600;">Setbacks</button>
             <button onclick="toggle3DEnvelope()" id="btnToggleEnvelope" style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:10px;font-family:inherit;cursor:pointer;background:#ecfdf5;color:#059669;font-weight:600;">Envelope</button>
+            <button onclick="toggle3DXray()" id="btnToggleXray" style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:10px;font-family:inherit;cursor:pointer;background:#fef3c7;color:#92400e;font-weight:600;">X-Ray</button>
+            <button onclick="toggle3DFloorPlan()" id="btnFloorPlan" style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:10px;font-family:inherit;cursor:pointer;background:#f0fdf4;color:#166534;font-weight:600;">Floor Plan</button>
           </div>
 
           <!-- AI Optimizer Button -->
@@ -1449,17 +1451,19 @@
         </div>
       </div>
 
-      <!-- AI Recommendation Overlay -->
-      <div id="threeDaiOverlay" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;display:none;max-width:380px;width:90%;">
-        <div style="background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-radius:16px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid rgba(99,102,241,.2);">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:grid;place-items:center;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4c0 4 4 6 4 6s4-2 4-6a4 4 0 0 0-4-4z"/><path d="M12 18v4"/></svg>
+      <!-- AI Recommendation Side Panel -->
+      <div id="threeDaiOverlay" style="position:absolute;top:12px;right:12px;bottom:12px;z-index:20;display:none;width:280px;pointer-events:none;">
+        <div style="pointer-events:auto;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-radius:12px;padding:14px;box-shadow:0 4px 20px rgba(0,0,0,.12);border:1px solid rgba(99,102,241,.15);max-height:100%;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:grid;place-items:center;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2a4 4 0 0 0-4 4c0 4 4 6 4 6s4-2 4-6a4 4 0 0 0-4-4z"/><path d="M12 18v4"/></svg>
+              </div>
+              <div style="font-weight:700;font-size:12px;">AI Optimizer</div>
             </div>
-            <div style="font-weight:700;font-size:14px;">AI Design Recommendation</div>
+            <button onclick="document.getElementById('threeDaiOverlay').style.display='none'" style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:16px;line-height:1;padding:2px;">&times;</button>
           </div>
-          <div id="threeDaiContent" style="font-size:12px;line-height:1.6;color:#374151;"></div>
-          <button onclick="document.getElementById('threeDaiOverlay').style.display='none'" style="margin-top:12px;padding:6px 14px;border:1px solid #e8e8e8;border-radius:8px;font-size:11px;font-family:inherit;cursor:pointer;background:white;color:#6b6b6b;">Dismiss</button>
+          <div id="threeDaiContent" style="font-size:11px;line-height:1.5;color:#374151;"></div>
         </div>
       </div>
     </div>
@@ -5719,92 +5723,281 @@ function drawPrefabModule(sku, lotW, lotD, rules) {
   const modD = footprint / modW;
   const modH = stories * 10; // 10ft per story
 
-  // Place in rear yard for ADUs, front-center for infill/multifamily
+  // Check for AI placement override
   let posX = 0, posZ = 0;
-  const isADU = sku.type === 'adu' || sku.type === 'conversion';
-  if (isADU) {
-    // Place in rear portion of lot, respecting rear setback
-    posZ = lotD / 2 - rear - modD / 2 - 2;
+  let effectiveModW = modW, effectiveModD = modD;
+  const aiP = window._aiPlacement;
+  if (aiP) {
+    posX = aiP.posX || 0;
+    posZ = aiP.posZ || 0;
+    if (aiP.rotated) { effectiveModW = modD; effectiveModD = modW; }
   } else {
-    // Place centered, respecting front setback
-    posZ = -lotD / 2 + front + modD / 2 + 2;
-  }
-
-  // Module colors by material
-  const matColors = {
-    sip: 0xf4e4c1, // warm wood tone
-    clt: 0xd4a373, // timber
-    steel: 0xb0c4de, // steel blue
-    hybrid: 0xc8b8a0, // mixed
-  };
-  const modColor = matColors[sku.material] || 0xc8c8c8;
-
-  // Draw modules
-  const moduleCount = sku.modules || 2;
-  const moduleWidth = modW / moduleCount - 0.5;
-
-  for (let i = 0; i < moduleCount; i++) {
-    const offsetX = (i - (moduleCount - 1) / 2) * (moduleWidth + 0.5);
-
-    // Main module box
-    const mGeo = new THREE.BoxGeometry(moduleWidth, modH, modD);
-    const mMat = new THREE.MeshPhongMaterial({
-      color: modColor,
-      transparent: true,
-      opacity: 0.85,
-      shininess: 30,
-    });
-    const mMesh = new THREE.Mesh(mGeo, mMat);
-    mMesh.position.set(posX + offsetX, modH / 2, posZ);
-    mMesh.castShadow = true;
-    mMesh.receiveShadow = true;
-    scene3D.add(mMesh);
-    buildingMeshes.push(mMesh);
-
-    // Module edges
-    const mEdges = new THREE.EdgesGeometry(mGeo);
-    const mLineMat = new THREE.LineBasicMaterial({ color: 0x666666 });
-    const mLine = new THREE.LineSegments(mEdges, mLineMat);
-    mLine.position.copy(mMesh.position);
-    scene3D.add(mLine);
-    buildingMeshes.push(mLine);
-
-    // Window indents (simple rectangles on front face)
-    for (let f = 0; f < stories; f++) {
-      const winGeo = new THREE.PlaneGeometry(moduleWidth * 0.5, 4);
-      const winMat = new THREE.MeshPhongMaterial({ color: 0x87ceeb, transparent: true, opacity: 0.7 });
-      const win = new THREE.Mesh(winGeo, winMat);
-      win.position.set(posX + offsetX, 5 + f * 10, posZ - modD / 2 - 0.05);
-      scene3D.add(win);
-      buildingMeshes.push(win);
+    // Default: rear for ADU, front for infill
+    const isADU = sku.type === 'adu' || sku.type === 'conversion';
+    if (isADU) {
+      posZ = lotD / 2 - rear - modD / 2 - 2;
+    } else {
+      posZ = -lotD / 2 + front + modD / 2 + 2;
     }
   }
 
+  // Use effective dimensions (may be swapped if AI rotated)
+  const drawW = effectiveModW;
+  const drawD = effectiveModD;
+
+  // Module colors by material
+  const matColors = {
+    sip: 0xf4e4c1, clt: 0xd4a373, steel: 0xb0c4de, hybrid: 0xc8b8a0,
+  };
+  const modColor = matColors[sku.material] || 0xc8c8c8;
+  const wallThick = 0.4;
+  const floorH = 0.3;
+
+  // Draw modules
+  const moduleCount = sku.modules || 2;
+  const moduleWidth = drawW / moduleCount - 0.5;
+
+  for (let i = 0; i < moduleCount; i++) {
+    const offsetX = (i - (moduleCount - 1) / 2) * (moduleWidth + 0.5);
+    const cx = posX + offsetX;
+
+    for (let f = 0; f < stories; f++) {
+      const baseY = f * 10;
+
+      // Floor slab
+      const floorGeo = new THREE.BoxGeometry(moduleWidth, floorH, drawD);
+      const floorMat = new THREE.MeshPhongMaterial({ color: 0x8B7355, shininess: 20 });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.position.set(cx, baseY + floorH / 2, posZ);
+      floor.receiveShadow = true;
+      scene3D.add(floor); buildingMeshes.push(floor);
+
+      // Exterior walls (4 sides, semi-transparent so you can see inside)
+      const extMat = new THREE.MeshPhongMaterial({ color: modColor, transparent: true, opacity: 0.55, shininess: 30, side: THREE.DoubleSide });
+
+      // Front wall (with window cutout — we'll add windows separately)
+      const fwGeo = new THREE.BoxGeometry(moduleWidth, 9.5, wallThick);
+      const fw = new THREE.Mesh(fwGeo, extMat);
+      fw.position.set(cx, baseY + 5, posZ - drawD / 2);
+      fw.castShadow = true; scene3D.add(fw); buildingMeshes.push(fw);
+
+      // Back wall
+      const bw = new THREE.Mesh(fwGeo, extMat);
+      bw.position.set(cx, baseY + 5, posZ + drawD / 2);
+      bw.castShadow = true; scene3D.add(bw); buildingMeshes.push(bw);
+
+      // Left wall
+      const swGeo = new THREE.BoxGeometry(wallThick, 9.5, drawD);
+      const lw = new THREE.Mesh(swGeo, extMat);
+      lw.position.set(cx - moduleWidth / 2, baseY + 5, posZ);
+      lw.castShadow = true; scene3D.add(lw); buildingMeshes.push(lw);
+
+      // Right wall
+      const rw = new THREE.Mesh(swGeo, extMat);
+      rw.position.set(cx + moduleWidth / 2, baseY + 5, posZ);
+      rw.castShadow = true; scene3D.add(rw); buildingMeshes.push(rw);
+
+      // === WINDOWS (glass panes inset into walls) ===
+      const glassMat = new THREE.MeshPhongMaterial({ color: 0x87CEEB, transparent: true, opacity: 0.5, shininess: 100, side: THREE.DoubleSide });
+      // Front windows (2)
+      for (let wn = -1; wn <= 1; wn += 2) {
+        const winGeo = new THREE.PlaneGeometry(moduleWidth * 0.22, 4);
+        const win = new THREE.Mesh(winGeo, glassMat);
+        win.position.set(cx + wn * moduleWidth * 0.2, baseY + 5.5, posZ - drawD / 2 - 0.05);
+        scene3D.add(win); buildingMeshes.push(win);
+        // Window frame
+        const frameGeo = new THREE.EdgesGeometry(winGeo);
+        const frameLine = new THREE.LineSegments(frameGeo, new THREE.LineBasicMaterial({ color: 0x333333 }));
+        frameLine.position.copy(win.position);
+        scene3D.add(frameLine); buildingMeshes.push(frameLine);
+      }
+      // Back window (1 large)
+      const bWinGeo = new THREE.PlaneGeometry(moduleWidth * 0.35, 4);
+      const bWin = new THREE.Mesh(bWinGeo, glassMat);
+      bWin.position.set(cx, baseY + 5.5, posZ + drawD / 2 + 0.05);
+      scene3D.add(bWin); buildingMeshes.push(bWin);
+      const bFrame = new THREE.LineSegments(new THREE.EdgesGeometry(bWinGeo), new THREE.LineBasicMaterial({ color: 0x333333 }));
+      bFrame.position.copy(bWin.position);
+      scene3D.add(bFrame); buildingMeshes.push(bFrame);
+      // Side windows
+      for (const side of [-1, 1]) {
+        const sWinGeo = new THREE.PlaneGeometry(4, 3.5);
+        const sWin = new THREE.Mesh(sWinGeo, glassMat);
+        sWin.rotation.y = Math.PI / 2;
+        sWin.position.set(cx + side * (moduleWidth / 2 + 0.05), baseY + 5.5, posZ);
+        scene3D.add(sWin); buildingMeshes.push(sWin);
+      }
+
+      // === INTERIOR WALLS & ROOMS ===
+      const intWallMat = new THREE.MeshLambertMaterial({ color: 0xe8e0d4, side: THREE.DoubleSide });
+
+      // Floor plan varies by bed count and floor
+      const beds = sku.defaultBeds || 1;
+      const baths = sku.defaultBaths || 1;
+
+      if (f === 0) {
+        // Ground floor: kitchen/living + bathroom partition
+
+        // Bathroom partition wall (rear corner, ~25% of depth)
+        const bathDepth = drawD * 0.28;
+        const bathWidth = moduleWidth * 0.35;
+        // Lateral wall
+        const bpGeo1 = new THREE.BoxGeometry(wallThick * 0.7, 8, bathDepth);
+        const bp1 = new THREE.Mesh(bpGeo1, intWallMat);
+        bp1.position.set(cx + moduleWidth / 2 - bathWidth, baseY + 4.3, posZ + drawD / 2 - bathDepth / 2);
+        scene3D.add(bp1); buildingMeshes.push(bp1);
+        // Cross wall
+        const bpGeo2 = new THREE.BoxGeometry(bathWidth, 8, wallThick * 0.7);
+        const bp2 = new THREE.Mesh(bpGeo2, intWallMat);
+        bp2.position.set(cx + moduleWidth / 2 - bathWidth / 2, baseY + 4.3, posZ + drawD / 2 - bathDepth);
+        scene3D.add(bp2); buildingMeshes.push(bp2);
+
+        // Room labels on floor (flat text sprites)
+        const kitLabel = makeTextSprite('Kitchen', { fontSize: 7, fontColor: '#6b7280' });
+        kitLabel.position.set(cx - moduleWidth * 0.15, baseY + 0.5, posZ + drawD * 0.15);
+        scene3D.add(kitLabel); buildingMeshes.push(kitLabel);
+
+        const livLabel = makeTextSprite('Living', { fontSize: 7, fontColor: '#6b7280' });
+        livLabel.position.set(cx, baseY + 0.5, posZ - drawD * 0.15);
+        scene3D.add(livLabel); buildingMeshes.push(livLabel);
+
+        const bathLabel = makeTextSprite('Bath', { fontSize: 6, fontColor: '#6b7280' });
+        bathLabel.position.set(cx + moduleWidth / 2 - bathWidth / 2, baseY + 0.5, posZ + drawD / 2 - bathDepth / 2);
+        scene3D.add(bathLabel); buildingMeshes.push(bathLabel);
+
+        // Kitchen counter (simple box)
+        const counterGeo = new THREE.BoxGeometry(moduleWidth * 0.6, 3, 1.5);
+        const counterMat = new THREE.MeshPhongMaterial({ color: 0x555555, shininess: 50 });
+        const counter = new THREE.Mesh(counterGeo, counterMat);
+        counter.position.set(cx - moduleWidth * 0.1, baseY + 1.8, posZ + drawD * 0.3);
+        scene3D.add(counter); buildingMeshes.push(counter);
+
+        // Entry door indicator (on front wall)
+        const doorGeo = new THREE.PlaneGeometry(3, 7);
+        const doorMat = new THREE.MeshPhongMaterial({ color: 0x8B4513, side: THREE.DoubleSide });
+        const door = new THREE.Mesh(doorGeo, doorMat);
+        door.position.set(cx, baseY + 3.7, posZ - drawD / 2 - 0.1);
+        scene3D.add(door); buildingMeshes.push(door);
+
+      }
+
+      if (f === 0 && stories === 1 && beds >= 1) {
+        // Studio/1-bed: bedroom partition at front
+        const bedDepth = drawD * 0.38;
+        const bpGeo = new THREE.BoxGeometry(moduleWidth * 0.9, 8, wallThick * 0.7);
+        const bp = new THREE.Mesh(bpGeo, intWallMat);
+        bp.position.set(cx, baseY + 4.3, posZ - drawD / 2 + bedDepth);
+        scene3D.add(bp); buildingMeshes.push(bp);
+
+        const bedLabel = makeTextSprite('Bedroom', { fontSize: 7, fontColor: '#6b7280' });
+        bedLabel.position.set(cx, baseY + 0.5, posZ - drawD / 2 + bedDepth / 2);
+        scene3D.add(bedLabel); buildingMeshes.push(bedLabel);
+
+        // Bed (simple box)
+        const bedGeo = new THREE.BoxGeometry(5, 1.5, 6.5);
+        const bedMat = new THREE.MeshLambertMaterial({ color: 0xc4a882 });
+        const bed = new THREE.Mesh(bedGeo, bedMat);
+        bed.position.set(cx, baseY + 1, posZ - drawD / 2 + bedDepth * 0.45);
+        scene3D.add(bed); buildingMeshes.push(bed);
+        // Pillow
+        const pillowGeo = new THREE.BoxGeometry(4, 0.6, 1.5);
+        const pillowMat = new THREE.MeshLambertMaterial({ color: 0xf5f5f5 });
+        const pillow = new THREE.Mesh(pillowGeo, pillowMat);
+        pillow.position.set(cx, baseY + 1.9, posZ - drawD / 2 + bedDepth * 0.2);
+        scene3D.add(pillow); buildingMeshes.push(pillow);
+      }
+
+      if (f === 1) {
+        // Upper floor: bedrooms
+        const halfW = moduleWidth * 0.45;
+        // Center partition
+        const upPartGeo = new THREE.BoxGeometry(wallThick * 0.7, 8, drawD * 0.85);
+        const upPart = new THREE.Mesh(upPartGeo, intWallMat);
+        upPart.position.set(cx, baseY + 4.3, posZ);
+        scene3D.add(upPart); buildingMeshes.push(upPart);
+
+        const br1Label = makeTextSprite('BR 1', { fontSize: 7, fontColor: '#6b7280' });
+        br1Label.position.set(cx - halfW / 2, baseY + 0.5, posZ);
+        scene3D.add(br1Label); buildingMeshes.push(br1Label);
+
+        const br2Label = makeTextSprite(beds >= 2 ? 'BR 2' : 'Office', { fontSize: 7, fontColor: '#6b7280' });
+        br2Label.position.set(cx + halfW / 2, baseY + 0.5, posZ);
+        scene3D.add(br2Label); buildingMeshes.push(br2Label);
+
+        // Beds in each room
+        for (const side of [-1, 1]) {
+          const bedGeo = new THREE.BoxGeometry(4, 1.5, 5.5);
+          const bedMat = new THREE.MeshLambertMaterial({ color: side === -1 ? 0xc4a882 : 0xa8b8c4 });
+          const bed = new THREE.Mesh(bedGeo, bedMat);
+          bed.position.set(cx + side * halfW * 0.5, baseY + 1, posZ);
+          scene3D.add(bed); buildingMeshes.push(bed);
+        }
+      }
+
+      // Ceiling for this floor (thin slab)
+      if (f < stories - 1) {
+        const ceilGeo = new THREE.BoxGeometry(moduleWidth, 0.2, drawD);
+        const ceilMat = new THREE.MeshLambertMaterial({ color: 0xfafafa });
+        const ceil = new THREE.Mesh(ceilGeo, ceilMat);
+        ceil.position.set(cx, baseY + 9.8, posZ);
+        scene3D.add(ceil); buildingMeshes.push(ceil);
+      }
+    }
+
+    // Module edges (outer wireframe)
+    const fullGeo = new THREE.BoxGeometry(moduleWidth, modH, drawD);
+    const mEdges = new THREE.EdgesGeometry(fullGeo);
+    const mLine = new THREE.LineSegments(mEdges, new THREE.LineBasicMaterial({ color: 0x444444 }));
+    mLine.position.set(cx, modH / 2, posZ);
+    scene3D.add(mLine); buildingMeshes.push(mLine);
+  }
+
   // Roof
-  const roofGeo = new THREE.BoxGeometry(modW + 1, 0.5, modD + 1);
-  const roofMat = new THREE.MeshPhongMaterial({ color: 0x555555 });
+  const roofGeo = new THREE.BoxGeometry(drawW + 1, 0.5, drawD + 1);
+  const roofMat = new THREE.MeshPhongMaterial({ color: 0x444444 });
   const roof = new THREE.Mesh(roofGeo, roofMat);
   roof.position.set(posX, modH + 0.25, posZ);
   roof.castShadow = true;
-  scene3D.add(roof);
-  buildingMeshes.push(roof);
+  scene3D.add(roof); buildingMeshes.push(roof);
+
+  // Roof overhang edges
+  const roofEdges = new THREE.EdgesGeometry(roofGeo);
+  const roofLine = new THREE.LineSegments(roofEdges, new THREE.LineBasicMaterial({ color: 0x333333 }));
+  roofLine.position.copy(roof.position);
+  scene3D.add(roofLine); buildingMeshes.push(roofLine);
 
   // Solar panels (if SKU has solar)
   if (sku.mep && sku.mep.solar && sku.mep.solar.includes('solar')) {
-    const solarGeo = new THREE.PlaneGeometry(modW * 0.7, modD * 0.6);
-    const solarMat = new THREE.MeshPhongMaterial({ color: 0x1a237e, shininess: 80 });
-    const solar = new THREE.Mesh(solarGeo, solarMat);
-    solar.rotation.x = -Math.PI / 2 + 0.15; // slight tilt
-    solar.position.set(posX, modH + 0.8, posZ);
-    scene3D.add(solar);
-    buildingMeshes.push(solar);
+    for (let sp = 0; sp < 3; sp++) {
+      const solarGeo = new THREE.BoxGeometry(drawW * 0.28, 0.15, drawD * 0.25);
+      const solarMat = new THREE.MeshPhongMaterial({ color: 0x1a237e, shininess: 80 });
+      const solar = new THREE.Mesh(solarGeo, solarMat);
+      solar.position.set(posX + (sp - 1) * drawW * 0.3, modH + 0.8, posZ);
+      solar.rotation.x = 0.15;
+      scene3D.add(solar); buildingMeshes.push(solar);
+    }
+  }
+
+  // Deck/patio at entry
+  const deckGeo = new THREE.BoxGeometry(drawW * 0.5, 0.2, 4);
+  const deckMat = new THREE.MeshPhongMaterial({ color: 0xB8956A });
+  const deck = new THREE.Mesh(deckGeo, deckMat);
+  deck.position.set(posX, 0.15, posZ - drawD / 2 - 2.2);
+  scene3D.add(deck); buildingMeshes.push(deck);
+
+  // Steps
+  for (let s = 0; s < 2; s++) {
+    const stepGeo = new THREE.BoxGeometry(4, 0.4, 1);
+    const stepMat = new THREE.MeshLambertMaterial({ color: 0x999999 });
+    const step = new THREE.Mesh(stepGeo, stepMat);
+    step.position.set(posX, 0.2 - s * 0.3, posZ - drawD / 2 - 4.5 - s * 1);
+    scene3D.add(step); buildingMeshes.push(step);
   }
 
   // Label
   const skuLabel = makeTextSprite(sku.name, { fontSize: 10, fontColor: '#4f46e5' });
-  skuLabel.position.set(posX, modH + 5, posZ);
-  scene3D.add(skuLabel);
-  buildingMeshes.push(skuLabel);
+  skuLabel.position.set(posX, modH + 4, posZ);
+  scene3D.add(skuLabel); buildingMeshes.push(skuLabel);
 
   // Foundation indicator
   if (sku.structural && sku.structural.foundation) {
@@ -5813,7 +6006,7 @@ function drawPrefabModule(sku, lotW, lotD, rules) {
     if (foundType.includes('pier') || foundType.includes('raised')) foundColor = 0xd4a373;
     else if (foundType.includes('helical')) foundColor = 0x4a90d9;
 
-    const fGeo = new THREE.BoxGeometry(modW + 2, 0.8, modD + 2);
+    const fGeo = new THREE.BoxGeometry(drawW + 2, 0.8, drawD + 2);
     const fMat = new THREE.MeshLambertMaterial({ color: foundColor });
     const fMesh = new THREE.Mesh(fGeo, fMat);
     fMesh.position.set(posX, -0.4, posZ);
@@ -5893,14 +6086,59 @@ function toggle3DEnvelope() {
   update3DScene();
 }
 
+let floorPlanMode = false;
+let savedOrbit = null;
+function toggle3DFloorPlan() {
+  floorPlanMode = !floorPlanMode;
+  const btn = document.getElementById('btnFloorPlan');
+  btn.style.opacity = floorPlanMode ? 1 : 0.4;
+  if (floorPlanMode) {
+    savedOrbit = { theta: orbitTheta, phi: orbitPhi, radius: orbitRadius };
+    // Top-down view
+    orbitPhi = 0.05; // nearly straight down
+    orbitTheta = 0;
+    orbitRadius = 80;
+    // Also enable x-ray
+    if (!xrayMode) toggle3DXray();
+  } else {
+    if (savedOrbit) {
+      orbitTheta = savedOrbit.theta;
+      orbitPhi = savedOrbit.phi;
+      orbitRadius = savedOrbit.radius;
+    }
+    if (xrayMode) toggle3DXray();
+  }
+  updateCameraOrbit();
+}
+
+let xrayMode = false;
+function toggle3DXray() {
+  xrayMode = !xrayMode;
+  const btn = document.getElementById('btnToggleXray');
+  btn.style.opacity = xrayMode ? 1 : 0.4;
+  // Toggle exterior wall opacity across all building meshes
+  buildingMeshes.forEach(m => {
+    if (m.material && m.material.opacity !== undefined && m.material.transparent) {
+      // Exterior walls are the ones at ~0.55 opacity
+      if (m.material.opacity >= 0.45 && m.material.opacity <= 0.6) {
+        m.material.opacity = xrayMode ? 0.12 : 0.55;
+        m.material.needsUpdate = true;
+      }
+    }
+  });
+}
+
 // =============================================
 // AI DESIGN OPTIMIZER
 // =============================================
 
+// AI placement override — when set, drawPrefabModule uses these coords
+window._aiPlacement = null;
+
 async function runAIDesignOptimizer() {
   if (!CLAUDE_API_KEY) {
-    document.getElementById('threeDaiOverlay').style.display = 'block';
-    document.getElementById('threeDaiContent').innerHTML = '<div style="color:#6b6b6b;">Add your Claude API key in <b>Settings</b> (gear icon, top right) to enable AI recommendations.</div>';
+    document.getElementById('threeDaiOverlay').style.display = 'flex';
+    document.getElementById('threeDaiContent').innerHTML = '<div style="color:#6b6b6b;">Add your Claude API key in <b>Settings</b> (gear icon, top right) to enable AI optimization.</div>';
     return;
   }
 
@@ -5909,7 +6147,7 @@ async function runAIDesignOptimizer() {
   const sku = DESIGN_CATALOG.find(s => s.id === skuId);
 
   if (!plutoData || !sku) {
-    document.getElementById('threeDaiOverlay').style.display = 'block';
+    document.getElementById('threeDaiOverlay').style.display = 'flex';
     document.getElementById('threeDaiContent').innerHTML = '<div style="color:#f59e0b;">Select a property and a design SKU first.</div>';
     return;
   }
@@ -5919,45 +6157,52 @@ async function runAIDesignOptimizer() {
   const lotW = parseFloat(plutoData.lotfront) || 40;
   const lotD = parseFloat(plutoData.lotdepth) || 100;
   const lotArea = parseFloat(plutoData.lotarea) || 3000;
+  const rear = rules.yards.rear || 20;
+  const front = rules.yards.front || 0;
+  const sideVal = parseInt(rules.yards.side) || 0;
+
+  // Compute buildable area bounds (in 3D coords where lot center = 0,0)
+  const minX = -lotW / 2 + sideVal;
+  const maxX = lotW / 2 - sideVal;
+  const minZ = -lotD / 2 + front;
+  const maxZ = lotD / 2 - rear;
 
   // Show loading
-  document.getElementById('threeDaiOverlay').style.display = 'block';
+  document.getElementById('threeDaiOverlay').style.display = 'flex';
   document.getElementById('threeDaiContent').innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;color:#6366f1;">
+    <div style="display:flex;align-items:center;gap:6px;color:#6366f1;">
       <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
-      <span>Analyzing lot constraints and optimizing design placement...</span>
+      <span style="font-size:11px;">Optimizing placement...</span>
     </div>`;
 
-  const prompt = `You are a NYC prefab housing architect advisor. Analyze this site and give a placement recommendation.
+  const sqft = sku.defaultSqft || 550;
+  const stories = sku.stories || 1;
+  const footprint = sqft / stories;
+  const modW = Math.min(sku.minLotWidth || 24, Math.sqrt(footprint) * 1.2);
+  const modD = footprint / modW;
 
-LOT DATA:
-- Address: ${plutoData.address || 'Unknown'}
-- Zone: ${zone} (${rules.label})
-- Lot: ${lotW}ft wide × ${lotD}ft deep = ${lotArea.toLocaleString()} sqft
-- FAR: ${rules.far.standard} (standard)${rules.far.qrs ? ', ' + rules.far.qrs + ' (QRS)' : ''}${rules.far.uap ? ', ' + rules.far.uap + ' (UAP)' : ''}
-- Setbacks: Front ${rules.yards.front}ft, Rear ${rules.yards.rear}ft, Side ${rules.yards.side || 'none'}
-- Height: ${rules.height.maxHeight}ft max${rules.height.maxBase ? ', ' + rules.height.maxBase + 'ft base' : ''}
-- Coverage: ${rules.coverage.standard}%
-- ADU eligible: ${rules.adu.eligible ? 'Yes (max ' + rules.adu.maxSqft + ' sqft)' : 'No'}
-- Existing building: ${plutoData.numfloors || 1} floors, built ${plutoData.yearbuilt || 'unknown'}
-- Flood zone: ${plutoData.firm07_flag === '1' ? 'YES' : 'No'}
+  const prompt = `You are a NYC prefab housing placement engine. Return ONLY valid JSON, no other text.
 
-SELECTED SKU:
-- ${sku.name} (${sku.id})
-- ${sku.defaultSqft} sqft, ${sku.stories} stories, ${sku.modules} modules
-- Material: ${sku.materialName}
-- Min lot: ${sku.minLotWidth}ft × ${sku.minLotDepth}ft
-- Foundation: ${sku.structural.foundation}
-- Cost: $${sku.costRange[0].toLocaleString()}-${sku.costRange[1].toLocaleString()}
+LOT: ${lotW}ft W × ${lotD}ft D, zone ${zone}, setbacks: front=${front}ft rear=${rear}ft side=${sideVal}ft
+Buildable envelope X: ${minX.toFixed(1)} to ${maxX.toFixed(1)}, Z: ${minZ.toFixed(1)} to ${maxZ.toFixed(1)} (lot center=0,0; -Z=front/street, +Z=rear)
+Height max: ${rules.height.maxHeight}ft. Coverage: ${rules.coverage.standard}%. FAR: ${rules.far.standard}.
+Existing bldg: ${plutoData.numfloors||1} floors, ${plutoData.yearbuilt||'unknown'}. ADU: ${rules.adu.eligible?'yes':'no'}.
+Flood: ${plutoData.firm07_flag==='1'?'yes':'no'}.
 
-Give a concise recommendation covering:
-1. PLACEMENT: Where on the lot (rear/front/side), optimal orientation for solar/access
-2. FEASIBILITY: Pass/fail on zoning gates, any variances needed
-3. OPPORTUNITIES: QRS/UAP bonus FAR, add-on packages worth considering
-4. RISKS: Crane access, flood mitigation, neighbor setback conflicts
-5. COST OPTIMIZATION: Any ways to reduce cost based on site conditions
+MODULE: ${sku.name}, ${modW.toFixed(1)}ft W × ${modD.toFixed(1)}ft D × ${stories*10}ft H, ${sku.modules} modules.
 
-Keep it under 200 words. Be specific with numbers.`;
+Return JSON:
+{
+  "posX": <number, X position center of module within buildable bounds>,
+  "posZ": <number, Z position center of module within buildable bounds>,
+  "rotated": <boolean, true to rotate 90° for better fit>,
+  "placement": "<rear|front|side|center>",
+  "verdict": "<PASS|CONDITIONAL|FAIL>",
+  "confidence": <0-100>,
+  "notes": ["<short note 1>","<short note 2>","<short note 3 max>"]
+}
+
+Rules: keep module fully inside buildable envelope. Optimize for solar (south=front=-Z), crane access (side), privacy (rear for ADU). Max 3 notes, each under 15 words.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -5970,27 +6215,61 @@ Keep it under 200 words. Be specific with numbers.`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
+        max_tokens: 300,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
 
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
-    const text = data.content[0].text;
+    const raw = data.content[0].text;
 
-    // Parse and render
-    document.getElementById('threeDaiContent').innerHTML = text.split('\n').map(line => {
-      if (line.match(/^\d\./)) {
-        const parts = line.split(':');
-        return `<div style="margin-top:8px;"><span style="font-weight:700;color:#4f46e5;">${parts[0]}:</span>${parts.slice(1).join(':')}</div>`;
-      }
-      return `<div>${line}</div>`;
-    }).join('');
+    // Extract JSON from response
+    let ai;
+    try {
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      ai = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+    } catch (parseErr) {
+      throw new Error('Could not parse AI response');
+    }
+
+    // Clamp position inside buildable envelope
+    const halfModW = (ai.rotated ? modD : modW) / 2;
+    const halfModD = (ai.rotated ? modW : modD) / 2;
+    ai.posX = Math.max(minX + halfModW, Math.min(maxX - halfModW, ai.posX || 0));
+    ai.posZ = Math.max(minZ + halfModD, Math.min(maxZ - halfModD, ai.posZ || 0));
+
+    // Store placement and redraw the 3D scene
+    window._aiPlacement = ai;
+    update3DScene();
+
+    // Render compact card
+    const verdictColors = { PASS: '#059669', CONDITIONAL: '#d97706', FAIL: '#dc2626' };
+    const verdictBg = { PASS: '#ecfdf5', CONDITIONAL: '#fffbeb', FAIL: '#fef2f2' };
+    const v = ai.verdict || 'PASS';
+
+    document.getElementById('threeDaiContent').innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:${verdictBg[v]||'#f3f4f6'};color:${verdictColors[v]||'#374151'};">${v}</span>
+        <span style="font-size:10px;color:#9ca3af;">${ai.confidence||'--'}% confidence</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:#f9fafb;border-radius:8px;padding:6px 8px;">
+          <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Position</div>
+          <div style="font-size:12px;font-weight:600;color:#1a1a1a;">${(ai.placement||'rear').charAt(0).toUpperCase()+(ai.placement||'rear').slice(1)}</div>
+        </div>
+        <div style="background:#f9fafb;border-radius:8px;padding:6px 8px;">
+          <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Rotated</div>
+          <div style="font-size:12px;font-weight:600;color:#1a1a1a;">${ai.rotated ? 'Yes (90°)' : 'No'}</div>
+        </div>
+      </div>
+      ${(ai.notes||[]).map(n => `<div style="font-size:10px;color:#4b5563;padding:3px 0;border-top:1px solid #f3f4f6;">• ${n}</div>`).join('')}
+      <button onclick="window._aiPlacement=null;update3DScene();document.getElementById('threeDaiOverlay').style.display='none';" style="margin-top:8px;width:100%;padding:5px;border:1px solid #e5e7eb;border-radius:6px;font-size:10px;font-family:inherit;cursor:pointer;background:white;color:#6b7280;">Reset to Default</button>
+    `;
 
   } catch (e) {
     console.error('AI Optimizer error:', e);
-    document.getElementById('threeDaiContent').innerHTML = `<div style="color:#ef4444;">AI analysis unavailable: ${e.message}</div>`;
+    document.getElementById('threeDaiContent').innerHTML = `<div style="color:#ef4444;font-size:11px;">AI error: ${e.message}</div>`;
   }
 }
 
