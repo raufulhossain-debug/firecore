@@ -637,6 +637,14 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       <span>Plans</span>
     </button>
+    <button class="sidebar-btn" id="modeCompare" onclick="setMode('compare')" title="Compare">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+      <span>Compare</span>
+    </button>
+    <button class="sidebar-btn" id="modeTimeline" onclick="setMode('timeline')" title="Timeline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      <span>Timeline</span>
+    </button>
   </nav>
 
   <!-- Main content area -->
@@ -1541,6 +1549,52 @@
           <div style="padding:40px;text-align:center;color:#9ca3af;">Select a design SKU to generate architectural plans</div>
         </div>
       </div>
+    </div>
+
+    <!-- COMPARE PANEL -->
+    <div id="comparePanel" style="display:none;padding:20px;">
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:20px;font-weight:800;margin:0;margin-bottom:4px;">Compare SKUs</h2>
+        <p style="font-size:12px;color:var(--text-3);margin:0;">Side-by-side comparison of design specifications and costs</p>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-3);display:block;margin-bottom:6px;">Property</label>
+        <select id="compareLotSelect" onchange="updateComparePanel()" style="width:100%;padding:8px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:12px;font-family:inherit;background:white;">
+          <option value="">Select a property (load via Analyze)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-3);display:block;margin-bottom:6px;">Number of Columns</label>
+        <div style="display:flex;gap:6px;">
+          <button class="toggle-btn active" data-cols="2" onclick="setCompareColumns(2)">2 SKUs</button>
+          <button class="toggle-btn" data-cols="3" onclick="setCompareColumns(3)">3 SKUs</button>
+        </div>
+      </div>
+
+      <div id="compareGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+    </div>
+
+    <!-- TIMELINE PANEL -->
+    <div id="timelinePanel" style="display:none;padding:20px;">
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:20px;font-weight:800;margin:0;margin-bottom:4px;">Construction Timeline</h2>
+        <p style="font-size:12px;color:var(--text-3);margin:0;">Gantt chart showing construction phases and key milestones</p>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-3);display:block;margin-bottom:6px;">Design SKU</label>
+        <select id="timelineSkuSelect" onchange="renderTimelineGantt()" style="width:100%;padding:8px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:12px;font-family:inherit;background:white;">
+          <option value="">Select a design</option>
+        </select>
+      </div>
+
+      <div style="background:white;border:1px solid #e0e0e0;border-radius:8px;overflow-x:auto;padding:20px;">
+        <svg id="timelineSvg" width="100%" height="400" style="min-width:700px;"></svg>
+      </div>
+
+      <div id="timelineInfo" style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:8px;font-size:11px;"></div>
     </div>
 
   </div>
@@ -2535,7 +2589,7 @@ let finderMarkers = [];
 
 function setMode(mode) {
   currentMode = mode;
-  ['Analyze','Finder','Catalog','Packager','Portal','3d','Plans'].forEach(m => {
+  ['Analyze','Finder','Catalog','Packager','Portal','3d','Plans','Compare','Timeline'].forEach(m => {
     const btn = document.getElementById('mode' + m);
     if (btn) btn.classList.toggle('active', mode === m.toLowerCase());
   });
@@ -2549,11 +2603,13 @@ function setMode(mode) {
   const packagerPanel = document.getElementById('packagerPanel');
   const portalPanel = document.getElementById('portalPanel');
   const threeDPanel = document.getElementById('threeDPanel');
+  const comparePanel = document.getElementById('comparePanel');
+  const timelinePanel = document.getElementById('timelinePanel');
   const mapCol = document.querySelector('.map-col');
   const panel = document.getElementById('panel');
 
   // Hide all sub-panels
-  [finderPanel, catalogPanel, packagerPanel, portalPanel, threeDPanel, document.getElementById('plansPanel')].forEach(p => { if(p) p.style.display = 'none'; });
+  [finderPanel, catalogPanel, packagerPanel, portalPanel, threeDPanel, document.getElementById('plansPanel'), comparePanel, timelinePanel].forEach(p => { if(p) p.style.display = 'none'; });
 
   // Modes that need the map
   const mapModes = ['analyze', 'finder'];
@@ -2618,6 +2674,20 @@ function setMode(mode) {
     document.getElementById('mapInstructions').style.display = 'none';
     populatePlansSkuSelect();
     renderPlans();
+  } else if (mode === 'compare') {
+    searchWrap.style.display = 'none';
+    emptyState.style.display = 'none';
+    filledPanel.style.display = 'none';
+    comparePanel.style.display = 'block';
+    document.getElementById('mapInstructions').style.display = 'none';
+    initComparePanel();
+  } else if (mode === 'timeline') {
+    searchWrap.style.display = 'none';
+    emptyState.style.display = 'none';
+    filledPanel.style.display = 'none';
+    timelinePanel.style.display = 'block';
+    document.getElementById('mapInstructions').style.display = 'none';
+    populateTimelineSkuSelect();
   }
 }
 
@@ -7690,6 +7760,454 @@ function renderProForma() {
     return result;
   };
 })();
+
+// =============================================
+// FEATURE 1: COMPARE MODE
+// =============================================
+
+var compareColumns = 2;
+var compareState = { col1: null, col2: null, col3: null };
+
+function setCompareColumns(numCols) {
+  compareColumns = numCols;
+  document.querySelectorAll('[data-cols]').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.cols) === numCols);
+  });
+  updateComparePanel();
+}
+
+function initComparePanel() {
+  var lotSelect = document.getElementById('compareLotSelect');
+  if (selectedProperty) {
+    lotSelect.innerHTML = '<option value="' + selectedProperty.address + '">' + selectedProperty.address + '</option>';
+    lotSelect.value = selectedProperty.address;
+  } else {
+    lotSelect.innerHTML = '<option value="">Select a property (load via Analyze)</option>';
+  }
+  updateComparePanel();
+}
+
+function updateComparePanel() {
+  var grid = document.getElementById('compareGrid');
+  grid.style.gridTemplateColumns = compareColumns === 3 ? '1fr 1fr 1fr' : '1fr 1fr';
+  grid.innerHTML = '';
+
+  for (var i = 1; i <= compareColumns; i++) {
+    var col = document.createElement('div');
+    col.style.cssText = 'border:1px solid #e8e8e8;border-radius:8px;padding:12px;background:#fafafa;';
+    col.innerHTML = `
+      <label style="font-size:10px;font-weight:600;text-transform:uppercase;color:#9ca3af;display:block;margin-bottom:6px;">SKU ${i}</label>
+      <select id="compareSku${i}" onchange="updateCompareGrid()" style="width:100%;padding:6px 8px;border:1px solid #e8e8e8;border-radius:6px;font-size:11px;font-family:inherit;background:white;margin-bottom:12px;">
+        <option value="">— Select SKU —</option>
+      </select>
+      <div id="compareData${i}" style="font-size:11px;"></div>
+    `;
+    grid.appendChild(col);
+
+    // Populate SKU select
+    var select = document.getElementById('compareSku' + i);
+    if (DESIGN_CATALOG && DESIGN_CATALOG.length > 0) {
+      DESIGN_CATALOG.forEach(sku => {
+        var opt = document.createElement('option');
+        opt.value = sku.id;
+        opt.textContent = sku.name;
+        select.appendChild(opt);
+      });
+    }
+  }
+}
+
+function updateCompareGrid() {
+  var cols = [];
+  for (var i = 1; i <= compareColumns; i++) {
+    var skuId = document.getElementById('compareSku' + i).value;
+    cols.push(skuId);
+  }
+
+  for (var i = 1; i <= compareColumns; i++) {
+    var skuId = cols[i - 1];
+    var dataDiv = document.getElementById('compareData' + i);
+
+    if (!skuId) {
+      dataDiv.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:20px;">Select a SKU</div>';
+      continue;
+    }
+
+    var sku = DESIGN_CATALOG.find(s => s.id === skuId);
+    if (!sku) continue;
+
+    // Calculate costs
+    var hardCost = sku.defaultSqft * 280;
+    var softCost = hardCost * 0.22;
+    var totalCost = hardCost + softCost;
+
+    // Monthly rent estimate (zone-based, default to R5 for NYC)
+    var zone = window._currentPlutoData ? window._currentPlutoData.ZoneDistrict : 'R5';
+    var rentPerSqft = zone.startsWith('R3') ? 28 : zone.startsWith('R4') ? 32 : zone.startsWith('R5') ? 36 : zone.startsWith('R6') || zone.startsWith('R7') ? 38 : 42;
+    var monthlyRent = (sku.defaultSqft * rentPerSqft) / 12;
+    var annualGross = monthlyRent * 12;
+    var noi = (annualGross * 0.65) - (annualGross * 0.65 * 0.35);
+    var capRate = ((noi / totalCost) * 100).toFixed(2);
+    var cashOnCash = ((noi / (totalCost * 0.3)) * 100).toFixed(2);
+
+    // Check zoning
+    var zoningRules = getZoningRules(zone);
+    var fits = zoningRules && zoningRules.maxStories >= sku.stories;
+
+    dataDiv.innerHTML = `
+      <div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e0e0e0;">
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px;">${sku.name}</div>
+        <div style="font-size:9px;color:#6b6b6b;">Type: ${sku.typeName}</div>
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:9px;color:#9ca3af;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Specs</div>
+        <div style="font-size:10px;">Sqft: <strong>${sku.defaultSqft}</strong></div>
+        <div style="font-size:10px;">Stories: <strong>${sku.stories}</strong></div>
+        <div style="font-size:10px;">Beds: <strong>${sku.beds}</strong></div>
+        <div style="font-size:10px;">Baths: <strong>${sku.baths}</strong></div>
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:9px;color:#9ca3af;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Costs</div>
+        <div style="font-size:10px;">Hard: <strong>$${(hardCost/1000).toFixed(0)}k</strong></div>
+        <div style="font-size:10px;">Total: <strong style="color:#4f46e5;">$${(totalCost/1000).toFixed(0)}k</strong></div>
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:9px;color:#9ca3af;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Returns</div>
+        <div style="font-size:10px;">Rent: <strong>$${monthlyRent.toFixed(0)}/mo</strong></div>
+        <div style="font-size:10px;">Cap Rate: <strong style="color:#059669;">${capRate}%</strong></div>
+        <div style="font-size:10px;">CoC: <strong style="color:#4f46e5;">${cashOnCash}%</strong></div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:#9ca3af;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Zoning</div>
+        <div style="font-size:10px;color:${fits ? '#059669' : '#dc2626'};font-weight:600;">${fits ? 'FITS' : 'DOES NOT FIT'}</div>
+      </div>
+    `;
+  }
+}
+
+// =============================================
+// FEATURE 2: TIMELINE MODE
+// =============================================
+
+function populateTimelineSkuSelect() {
+  var select = document.getElementById('timelineSkuSelect');
+  select.innerHTML = '<option value="">Select a design</option>';
+
+  if (DESIGN_CATALOG && DESIGN_CATALOG.length > 0) {
+    DESIGN_CATALOG.forEach(sku => {
+      var opt = document.createElement('option');
+      opt.value = sku.id;
+      opt.textContent = sku.name + ' (' + sku.stories + ' story)';
+      select.appendChild(opt);
+    });
+  }
+}
+
+function renderTimelineGantt() {
+  var skuId = document.getElementById('timelineSkuSelect').value;
+  if (!skuId) {
+    document.getElementById('timelineSvg').innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#9ca3af">Select a design to view timeline</text>';
+    return;
+  }
+
+  var sku = DESIGN_CATALOG.find(s => s.id === skuId);
+  if (!sku) return;
+
+  // Timeline phases with durations (weeks) - adjusted by stories
+  var phases = [
+    { name: 'Pre-Development', min: 4, max: 8 },
+    { name: 'Permitting', min: 8, max: 16 },
+    { name: 'Site Prep', min: 2, max: 4 },
+    { name: 'Factory Fabrication', min: 6, max: 10 },
+    { name: 'Delivery & Assembly', min: 1, max: 2 },
+    { name: 'MEP Rough-In', min: 3, max: 4 },
+    { name: 'Inspections', min: 2, max: 4 },
+    { name: 'Finish & Punch', min: 2, max: 3 }
+  ];
+
+  // Extend fabrication for multi-story
+  if (sku.stories > 1) {
+    phases[3].min += sku.stories;
+    phases[3].max += sku.stories;
+  }
+
+  var colors = ['#6366f1','#8b5cf6','#d946ef','#ec4899','#f43f5e','#f97316','#eab308','#84cc16'];
+  var y = 40;
+  var rowHeight = 40;
+  var svg = document.getElementById('timelineSvg');
+  var svgHeight = 60 + (phases.length * rowHeight);
+  svg.setAttribute('height', svgHeight);
+
+  var totalWeeks = 0;
+  var phaseData = [];
+
+  // Calculate start/end positions
+  phases.forEach((p, idx) => {
+    var duration = Math.floor((p.min + p.max) / 2);
+    var startWeek = totalWeeks;
+    totalWeeks += duration;
+    phaseData.push({ phase: p.name, start: startWeek, duration: duration, color: colors[idx] });
+  });
+
+  var pixelsPerWeek = 500 / totalWeeks;
+
+  // Draw title
+  svg.innerHTML = '<text x="10" y="25" font-weight="700" font-size="13">Construction Timeline (' + totalWeeks + ' weeks total)</text>';
+
+  // Draw timeline rows
+  phaseData.forEach((pd, idx) => {
+    var x = 100 + (pd.start * pixelsPerWeek);
+    var width = pd.duration * pixelsPerWeek;
+
+    // Label
+    svg.innerHTML += '<text x="10" y="' + (y + 18) + '" font-size="10" font-weight="600">' + pd.phase + '</text>';
+
+    // Bar
+    svg.innerHTML += '<rect x="' + x + '" y="' + (y + 5) + '" width="' + width + '" height="20" fill="' + pd.color + '" rx="4" opacity="0.85"/>';
+
+    // Duration label on bar
+    svg.innerHTML += '<text x="' + (x + width/2) + '" y="' + (y + 18) + '" font-size="9" fill="white" font-weight="600" text-anchor="middle">' + pd.duration + 'w</text>';
+
+    // Milestone diamond at end
+    if (idx < phaseData.length - 1) {
+      var diamondX = x + width;
+      svg.innerHTML += '<polygon points="' + diamondX + ',' + (y + 5) + ' ' + (diamondX + 6) + ',' + (y + 15) + ' ' + diamondX + ',' + (y + 25) + ' ' + (diamondX - 6) + ',' + (y + 15) + '" fill="#1f2937"/>';
+    }
+
+    y += rowHeight;
+  });
+
+  // Timeline info
+  var info = document.getElementById('timelineInfo');
+  info.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:#6b6b6b;text-transform:uppercase;font-weight:600;">Total Duration</div>
+        <div style="font-size:16px;font-weight:700;color:#6366f1;margin-top:4px;">${totalWeeks} weeks</div>
+      </div>
+      <div style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:#6b6b6b;text-transform:uppercase;font-weight:600;">SKU: ${sku.name}</div>
+        <div style="font-size:14px;font-weight:700;color:#8b5cf6;margin-top:4px;">${sku.stories}S / ${sku.beds}BR</div>
+      </div>
+      <div style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:#6b6b6b;text-transform:uppercase;font-weight:600;">Ready for Occupancy</div>
+        <div style="font-size:14px;font-weight:700;color:#059669;margin-top:4px;"><strong>${(totalWeeks * 7).toFixed(0)}</strong> days</div>
+      </div>
+    </div>
+  `;
+}
+
+// =============================================
+// FEATURE 3: PROJECT SAVE/LOAD
+// =============================================
+
+var saveProjectUI = null;
+
+function initProjectSaveLoad() {
+  // Add Save/Load button to settings area
+  var settingsDropdown = document.getElementById('settingsDropdown');
+  if (!settingsDropdown) return;
+
+  var saveBtn = document.createElement('div');
+  saveBtn.style.cssText = 'padding:8px 12px;border-top:1px solid #e8e8e8;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:8px;';
+  saveBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Project';
+  saveBtn.onclick = showSaveProjectDialog;
+  settingsDropdown.appendChild(saveBtn);
+
+  var loadBtn = document.createElement('div');
+  loadBtn.style.cssText = 'padding:8px 12px;border-top:1px solid #e8e8e8;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:8px;';
+  loadBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Load Project';
+  loadBtn.onclick = showLoadProjectDialog;
+  settingsDropdown.appendChild(loadBtn);
+}
+
+function showSaveProjectDialog() {
+  var projectName = prompt('Enter project name:');
+  if (!projectName) return;
+
+  try {
+    var projectData = {
+      timestamp: new Date().toISOString(),
+      name: projectName,
+      address: selectedProperty ? selectedProperty.address : '',
+      lat: currentLat,
+      lon: currentLon,
+      plutoData: window._currentPlutoData,
+      design: {
+        sqft: design.sqft,
+        stories: design.stories,
+        beds: design.beds,
+        baths: design.baths,
+        roof: design.roof,
+        finish: design.finish,
+        foundation: design.foundation,
+        wall: design.wall,
+        insulation: design.insulation,
+        windows: design.windows,
+        hvac: design.hvac,
+        hotwater: design.hotwater,
+        electrical: design.electrical,
+        ventilation: design.ventilation,
+        climate: design.climate,
+        performance: design.performance,
+        wind: design.wind,
+        floodmit: design.floodmit
+      }
+    };
+
+    var projects = JSON.parse(localStorage.getItem('prefabosProjects') || '{}');
+    if (Object.keys(projects).length >= 10) {
+      alert('Max 10 saved projects. Delete one first.');
+      return;
+    }
+
+    projects[projectName] = projectData;
+    localStorage.setItem('prefabosProjects', JSON.stringify(projects));
+    alert('Project saved: ' + projectName);
+  } catch(e) {
+    alert('Error saving project. Your browser may not support localStorage.');
+  }
+}
+
+function showLoadProjectDialog() {
+  try {
+    var projects = JSON.parse(localStorage.getItem('prefabosProjects') || '{}');
+    var projectNames = Object.keys(projects);
+
+    if (projectNames.length === 0) {
+      alert('No saved projects.');
+      return;
+    }
+
+    var choice = prompt('Load project:\n\n' + projectNames.join('\n') + '\n\nEnter project name:', projectNames[0]);
+    if (!choice || !projects[choice]) return;
+
+    loadProject(choice, projects[choice]);
+  } catch(e) {
+    alert('Error loading projects. Your browser may not support localStorage.');
+  }
+}
+
+function loadProject(name, projectData) {
+  // Restore design state
+  design.sqft = projectData.design.sqft;
+  design.stories = projectData.design.stories;
+  design.beds = projectData.design.beds;
+  design.baths = projectData.design.baths;
+  design.roof = projectData.design.roof;
+  design.finish = projectData.design.finish;
+  design.foundation = projectData.design.foundation;
+  design.wall = projectData.design.wall;
+  design.insulation = projectData.design.insulation;
+  design.windows = projectData.design.windows;
+  design.hvac = projectData.design.hvac;
+  design.hotwater = projectData.design.hotwater;
+  design.electrical = projectData.design.electrical;
+  design.ventilation = projectData.design.ventilation;
+  design.climate = projectData.design.climate;
+  design.performance = projectData.design.performance;
+  design.wind = projectData.design.wind;
+  design.floodmit = projectData.design.floodmit;
+
+  // Update UI sliders/toggles
+  document.getElementById('dSqft').value = design.sqft;
+  document.getElementById('dSqftVal').textContent = design.sqft;
+
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    if (btn.dataset.group === 'stories' && btn.dataset.val === String(design.stories)) {
+      btn.classList.add('active');
+    } else if (btn.dataset.group === 'beds' && btn.dataset.val === String(design.beds)) {
+      btn.classList.add('active');
+    } else if (btn.dataset.group === 'baths' && btn.dataset.val === String(design.baths)) {
+      btn.classList.add('active');
+    } else if (btn.dataset.group && ['roof','finish','foundation','wall','insulation','windows','hvac','hotwater','electrical','ventilation','climate','performance','wind','floodmit'].includes(btn.dataset.group)) {
+      var field = btn.dataset.group;
+      if (design[field] === btn.dataset.val) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // Update location if available
+  if (projectData.lat && projectData.lon) {
+    currentLat = projectData.lat;
+    currentLon = projectData.lon;
+    window._currentPlutoData = projectData.plutoData;
+    if (map) map.setView([currentLat, currentLon], 16);
+    renderFilledPanel();
+  }
+
+  calcCosts();
+  alert('Project loaded: ' + name);
+}
+
+function getShareableURL() {
+  var projectData = {
+    address: selectedProperty ? selectedProperty.address : '',
+    lat: currentLat,
+    lon: currentLon,
+    design: {
+      sqft: design.sqft,
+      stories: design.stories,
+      beds: design.beds,
+      baths: design.baths,
+      roof: design.roof,
+      finish: design.finish
+    }
+  };
+
+  var encoded = btoa(JSON.stringify(projectData));
+  var url = window.location.origin + window.location.pathname + '?project=' + encoded;
+  return url;
+}
+
+function loadFromURL() {
+  var params = new URLSearchParams(window.location.search);
+  var projectBase64 = params.get('project');
+
+  if (!projectBase64) return;
+
+  try {
+    var projectData = JSON.parse(atob(projectBase64));
+    if (projectData.lat && projectData.lon) {
+      currentLat = projectData.lat;
+      currentLon = projectData.lon;
+      if (map) {
+        map.setView([currentLat, currentLon], 16);
+        setTimeout(() => {
+          if (window._currentPlutoData || currentLat) {
+            renderFilledPanel();
+          }
+        }, 500);
+      }
+    }
+    if (projectData.design) {
+      design.sqft = projectData.design.sqft || 800;
+      design.stories = projectData.design.stories || 1;
+      design.beds = projectData.design.beds || 1;
+      design.baths = projectData.design.baths || 1;
+      design.roof = projectData.design.roof || 'flat';
+      design.finish = projectData.design.finish || 'standard';
+    }
+    calcCosts();
+  } catch(e) {
+    console.warn('Could not load project from URL');
+  }
+}
+
+// Initialize save/load on page load
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    initProjectSaveLoad();
+    loadFromURL();
+  } catch(e) {
+    console.warn('Save/load init error', e);
+  }
+});
 
 </script>
 </body>
