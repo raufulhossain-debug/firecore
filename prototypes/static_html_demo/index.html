@@ -7060,19 +7060,20 @@ function drawElevations(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) 
   const drawW = VW - 160;
   const drawH = VH - 250;
   const totalH = stories * floorH + cellarH;
-  const s = Math.min((drawW * 0.6) / bldgW, (drawH * 0.55) / totalH);
+  const s = Math.min((drawW * 0.6) / bldgW, (drawH * 0.7) / totalH);
 
   const bw = bldgW * s;
-  const bh = totalH * s;
+  const aboveGrade = stories * floorH * s;
+  const belowGrade = cellarH * s;
+  const sh = aboveGrade + belowGrade;
 
-  // Center on sheet
+  // Center vertically: roof at topY, cellar bottom at topY + sh
+  const topY = (drawH - sh) / 2 + 90;
+  const gradeY = topY + aboveGrade;
   const ox = (VW - bw) / 2;
-  const oy = (drawH - bh) / 2 + 40;
 
   svg += svgText(VW / 2, 50, 'FRONT ELEVATION', { size: 14, weight: '700', anchor: 'middle' });
   svg += svgText(VW / 2, 75, `Scale: 1/4" = 1'-0"`, { size: 9, anchor: 'middle', color: '#666' });
-
-  const gradeY = oy + cellarH * s;
 
   svg += svgLine(ox - 40, gradeY, ox + bw + 40, gradeY, { sw: 2, color: '#2d6a4f' });
   svg += svgText(ox - 35, gradeY - 5, 'GRADE', { size: 7, weight: '600', color: '#2d6a4f' });
@@ -7159,16 +7160,17 @@ function drawSection(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) {
   const drawW = VW - 160;
   const drawH = VH - 250;
   const totalH = stories * floorH + cellarH;
-  const s = Math.min((drawW * 0.6) / bldgD, (drawH * 0.55) / totalH);
+  const s = Math.min((drawW * 0.6) / bldgD, (drawH * 0.7) / totalH);
 
   const sd = bldgD * s;
-  const sh = totalH * s;
+  const aboveGrade = stories * floorH * s;
+  const belowGrade = cellarH * s;
+  const sh = aboveGrade + belowGrade;
 
-  // Center on sheet
+  // Center vertically: roof at topY, cellar bottom at topY + sh
+  const topY = (drawH - sh) / 2 + 90;
+  const gradeY = topY + aboveGrade;
   const ox = (VW - sd) / 2;
-  const oy = (drawH - sh) / 2 + 40;
-
-  const gradeY = oy + cellarH * s;
 
   svg += svgLine(ox - 50, gradeY, ox + sd + 50, gradeY, { sw: 2.5, color: '#2d6a4f' });
   svg += svgText(ox - 45, gradeY - 5, 'GRADE', { size: 8, weight: '600', color: '#2d6a4f' });
