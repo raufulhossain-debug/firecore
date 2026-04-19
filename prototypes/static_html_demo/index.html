@@ -1020,7 +1020,7 @@ async function askAI() {
   const resultEl = document.getElementById('aiResult');
 
   if (!CLAUDE_API_KEY) {
-    const key = prompt('Enter your Claude API key to enable AI design analysis:');
+    const key = window.prompt('Enter your Claude API key to enable AI design analysis:');
     if (!key) return;
     setApiKey(key.trim());
   }
