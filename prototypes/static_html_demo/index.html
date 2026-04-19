@@ -755,14 +755,18 @@ const design = {
   beds: 1,
   finish: 'standard',
   climate: 'standard',
+  material: 'sip',  // selected material
 };
 
 // Cost multipliers — this is the design→cost linkage
 // Based on NYC market rates (2024-2026 data)
 const COST_MODEL = {
   // === HARD COSTS ===
-  // Structural materials per sqft (framing, sheathing, insulation, exterior)
-  baseMaterialPerSqft: 38,
+  // Structural materials per sqft — varies by selected material
+  materialCostPerSqft: { sip: 38, steel: 32, clt: 52 },
+  // Carbon per sqft by material
+  materialCarbon: { sip: 2.8, steel: 5.8, clt: -1.2 },
+  baseMaterialPerSqft: 38, // default, overridden by selection
   stories: { 1: 1.0, 2: 1.18 },
   roof: { flat: 1.0, shed: 1.06, gable: 1.14 },
   finish: { standard: 1.0, premium: 1.22, luxury: 1.48 },
@@ -850,8 +854,9 @@ function calcCosts() {
   // === HARD COSTS ===
 
   // Structural materials (shell, framing, insulation, exterior cladding)
+  const matCostPerSqft = C.materialCostPerSqft[d.material] || C.baseMaterialPerSqft;
   const materials = Math.round(
-    C.baseMaterialPerSqft * d.sqft * C.roof[d.roof] * C.finish[d.finish]
+    matCostPerSqft * d.sqft * C.roof[d.roof] * C.finish[d.finish]
     + C.climatePkg[d.climate] * d.sqft
   );
 
@@ -1390,23 +1395,38 @@ function renderFeasibility(fit){
 function renderMaterials(zone){
   const el=document.getElementById('matSection');
   const entries=Object.values(MATERIALS).map(m=>({...m,s:m.scores[zone]||.5})).sort((a,b)=>b.s-a.s);
+
+  // Auto-select best material on first render if none selected
+  if (!design.material || !MATERIALS[design.material]) {
+    design.material = entries[0].id;
+  }
+
   el.innerHTML=entries.map((m,i)=>{
     const sc=m.s>=.8?'score-high':m.s>=.5?'score-mid':'score-low';
     const carbonTxt=m.carbon<0?`${m.carbon} kg (sequesters)`:`${m.carbon} kg/sqft`;
+    const isSelected = design.material === m.id;
+    const matCost = COST_MODEL.materialCostPerSqft[m.id] || 38;
     return `
-      <div class="mat-card ${i===0?'best':''}">
+      <div class="mat-card ${isSelected?'best':''}" onclick="selectMaterial('${m.id}')" title="Click to select ${m.short}">
         <div class="mat-head">
-          <span class="mat-name">${m.short} — ${m.name}</span>
+          <span class="mat-name">${isSelected?'&#10003; ':''}${m.short} — ${m.name}</span>
           <span class="mat-score ${sc}">${(m.s*100).toFixed(0)}%</span>
         </div>
         <div class="mat-stats">
           <div>Carbon: <b>${carbonTxt}</b></div>
           <div>Buy America: <b>${m.buyAmerica?'Yes':'No'}</b></div>
-          <div>From $${m.variants[m.variants.length-1].cost}/sqft</div>
+          <div>Material: <b>$${matCost}/sqft</b></div>
           <div>Lead: ${m.variants[0].lead}–${m.variants[m.variants.length-1].lead}d</div>
         </div>
+        ${isSelected?'<div style="margin-top:6px;font-size:10px;color:var(--accent);font-weight:600;">SELECTED — costs updated</div>':''}
       </div>`;
   }).join('');
+}
+
+function selectMaterial(matId) {
+  design.material = matId;
+  renderMaterials('standard');
+  renderCosts();
 }
 
 // Weight sliders
