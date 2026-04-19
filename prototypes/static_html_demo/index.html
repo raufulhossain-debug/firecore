@@ -259,6 +259,54 @@
 
     @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
     .loading { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:800px 100%; animation: shimmer 1.5s infinite; border-radius:var(--radius-sm); }
+
+    /* Financing Stack */
+    .fin-summary {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px;
+    }
+    .fin-summary-item {
+      background: var(--bg); border-radius: var(--radius-sm); padding: 12px; text-align: center;
+    }
+    .fin-summary-item .fin-sum-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+    .fin-summary-item .fin-sum-val { font-size: 18px; font-weight: 800; }
+    .fin-sum-total { color: var(--text); }
+    .fin-sum-covered { color: var(--green-dark); }
+    .fin-sum-gap { color: var(--accent); }
+
+    .fin-bar-wrap { margin-bottom: 14px; }
+    .fin-bar-outer { height: 24px; background: #e5e7eb; border-radius: 12px; overflow: hidden; display: flex; position: relative; }
+    .fin-bar-seg { height: 100%; transition: width .4s; position: relative; }
+    .fin-bar-seg:first-child { border-radius: 12px 0 0 12px; }
+    .fin-bar-seg:last-child { border-radius: 0 12px 12px 0; }
+    .fin-bar-label { position: absolute; top: 28px; font-size: 9px; color: var(--text-3); white-space: nowrap; }
+
+    .fin-program {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px; margin-bottom: 8px; transition: all .15s;
+    }
+    .fin-program:hover { border-color: var(--accent); }
+    .fin-program.eligible { border-left: 3px solid var(--green); }
+    .fin-program.maybe { border-left: 3px solid var(--amber); }
+    .fin-program.ineligible { border-left: 3px solid var(--border); opacity: .6; }
+    .fin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .fin-name { font-weight: 600; font-size: 13px; }
+    .fin-amount { font-weight: 700; font-size: 14px; color: var(--green-dark); }
+    .fin-amount.zero { color: var(--text-3); }
+    .fin-desc { font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
+    .fin-details { font-size: 10px; color: var(--text-3); }
+    .fin-tag { display: inline-flex; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; margin-right: 4px; }
+    .fin-tag-grant { background: #dcfce7; color: #166534; }
+    .fin-tag-loan { background: #dbeafe; color: #1e40af; }
+    .fin-tag-tax { background: #fef3c7; color: #92400e; }
+    .fin-tag-pace { background: #f3e8ff; color: #6b21a8; }
+    .fin-tag-rebate { background: #ccfbf1; color: #065f46; }
+
+    .fin-total-bar {
+      margin-top: 12px; padding: 12px; background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+      border: 1px solid #bbf7d0; border-radius: var(--radius-sm); text-align: center;
+    }
+    .fin-total-bar .big { font-size: 20px; font-weight: 800; color: var(--green-dark); }
+    .fin-total-bar .sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -459,6 +507,46 @@
         </div>
         <button class="btn-primary" style="margin-top:12px;" id="runBtn">Run Optimization</button>
         <div id="routeResults" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- 6. Financing Stack -->
+      <div class="section" id="financeSection">
+        <div class="section-title"><span class="num">6</span> Financing Stack</div>
+
+        <!-- Summary cards -->
+        <div class="fin-summary">
+          <div class="fin-summary-item">
+            <div class="fin-sum-label">Project Cost</div>
+            <div class="fin-sum-val fin-sum-total" id="finTotal">$0</div>
+          </div>
+          <div class="fin-summary-item">
+            <div class="fin-sum-label">Can Be Covered</div>
+            <div class="fin-sum-val fin-sum-covered" id="finCovered">$0</div>
+          </div>
+          <div class="fin-summary-item">
+            <div class="fin-sum-label">Out of Pocket</div>
+            <div class="fin-sum-val fin-sum-gap" id="finGap">$0</div>
+          </div>
+        </div>
+
+        <!-- Coverage bar -->
+        <div class="fin-bar-wrap">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-bottom:4px;">
+            <span>Coverage</span>
+            <span id="finPct">0%</span>
+          </div>
+          <div class="fin-bar-outer" id="finBar"></div>
+        </div>
+
+        <!-- Programs list -->
+        <div id="finPrograms"></div>
+
+        <!-- Bottom summary -->
+        <div class="fin-total-bar" id="finBottomBar">
+          <div class="sub">Potential financing coverage</div>
+          <div class="big" id="finBottomPct">0% covered</div>
+          <div class="sub" id="finBottomSub"></div>
+        </div>
       </div>
 
     </div>
@@ -1042,6 +1130,7 @@ function loadSite(lat,lon,props){
   document.getElementById('routeResults').innerHTML='';
   document.getElementById('aiResult').innerHTML='';
   clearRoutes();
+  renderFinancing();
 }
 
 function guessZone(props){
@@ -1160,6 +1249,220 @@ function drawRoute(o){
     routeLines.push(line);
   }
 }
+
+// =============================================
+// FINANCING STACK ENGINE
+// =============================================
+
+const FINANCE_PROGRAMS = [
+  {
+    id: 'cpace',
+    name: 'C-PACE (NYC)',
+    type: 'pace',
+    tag: 'PACE',
+    tagClass: 'fin-tag-pace',
+    desc: 'Commercial Property Assessed Clean Energy — finances energy efficiency improvements through property tax assessment. Up to 100% of eligible costs, repaid over 20-30 years.',
+    url: 'https://www.nyceec.com/c-pace/',
+    maxPct: 0.35,  // Up to 35% of total project for energy-related improvements
+    minProject: 50000,
+    eligible: (d, costs) => costs.total >= 50000,
+    calc: (d, costs) => Math.round(costs.total * 0.35),
+    note: '20-30yr term, ~6-8% fixed rate, repaid via property tax',
+  },
+  {
+    id: 'nyserda_clean',
+    name: 'NYSERDA Clean Energy',
+    type: 'rebate',
+    tag: 'Rebate',
+    tagClass: 'fin-tag-rebate',
+    desc: 'NY State incentives for energy-efficient new construction. $1,000-$5,000 per housing unit for high-performance buildings.',
+    url: 'https://www.nyserda.ny.gov/',
+    eligible: (d) => true,
+    calc: (d, costs) => {
+      // Higher rebate for better insulation (SIP/CLT prefab qualifies)
+      const base = d.climate === 'standard' ? 2500 : 4000;
+      return d.sqft > 800 ? base + 1500 : base;
+    },
+    note: 'Direct rebate, applied post-construction',
+  },
+  {
+    id: 'tax_45l',
+    name: '45L Tax Credit (Federal)',
+    type: 'tax',
+    tag: 'Tax Credit',
+    tagClass: 'fin-tag-tax',
+    desc: 'Federal tax credit for energy-efficient residential construction. $2,500 for ENERGY STAR, up to $5,000 for DOE Zero Energy Ready.',
+    url: 'https://www.energy.gov/eere/buildings/45l-tax-credits-zero-energy-ready-homes',
+    eligible: (d) => true,
+    calc: (d, costs) => {
+      // Prefab naturally hits high efficiency — $5,000 for premium+, $2,500 for standard
+      return d.finish === 'standard' ? 2500 : 5000;
+    },
+    note: 'Per-unit credit, claimed on federal tax return',
+  },
+  {
+    id: 'hpd_adu',
+    name: 'NYC HPD ADU Program',
+    type: 'grant',
+    tag: 'Grant',
+    tagClass: 'fin-tag-grant',
+    desc: 'NYC Dept of Housing Preservation grants for ADU construction. Forgivable loans up to $395,000 for homeowners in eligible areas.',
+    url: 'https://www.nyc.gov/site/hpd/services-and-information/adu-program.page',
+    eligible: (d, costs) => true,
+    calc: (d, costs) => Math.min(395000, Math.round(costs.total * 0.60)),
+    note: 'Forgivable loan if unit rented to affordable tenants for 15 years',
+  },
+  {
+    id: 'fha_203k',
+    name: 'FHA 203(k) Loan',
+    type: 'loan',
+    tag: 'Loan',
+    tagClass: 'fin-tag-loan',
+    desc: 'FHA-insured mortgage that rolls construction costs into the home loan. Lower down payment (3.5%), competitive rates.',
+    url: 'https://www.hud.gov/program_offices/housing/sfh/203k',
+    eligible: (d, costs) => costs.total >= 30000,
+    calc: (d, costs) => Math.min(500000, Math.round(costs.total * 0.965)),
+    note: '3.5% down, 30yr fixed, FHA mortgage insurance required',
+  },
+  {
+    id: 'ira_rebate',
+    name: 'IRA Home Efficiency Rebates',
+    type: 'rebate',
+    tag: 'Rebate',
+    tagClass: 'fin-tag-rebate',
+    desc: 'Inflation Reduction Act rebates for electrification and efficiency. Up to $8,000 for heat pumps, $4,000 for electrical panels, $1,600 for insulation.',
+    url: 'https://www.rewiringamerica.org/app/ira-calculator',
+    eligible: (d) => true,
+    calc: (d, costs) => {
+      let total = 1600; // Insulation (prefab qualifies)
+      total += 8000;    // Heat pump (standard in modern prefab)
+      total += 2500;    // Electrical panel upgrade
+      if (d.climate !== 'standard') total += 1600; // Additional weatherization
+      return total;
+    },
+    note: 'Income-dependent — low/moderate income gets full rebate',
+  },
+  {
+    id: 'greenbank',
+    name: 'NY Green Bank Financing',
+    type: 'loan',
+    tag: 'Loan',
+    tagClass: 'fin-tag-loan',
+    desc: 'Below-market-rate financing for clean energy projects. Bridges gap between conventional lending and project cost.',
+    url: 'https://greenbank.ny.gov/',
+    eligible: (d, costs) => costs.total >= 100000,
+    calc: (d, costs) => costs.total >= 100000 ? Math.round(costs.total * 0.25) : 0,
+    note: 'Below-market rates, 10-20yr terms, for projects >$100k',
+  },
+  {
+    id: 'solar_itc',
+    name: 'Solar ITC (30%)',
+    type: 'tax',
+    tag: 'Tax Credit',
+    tagClass: 'fin-tag-tax',
+    desc: 'Federal 30% Investment Tax Credit for solar installation. Prefab roofs are ideal for integrated solar panels.',
+    url: 'https://www.energy.gov/eere/solar/homeowners-guide-federal-tax-credit-solar-photovoltaics',
+    eligible: (d) => d.roof === 'flat' || d.roof === 'shed',
+    calc: (d, costs) => {
+      // Estimate solar cost based on roof area
+      const roofSqft = d.stories === 2 ? d.sqft / 2 : d.sqft;
+      const solarCost = roofSqft * 12; // ~$12/sqft for installed solar
+      return Math.round(solarCost * 0.30);
+    },
+    note: '30% of solar install cost, claimed on federal taxes',
+  },
+];
+
+const FINANCE_COLORS = ['#10b981','#6366f1','#f59e0b','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+
+function calcFinancing(costs) {
+  const results = [];
+  let totalCovered = 0;
+
+  for (const prog of FINANCE_PROGRAMS) {
+    const isEligible = prog.eligible(design, costs);
+    const amount = isEligible ? prog.calc(design, costs) : 0;
+
+    // Don't let total exceed project cost
+    const cappedAmount = Math.min(amount, costs.total - totalCovered);
+    const finalAmount = Math.max(0, cappedAmount);
+
+    results.push({
+      ...prog,
+      amount: finalAmount,
+      isEligible,
+      status: isEligible ? (finalAmount > 0 ? 'eligible' : 'maybe') : 'ineligible',
+    });
+
+    if (isEligible) totalCovered += finalAmount;
+  }
+
+  const gap = Math.max(0, costs.total - totalCovered);
+  const pct = costs.total > 0 ? Math.round((totalCovered / costs.total) * 100) : 0;
+
+  return { programs: results, totalCovered, gap, pct };
+}
+
+function renderFinancing() {
+  const costs = calcCosts();
+  const fin = calcFinancing(costs);
+  const fmt = v => '$' + v.toLocaleString();
+
+  // Summary cards
+  document.getElementById('finTotal').textContent = fmt(costs.total);
+  document.getElementById('finCovered').textContent = fmt(fin.totalCovered);
+  document.getElementById('finGap').textContent = fmt(fin.gap);
+  document.getElementById('finPct').textContent = fin.pct + '% covered';
+
+  // Coverage bar
+  const barEl = document.getElementById('finBar');
+  let barHTML = '';
+  let cumPct = 0;
+  const eligible = fin.programs.filter(p => p.amount > 0);
+  eligible.forEach((p, i) => {
+    const segPct = (p.amount / costs.total) * 100;
+    barHTML += `<div class="fin-bar-seg" style="width:${segPct}%;background:${FINANCE_COLORS[i % FINANCE_COLORS.length]};" title="${p.name}: ${fmt(p.amount)}"></div>`;
+    cumPct += segPct;
+  });
+  if (cumPct < 100) {
+    barHTML += `<div class="fin-bar-seg" style="width:${100 - cumPct}%;background:#e5e7eb;"></div>`;
+  }
+  barEl.innerHTML = barHTML;
+
+  // Programs list
+  const progsEl = document.getElementById('finPrograms');
+  progsEl.innerHTML = fin.programs.map((p, i) => `
+    <div class="fin-program ${p.status}">
+      <div class="fin-head">
+        <div>
+          <span class="fin-tag ${p.tagClass}">${p.tag}</span>
+          <span class="fin-name">${p.name}</span>
+        </div>
+        <span class="fin-amount ${p.amount === 0 ? 'zero' : ''}">${p.amount > 0 ? fmt(p.amount) : 'N/A'}</span>
+      </div>
+      <div class="fin-desc">${p.desc}</div>
+      <div class="fin-details">${p.note}</div>
+    </div>
+  `).join('');
+
+  // Bottom bar
+  document.getElementById('finBottomPct').textContent = `${fin.pct}% covered`;
+  document.getElementById('finBottomSub').textContent = fin.pct >= 80
+    ? `Only ${fmt(fin.gap)} out of pocket — financing can cover most of your project`
+    : fin.pct >= 50
+    ? `${fmt(fin.gap)} remaining — combine programs to reduce your gap`
+    : `${fmt(fin.totalCovered)} available — explore additional programs`;
+}
+
+// =============================================
+// LINK COSTS → FINANCING (update both on any design change)
+// =============================================
+
+const _origRenderCosts = renderCosts;
+renderCosts = function() {
+  _origRenderCosts();
+  if (currentLat) renderFinancing();
+};
 
 // Init cost display
 renderCosts();
