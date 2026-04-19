@@ -648,6 +648,7 @@
         </div>
 
         <!-- Quick filters -->
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:6px;">Lot &amp; Location</div>
         <div class="finder-filters">
           <div class="finder-filter">
             <div class="ff-label">Min Lot Size (sqft)</div>
@@ -675,12 +676,61 @@
             </select>
           </div>
           <div class="finder-filter">
+            <div class="ff-label">Min Lot Depth (ft)</div>
+            <input type="number" id="ffDepthMin" value="80" step="10"/>
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:6px;margin-top:10px;">Prefab Delivery &amp; Access</div>
+        <div class="finder-filters">
+          <div class="finder-filter">
             <div class="ff-label">Street Width</div>
             <select id="ffStreet">
               <option value="">Any</option>
               <option value="wide">Wide (75ft+, crane OK)</option>
               <option value="narrow">Narrow (&lt;75ft)</option>
             </select>
+          </div>
+          <div class="finder-filter">
+            <div class="ff-label">Corner Lot</div>
+            <select id="ffCorner">
+              <option value="">Any</option>
+              <option value="yes">Corner (better crane access)</option>
+              <option value="no">Interior lot only</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:6px;margin-top:10px;">Site Conditions</div>
+        <div class="finder-filters">
+          <div class="finder-filter">
+            <div class="ff-label">Flood Zone</div>
+            <select id="ffFlood">
+              <option value="">Any</option>
+              <option value="no">Not in flood zone</option>
+              <option value="yes">In flood zone (show anyway)</option>
+            </select>
+          </div>
+          <div class="finder-filter">
+            <div class="ff-label">Historic District</div>
+            <select id="ffHistoric">
+              <option value="">Any</option>
+              <option value="no">Not historic (no restrictions)</option>
+              <option value="yes">Historic (may restrict prefab)</option>
+            </select>
+          </div>
+          <div class="finder-filter">
+            <div class="ff-label">Land Use</div>
+            <select id="ffLanduse">
+              <option value="">Any Residential</option>
+              <option value="01">1 &amp; 2 Family</option>
+              <option value="02">Multi-Family Walk-Up</option>
+              <option value="03">Multi-Family Elevator</option>
+            </select>
+          </div>
+          <div class="finder-filter">
+            <div class="ff-label">Max Year Built</div>
+            <input type="number" id="ffYearMax" value="" placeholder="e.g. 1980"/>
           </div>
         </div>
 
@@ -1561,31 +1611,49 @@ function buildPlutoQuery(filters) {
   const conditions = [];
 
   // Lot area
-  if (filters.lotMin) {
-    conditions.push(`lotarea > ${filters.lotMin}`);
-  }
+  if (filters.lotMin) conditions.push(`lotarea > ${filters.lotMin}`);
+
+  // Lot depth
+  if (filters.depthMin) conditions.push(`lotdepth > ${filters.depthMin}`);
 
   // Borough
-  const boroMap = { BK: 'BK', QN: 'QN', BX: 'BX', SI: 'SI', MN: 'MN' };
-  if (filters.boro && boroMap[filters.boro]) {
-    conditions.push(`borocode = '${filters.boro === 'MN' ? '1' : filters.boro === 'BX' ? '2' : filters.boro === 'BK' ? '3' : filters.boro === 'QN' ? '4' : '5'}'`);
+  if (filters.boro) {
+    const boroCode = { MN: '1', BX: '2', BK: '3', QN: '4', SI: '5' }[filters.boro];
+    if (boroCode) conditions.push(`borocode = '${boroCode}'`);
   }
 
-  // Zoning — partial match
+  // Zoning — match R{n}+ and above
   if (filters.zone) {
     const zoneNum = parseInt(filters.zone.replace('R', ''));
-    // Get zones >= the selected threshold
     const zones = [];
     for (let i = zoneNum; i <= 10; i++) zones.push(`zonedist1 LIKE 'R${i}%'`);
     if (zones.length) conditions.push(`(${zones.join(' OR ')})`);
   }
 
-  // Only residential lots with enough space
+  // Land use
+  if (filters.landuse) {
+    conditions.push(`landuse = '${filters.landuse}'`);
+  } else {
+    conditions.push("(landuse = '01' OR landuse = '02')"); // Residential
+  }
+
+  // Year built
+  if (filters.yearMax) conditions.push(`yearbuilt <= ${filters.yearMax}`);
+  // Require yearbuilt > 0 to filter empty lots that have no year
+  conditions.push('yearbuilt > 1800');
+
+  // Flood zone — exclude if "no"
+  if (filters.flood === 'no') conditions.push("(firm07_flag IS NULL OR firm07_flag != '1')");
+
+  // Historic district — exclude if "no"
+  if (filters.historic === 'no') conditions.push("(histdist IS NULL OR histdist = '')");
+
+  // Always need a minimum viable lot
   conditions.push('lotarea > 1500');
-  conditions.push("landuse = '01'"); // 1&2 family residential
+  conditions.push('lotfront > 15');
 
   const where = conditions.join(' AND ');
-  return `${PLUTO_API}?$where=${encodeURIComponent(where)}&$limit=50&$order=lotarea DESC`;
+  return `${PLUTO_API}?$where=${encodeURIComponent(where)}&$limit=60&$order=lotarea DESC&$select=bbl,borocode,address,zipcode,zonedist1,lotarea,lotfront,lotdepth,bldgclass,landuse,yearbuilt,numbldgs,numfloors,builtfar,residfar,overlay1,histdist,firm07_flag,irrlotcode,latitude,longitude`;
 }
 
 async function queryPluto(filters) {
@@ -1601,45 +1669,106 @@ async function queryPluto(filters) {
 }
 
 function scorePlutoResult(lot, filters) {
-  let score = 50; // Base score
+  let score = 30; // Lower base — earn more through criteria
   const reasons = [];
+  const warnings = [];
 
-  // Lot area scoring
+  // === LOT SIZE ===
   const area = parseFloat(lot.lotarea) || 0;
   if (area >= (filters.lotMin || 2500)) {
-    score += 15;
+    score += 10;
     reasons.push(`Lot ${area.toLocaleString()} sqft meets minimum`);
   }
-  if (area >= 4000) { score += 5; reasons.push('Large lot for flexible placement'); }
-  if (area >= 6000) { score += 5; reasons.push('Ample space for staging + crane'); }
+  if (area >= 4000) { score += 5; reasons.push('Large lot — flexible ADU placement'); }
+  if (area >= 6000) { score += 3; reasons.push('Extra space for staging area'); }
 
-  // Lot width — wider is better for crane access
+  // === LOT FRONTAGE (width) — crane access ===
   const width = parseFloat(lot.lotfront) || 0;
-  if (width >= 40) { score += 10; reasons.push(`${width}ft lot frontage — good crane access`); }
-  else if (width >= 25) { score += 5; reasons.push(`${width}ft frontage — tight but workable`); }
-  else if (width > 0) { reasons.push(`${width}ft frontage — crane access limited`); }
+  if (width >= 50) { score += 10; reasons.push(`${width}ft frontage — excellent crane access`); }
+  else if (width >= 35) { score += 7; reasons.push(`${width}ft frontage — good crane access`); }
+  else if (width >= 25) { score += 3; reasons.push(`${width}ft frontage — tight crane access`); }
+  else if (width > 0) { score -= 5; warnings.push(`${width}ft frontage — crane access very limited`); }
 
-  // Street width (PLUTO doesn't have this directly, infer from lot width + context)
-  // Lots on wider streets tend to have wider frontage and be on mapped wide streets
-  if (width >= 50) { score += 5; reasons.push('Likely wide street — easier delivery'); }
+  // === LOT DEPTH — module staging & placement ===
+  const depth = parseFloat(lot.lotdepth) || 0;
+  if (depth >= 100) { score += 8; reasons.push(`${depth}ft deep — room for rear ADU + setbacks`); }
+  else if (depth >= 80) { score += 5; reasons.push(`${depth}ft deep — adequate for ADU`); }
+  else if (depth > 0 && depth < 60) { score -= 3; warnings.push(`${depth}ft deep — may be too shallow`); }
 
-  // Zoning compatibility
+  // === CORNER LOT (inferred from irregular lot code + wide frontage) ===
+  const isIrregular = lot.irrlotcode === 'Y';
+  const likelyCorner = width >= 50 && isIrregular;
+  if (likelyCorner) {
+    score += 5; reasons.push('Likely corner lot — two-sided access for delivery');
+  }
+  if (filters.corner === 'yes' && !likelyCorner) { score -= 5; }
+  if (filters.corner === 'yes' && likelyCorner) { score += 5; }
+
+  // === ZONING ===
   const zone = lot.zonedist1 || '';
-  if (zone.match(/R[5-9]/)) { score += 10; reasons.push(`${zone} zoning allows ADU`); }
-  else if (zone.match(/R[3-4]/)) { score += 5; reasons.push(`${zone} — may need variance`); }
+  if (zone.match(/R[6-9]/)) { score += 8; reasons.push(`${zone} — ADU-friendly zoning`); }
+  else if (zone.match(/R[4-5]/)) { score += 4; reasons.push(`${zone} — ADU possible with review`); }
+  else if (zone.match(/R[1-3]/)) { score += 2; warnings.push(`${zone} — may need zoning variance`); }
 
-  // FAR — lower existing usage = more room
-  const far = parseFloat(lot.builtfar) || 0;
+  // === FAR AVAILABILITY ===
+  const builtFar = parseFloat(lot.builtfar) || 0;
   const maxFar = parseFloat(lot.residfar) || 0;
-  if (maxFar > 0 && far < maxFar * 0.7) { score += 10; reasons.push(`FAR ${far}/${maxFar} — room to build`); }
-
-  // Building class — 1-2 family ideal
-  const bldgClass = lot.bldgclass || '';
-  if (bldgClass.startsWith('A') || bldgClass.startsWith('B')) {
-    score += 5; reasons.push('1-2 family property — ADU eligible');
+  if (maxFar > 0) {
+    const farUsed = builtFar / maxFar;
+    if (farUsed < 0.5) { score += 10; reasons.push(`FAR ${builtFar}/${maxFar} — significant room to build`); }
+    else if (farUsed < 0.7) { score += 6; reasons.push(`FAR ${builtFar}/${maxFar} — room for ADU`); }
+    else if (farUsed < 0.9) { score += 2; warnings.push(`FAR ${builtFar}/${maxFar} — limited remaining capacity`); }
+    else { score -= 5; warnings.push(`FAR ${builtFar}/${maxFar} — nearly maxed out`); }
   }
 
-  return { score: Math.min(100, score), reasons };
+  // === BUILDING CLASS ===
+  const bldgClass = lot.bldgclass || '';
+  if (bldgClass.startsWith('A')) { score += 5; reasons.push('Single-family — ideal for ADU'); }
+  else if (bldgClass.startsWith('B')) { score += 4; reasons.push('2-family — ADU eligible'); }
+  else if (bldgClass.startsWith('C')) { score += 2; reasons.push('Walk-up residential'); }
+
+  // === NUMBER OF BUILDINGS ===
+  const numBldgs = parseInt(lot.numbldgs) || 0;
+  if (numBldgs === 1) { score += 3; reasons.push('Single building — clear ADU siting'); }
+  else if (numBldgs === 0) { score += 5; reasons.push('Vacant lot — full flexibility'); }
+  else if (numBldgs >= 3) { score -= 3; warnings.push(`${numBldgs} buildings — tight for another structure`); }
+
+  // === YEAR BUILT ===
+  const year = parseInt(lot.yearbuilt) || 0;
+  if (year > 0 && year < 1960) { score += 3; reasons.push(`Built ${year} — older property, likely underutilized lot`); }
+  else if (year >= 1960 && year < 2000) { score += 1; }
+
+  // === FLOOD ZONE ===
+  const inFlood = lot.firm07_flag === '1';
+  if (inFlood) {
+    score -= 8;
+    warnings.push('FEMA flood zone — raised foundation required (+$15-25k)');
+  } else {
+    score += 5;
+    reasons.push('Not in flood zone');
+  }
+
+  // === HISTORIC DISTRICT ===
+  const historic = lot.histdist && lot.histdist.trim() !== '';
+  if (historic) {
+    score -= 10;
+    warnings.push(`Historic district (${lot.histdist}) — LPC review required, may restrict prefab`);
+  } else {
+    score += 3;
+    reasons.push('No historic restrictions');
+  }
+
+  // === STREET WIDTH (inferred) ===
+  // PLUTO doesn't have street width directly, but wide frontage on non-irregular lots suggests wide streets
+  if (width >= 60 && !isIrregular) {
+    score += 3;
+    reasons.push('Wide street likely — easier module delivery');
+  }
+
+  // Combine reasons and warnings
+  const allReasons = [...reasons, ...warnings.map(w => '⚠ ' + w)];
+
+  return { score: Math.max(0, Math.min(100, score)), reasons: allReasons, warnings, inFlood, historic };
 }
 
 async function runPropertyFinder() {
@@ -1656,6 +1785,12 @@ async function runPropertyFinder() {
     boro: document.getElementById('ffBoro').value,
     zone: document.getElementById('ffZone').value,
     street: document.getElementById('ffStreet').value,
+    depthMin: parseInt(document.getElementById('ffDepthMin').value) || 0,
+    corner: document.getElementById('ffCorner').value,
+    flood: document.getElementById('ffFlood').value,
+    historic: document.getElementById('ffHistoric').value,
+    landuse: document.getElementById('ffLanduse').value,
+    yearMax: parseInt(document.getElementById('ffYearMax').value) || 0,
   };
 
   // If user typed a natural language query, use AI to extract filters
@@ -1726,8 +1861,14 @@ function renderFinderResults(results) {
         <div class="prop-stats">
           <div><div class="val">${fmt(lot.lotarea)} sf</div><div class="lbl">Lot Area</div></div>
           <div><div class="val">${fmt(lot.lotfront || 0)}ft</div><div class="lbl">Frontage</div></div>
+          <div><div class="val">${lot.lotdepth ? fmt(lot.lotdepth) + 'ft' : '—'}</div><div class="lbl">Depth</div></div>
           <div><div class="val">${lot.builtfar || '—'}/${lot.residfar || '—'}</div><div class="lbl">FAR Used/Max</div></div>
-          <div><div class="val">${lot.bldgclass || '—'}</div><div class="lbl">Bldg Class</div></div>
+        </div>
+        <div class="prop-stats" style="margin-top:4px;">
+          <div><div class="val">${lot.yearbuilt && lot.yearbuilt !== '0' ? lot.yearbuilt : '—'}</div><div class="lbl">Year Built</div></div>
+          <div><div class="val">${lot.numbldgs || '—'}</div><div class="lbl">Buildings</div></div>
+          <div><div class="val">${lot.firm07_flag === '1' ? '<span style="color:var(--red);">Yes</span>' : '<span style="color:var(--green);">No</span>'}</div><div class="lbl">Flood Zone</div></div>
+          <div><div class="val">${lot.histdist && lot.histdist.trim() ? '<span style="color:var(--amber);">Yes</span>' : '<span style="color:var(--green);">No</span>'}</div><div class="lbl">Historic</div></div>
         </div>
         <div class="prop-why">${lot.matchReasons.slice(0, 3).join(' · ')}</div>
       </div>`;
