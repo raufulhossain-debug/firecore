@@ -1455,6 +1455,11 @@ document.getElementById('runBtn').addEventListener('click',()=>{
   const results=runOptimizer(currentLat,currentLon,design.sqft,weights);
   renderRoutes(results);
   if(results.length) drawRoute(results[0]);
+  // Auto-scroll to results
+  setTimeout(()=>{
+    const el=document.getElementById('routeResults');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
 });
 
 function renderRoutes(results){
