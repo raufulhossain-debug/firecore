@@ -1938,7 +1938,7 @@ Give 3-4 specific, actionable recommendations to optimize this design. For each,
 
 Be specific with dollar amounts. Keep it concise — 150 words max. Use plain text, no markdown.`;
 
-  resultEl.innerHTML = '<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span>Analyzing your design...</span></div>';
+  resultEl.innerHTML = '<div class="ai-response" id="aiStreamOutput" style="min-height:40px;"></div>';
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1950,8 +1950,9 @@ Be specific with dollar amounts. Keep it concise — 150 words max. Use plain te
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
+        stream: true,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -1961,17 +1962,40 @@ Be specific with dollar amounts. Keep it concise — 150 words max. Use plain te
       throw new Error(errData.error?.message || `API error ${res.status}`);
     }
 
-    const data = await res.json();
-    const text = data.content?.[0]?.text || 'No response received.';
+    // Stream the response
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    const outputEl = document.getElementById('aiStreamOutput');
 
-    // Render with paragraph breaks
-    resultEl.innerHTML = '<div class="ai-response">' +
-      text.split('\n').filter(l => l.trim()).map(p => `<p>${p}</p>`).join('') +
-      '</div>';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const jsonStr = line.slice(6);
+          if (jsonStr === '[DONE]') continue;
+          try {
+            const event = JSON.parse(jsonStr);
+            if (event.type === 'content_block_delta' && event.delta?.text) {
+              fullText += event.delta.text;
+              outputEl.innerHTML = fullText.split('\n').filter(l => l.trim()).map(p => `<p>${p}</p>`).join('');
+            }
+          } catch (e) { /* skip non-JSON lines */ }
+        }
+      }
+    }
+
+    if (!fullText.trim()) {
+      outputEl.innerHTML = '<p>No response received.</p>';
+    }
 
   } catch (err) {
     console.error('AI error:', err);
-    // Fallback: generate a smart rule-based response
     resultEl.innerHTML = '<div class="ai-response">' + generateFallbackAdvice(costs) + '</div>';
   }
 
@@ -3406,7 +3430,7 @@ async function aiParseQuery(query, existingFilters) {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 200,
         messages: [{ role: 'user', content: `Extract property search filters from this request. Return ONLY a JSON object with these optional fields:
 - lotMin (number, minimum lot sqft)
@@ -3456,7 +3480,7 @@ async function aiSummarizeResults(query, results, containerEl) {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
         messages: [{ role: 'user', content: `You are PrefabOS, an AI property advisor for prefab housing in NYC. The user searched for: "${query}"
 
@@ -5905,7 +5929,7 @@ Keep it under 200 words. Be specific with numbers.`;
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }],
       }),
