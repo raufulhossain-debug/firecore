@@ -932,14 +932,19 @@
             <option value="">All Types</option>
             <option value="adu">Backyard ADU</option>
             <option value="addition">Home Addition</option>
+            <option value="conversion">Conversion</option>
             <option value="infill">Infill Housing</option>
+            <option value="townhouse">Townhouse</option>
+            <option value="mixed_use">Mixed-Use</option>
             <option value="multifamily">Multi-Family</option>
+            <option value="emergency">Emergency / Rapid</option>
           </select>
           <select id="catFilterMat" onchange="renderCatalog()">
             <option value="">All Materials</option>
             <option value="sip">SIP</option>
             <option value="steel">Light-Gauge Steel</option>
             <option value="clt">CLT / Mass Timber</option>
+            <option value="hybrid">Hybrid</option>
           </select>
           <select id="catFilterBeds" onchange="renderCatalog()">
             <option value="">Any Beds</option>
@@ -947,7 +952,38 @@
             <option value="1">1 BR</option>
             <option value="2">2 BR</option>
             <option value="3">3 BR</option>
+            <option value="4">4+ BR</option>
           </select>
+          <select id="catFilterStories" onchange="renderCatalog()">
+            <option value="">Any Height</option>
+            <option value="1">1 Story</option>
+            <option value="2">2 Stories</option>
+            <option value="3">3 Stories</option>
+            <option value="4">4+ Stories</option>
+          </select>
+          <select id="catFilterClimate" onchange="renderCatalog()">
+            <option value="">Any Climate</option>
+            <option value="coastal">Coastal / Hurricane</option>
+            <option value="flood">Flood Zone</option>
+            <option value="seismic">Seismic</option>
+            <option value="fire">Wildfire (WUI)</option>
+            <option value="passive">Passive House</option>
+            <option value="netzero">Net-Zero</option>
+          </select>
+          <select id="catFilterPrice" onchange="renderCatalog()">
+            <option value="">Any Budget</option>
+            <option value="under150">Under $150k</option>
+            <option value="150to300">$150k – $300k</option>
+            <option value="300to500">$300k – $500k</option>
+            <option value="500plus">$500k+</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div id="catalogCount" style="font-size:11px;color:var(--text-3);"></div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="document.getElementById('catalogList').classList.remove('catalog-compact');renderCatalog()" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;font-size:10px;">Detailed</button>
+            <button onclick="document.getElementById('catalogList').classList.add('catalog-compact');renderCatalog()" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;font-size:10px;">Compact</button>
+          </div>
         </div>
         <div id="catalogList"></div>
       </div>
@@ -2666,6 +2702,7 @@ const DESIGN_CATALOG = [
     stories: 1, beds: 1, baths: 1,
     zoningCompat: ['R1','R2','R3','R4','R5','R6','R7'],
     floodReady: true, coastalPkg: true,
+    climateTags: ['coastal','flood'],
     structural: {
       foundation: 'Slab-on-grade or helical piles (flood: raised pier)',
       wallSystem: '6.5" SIP panel — R-23 continuous',
@@ -2705,6 +2742,7 @@ const DESIGN_CATALOG = [
     stories: 1, beds: 2, baths: 1,
     zoningCompat: ['R3','R4','R5','R6','R7'],
     floodReady: true, coastalPkg: true,
+    climateTags: ['coastal','flood'],
     structural: {
       foundation: 'Slab-on-grade or helical piles',
       wallSystem: '6.5" SIP panel — R-23 continuous',
@@ -2743,6 +2781,7 @@ const DESIGN_CATALOG = [
     stories: 1, beds: 2, baths: 1,
     zoningCompat: ['R3','R4','R5','R6','R7','R8'],
     floodReady: false, coastalPkg: false,
+    climateTags: ['netzero'],
     structural: {
       foundation: 'Concrete slab or screw piles',
       wallSystem: '5-ply CLT 5.3" — R-24 (with insulation)',
@@ -2781,6 +2820,7 @@ const DESIGN_CATALOG = [
     stories: 1, beds: 1, baths: 1,
     zoningCompat: ['R5','R6','R7','R8','R9'],
     floodReady: false, coastalPkg: false,
+    climateTags: ['seismic'],
     structural: {
       foundation: 'Steel bearing on existing structure',
       wallSystem: 'Light-gauge steel 6" — R-21 spray foam',
@@ -2819,6 +2859,7 @@ const DESIGN_CATALOG = [
     stories: 2, beds: 3, baths: 2,
     zoningCompat: ['R5','R6','R7','R8'],
     floodReady: true, coastalPkg: true,
+    climateTags: ['coastal','flood','netzero'],
     structural: {
       foundation: 'Full basement or raised slab',
       wallSystem: '8.25" SIP — R-30 continuous',
@@ -2857,6 +2898,7 @@ const DESIGN_CATALOG = [
     stories: 3, beds: 1, baths: 1,
     zoningCompat: ['R6','R7','R8','R9','R10'],
     floodReady: false, coastalPkg: false,
+    climateTags: ['seismic'],
     structural: {
       foundation: 'Reinforced concrete mat foundation',
       wallSystem: 'Light-gauge steel modules — R-21',
@@ -2895,6 +2937,7 @@ const DESIGN_CATALOG = [
     stories: 1, beds: 0, baths: 1,
     zoningCompat: ['R1','R2','R3','R4','R5','R6'],
     floodReady: true, coastalPkg: false,
+    climateTags: ['flood'],
     structural: {
       foundation: 'Concrete piers or helical piles',
       wallSystem: 'Light-gauge steel 4" — R-15 spray foam',
@@ -2923,6 +2966,611 @@ const DESIGN_CATALOG = [
     version: '1.1', lastUpdated: '2026-03-20',
     changeLog: ['v1.1: No-crane delivery option', 'v1.0: Initial release'],
   },
+  // ──────── TOWNHOUSES ────────
+  {
+    id: 'PFB-TWN-3BR-SIP-v1.4',
+    name: '3BR Urban Townhouse',
+    type: 'townhouse', typeName: 'Townhouse',
+    material: 'sip', materialName: 'SIP',
+    desc: '3-story narrow-lot townhouse designed for NYC infill. 20ft-wide footprint with full-height stair core. Ground-floor flex space, 2 upper bedroom floors. Party-wall ready for row configuration.',
+    sqftRange: [1400, 1800], defaultSqft: 1600,
+    stories: 3, beds: 3, baths: 2,
+    zoningCompat: ['R6','R7','R8','R9'],
+    floodReady: true, coastalPkg: true,
+    climateTags: ['coastal','flood'],
+    structural: {
+      foundation: 'Reinforced concrete basement or raised slab',
+      wallSystem: '8.25" SIP — R-30 continuous, party-wall rated 2-hr fire',
+      roofSystem: '12.25" SIP — R-50',
+      floorSystem: 'Engineered I-joist 11-7/8" — 1hr fire-rated assembly',
+      loadPath: 'SIP bearing walls continuous 3 stories',
+      windRating: '130 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Ducted mini-split multi-zone (3.5-ton), per-floor heads',
+      plumbing: 'PEX manifold, 2 wet walls stacked, tankless combo WH',
+      electrical: '200A panel, EV charger pre-wire, smart panel (Span)',
+      solar: 'Roof-integrated 6kW array + battery pre-wire',
+      erv: 'Whole-house ERV (Broan AI Series)',
+    },
+    modules: 6, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 20, minLotDepth: 85,
+    setbacks: { front: 10, rear: 30, side: 0 },
+    permitPath: 'DOB New Building (NB)',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'NFPA 13R sprinkler', 'FEMA P-55 (flood opt)', 'Net-zero ready'],
+    timelineWeeks: { design: 4, permit: 10, fab: 14, ship: 2, install: 2, finish: 6 },
+    costRange: [520000, 680000],
+    costPerSqft: [335, 380],
+    licenseFee: 7500,
+    version: '1.4', lastUpdated: '2026-04-01',
+    changeLog: ['v1.4: Party-wall assembly for row configs', 'v1.3: Span smart panel option', 'v1.0: Initial release'],
+  },
+  {
+    id: 'PFB-TWN-4BR-HYBRID-v1.0',
+    name: '4BR Family Townhouse',
+    type: 'townhouse', typeName: 'Townhouse',
+    material: 'hybrid', materialName: 'Hybrid',
+    desc: '3-story, 4-bedroom family townhouse using hybrid steel frame + SIP envelope. Steel moment frame eliminates interior bearing walls for open floor plans. Rear garden level with ADU potential.',
+    sqftRange: [1800, 2400], defaultSqft: 2100,
+    stories: 3, beds: 4, baths: 3,
+    zoningCompat: ['R6','R7','R8','R9','R10'],
+    floodReady: true, coastalPkg: true,
+    climateTags: ['coastal','seismic'],
+    structural: {
+      foundation: 'Concrete foundation with waterproofing',
+      wallSystem: 'Steel moment frame + 6.5" SIP infill — R-23',
+      roofSystem: 'Steel truss + SIP — R-45',
+      floorSystem: 'Steel beams + composite deck, 1hr rated',
+      loadPath: 'Steel frame to foundation, SIP non-bearing',
+      windRating: '140 mph',
+      snowLoad: '35 psf',
+    },
+    mep: {
+      hvac: 'Air-source heat pump, ducted multi-zone (4-ton)',
+      plumbing: 'PEX-A manifold, 3 wet walls, hybrid WH',
+      electrical: '200A smart panel, whole-home battery pre-wire',
+      solar: 'Roof array 8kW + Tesla Powerwall ready',
+      erv: 'Zehnder ComfoAir Q350',
+    },
+    modules: 8, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 22, minLotDepth: 90,
+    setbacks: { front: 10, rear: 30, side: 0 },
+    permitPath: 'DOB New Building (NB)',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'ASCE 7-22 seismic', 'NFPA 13R', 'ADA ground floor opt'],
+    timelineWeeks: { design: 5, permit: 12, fab: 16, ship: 2, install: 3, finish: 8 },
+    costRange: [720000, 960000],
+    costPerSqft: [365, 410],
+    licenseFee: 9000,
+    version: '1.0', lastUpdated: '2026-03-28',
+    changeLog: ['v1.0: Initial release — hybrid frame prototype'],
+  },
+  // ──────── CONVERSIONS ────────
+  {
+    id: 'PFB-CONV-GARAGE-SIP-v2.0',
+    name: 'Garage-to-Studio Conversion',
+    type: 'conversion', typeName: 'Conversion',
+    material: 'sip', materialName: 'SIP',
+    desc: 'Convert an existing attached or detached garage into a fully code-compliant studio living space. SIP panels insulate inside the existing shell. Minimal site disruption, no crane needed.',
+    sqftRange: [200, 400], defaultSqft: 320,
+    stories: 1, beds: 0, baths: 1,
+    zoningCompat: ['R1','R2','R3','R4','R5','R6'],
+    floodReady: false, coastalPkg: false,
+    climateTags: [],
+    structural: {
+      foundation: 'Existing garage slab (verified + leveled)',
+      wallSystem: '4.5" SIP insulating liner inside existing walls — R-16',
+      roofSystem: 'SIP roof panel over existing rafters — R-30',
+      floorSystem: 'SIP floor over existing slab — R-15 + radiant heat opt',
+      loadPath: 'Uses existing garage structure',
+      windRating: 'Existing',
+      snowLoad: 'Existing',
+    },
+    mep: {
+      hvac: 'Mini-split 0.75-ton',
+      plumbing: 'PEX to existing house lines, point-of-use WH',
+      electrical: '60A sub-panel from house',
+      solar: 'N/A (use existing house)',
+      erv: 'Bathroom exhaust + supply vent',
+    },
+    modules: 0, transportWidth: 'Flat-pack panels', craneRequired: false,
+    minLotWidth: 0, minLotDepth: 0,
+    setbacks: { front: 0, rear: 0, side: 0 },
+    permitPath: 'DOB Alt-2 (change of use)',
+    codeCompliance: ['NYC Energy Code 2024', 'IRC 2021', 'Egress window required'],
+    timelineWeeks: { design: 1, permit: 4, fab: 3, ship: 1, install: 2, finish: 2 },
+    costRange: [55000, 85000],
+    costPerSqft: [210, 265],
+    licenseFee: 2000,
+    version: '2.0', lastUpdated: '2026-04-05',
+    changeLog: ['v2.0: Radiant floor option, improved moisture barrier', 'v1.0: Initial release'],
+  },
+  {
+    id: 'PFB-CONV-BSMT-STEEL-v1.2',
+    name: 'Basement ADU Conversion',
+    type: 'conversion', typeName: 'Conversion',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: 'Convert existing basement to code-compliant 1BR ADU with separate entrance. Steel stud framing for moisture resistance. Includes egress well, waterproofing system, and fire separation.',
+    sqftRange: [400, 700], defaultSqft: 550,
+    stories: 1, beds: 1, baths: 1,
+    zoningCompat: ['R3','R4','R5','R6','R7','R8'],
+    floodReady: false, coastalPkg: false,
+    climateTags: ['flood'],
+    structural: {
+      foundation: 'Existing basement (waterproofing + French drain)',
+      wallSystem: 'Light-gauge steel studs 3-5/8" + closed-cell foam — R-13',
+      roofSystem: 'N/A (existing first floor above)',
+      floorSystem: 'Dricore subfloor over existing slab — R-4 thermal break',
+      loadPath: 'Non-structural (interior partition only)',
+      windRating: 'N/A',
+      snowLoad: 'N/A',
+    },
+    mep: {
+      hvac: 'Mini-split + dehumidifier (required for basements)',
+      plumbing: 'PEX to existing risers, sewage ejector pump',
+      electrical: '100A sub-panel, GFCI all circuits',
+      solar: 'N/A',
+      erv: 'Dedicated basement ERV (moisture control)',
+    },
+    modules: 0, transportWidth: 'Material delivery', craneRequired: false,
+    minLotWidth: 0, minLotDepth: 0,
+    setbacks: { front: 0, rear: 0, side: 0 },
+    permitPath: 'DOB Alt-2 + change of occupancy',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'Egress window/well required', 'Fire separation 1-hr', 'Ceiling height min 7ft'],
+    timelineWeeks: { design: 2, permit: 6, fab: 0, ship: 0, install: 4, finish: 3 },
+    costRange: [85000, 140000],
+    costPerSqft: [170, 250],
+    licenseFee: 2500,
+    version: '1.2', lastUpdated: '2026-03-25',
+    changeLog: ['v1.2: Sewage ejector detail, improved waterproofing spec', 'v1.0: Initial release'],
+  },
+  // ──────── MIXED-USE ────────
+  {
+    id: 'PFB-MX-RETAIL2R-STEEL-v1.0',
+    name: 'Mixed-Use: Retail + 2 Residential',
+    type: 'mixed_use', typeName: 'Mixed-Use',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: '3-story mixed-use building: ground-floor retail/commercial shell + 2 upper-floor residential units (1BR each). Steel frame for open commercial spans. Ideal for C1/C2 overlay zones.',
+    sqftRange: [3000, 4200], defaultSqft: 3600,
+    stories: 3, beds: 1, baths: 1,
+    zoningCompat: ['C1','C2','C4','R7','R8','MX'],
+    floodReady: false, coastalPkg: false,
+    climateTags: ['seismic'],
+    structural: {
+      foundation: 'Reinforced concrete spread footings',
+      wallSystem: 'Steel moment frame + light-gauge infill — R-21',
+      roofSystem: 'Steel truss + TPO membrane — R-38',
+      floorSystem: 'Concrete-topped steel deck (commercial), steel joist (residential)',
+      loadPath: 'Steel frame continuous',
+      windRating: '120 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Commercial: RTU package unit | Residential: mini-splits',
+      plumbing: 'Separate risers commercial/residential, grease trap (commercial)',
+      electrical: 'Commercial: 200A 3-phase | Residential: 100A per unit, CT metering',
+      solar: 'Roof array 10kW',
+      erv: 'Per-unit ERV residential, MAU commercial',
+    },
+    modules: 6, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 25, minLotDepth: 80,
+    setbacks: { front: 0, rear: 30, side: 0 },
+    permitPath: 'DOB New Building (NB) — Mixed Occupancy',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'ADA (ground floor commercial)', 'NFPA 13 sprinkler', 'Occupancy separation 2-hr'],
+    timelineWeeks: { design: 6, permit: 14, fab: 16, ship: 2, install: 3, finish: 8 },
+    costRange: [1200000, 1650000],
+    costPerSqft: [360, 420],
+    licenseFee: 10000,
+    version: '1.0', lastUpdated: '2026-03-10',
+    changeLog: ['v1.0: Initial release — mixed-use prototype'],
+  },
+  // ──────── MID-RISE MULTIFAMILY ────────
+  {
+    id: 'PFB-MF-12U-STEEL-v1.0',
+    name: '12-Unit Mid-Rise (4 stories)',
+    type: 'multifamily', typeName: 'Multi-Family',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: '4-story, 12-unit apartment building using stackable modular steel-frame construction. Mix of studios and 1BRs. Elevator-ready core. Designed for R7-R10 zones with significant FAR available.',
+    sqftRange: [8400, 10800], defaultSqft: 9600,
+    stories: 4, beds: 1, baths: 1,
+    zoningCompat: ['R7','R8','R9','R10'],
+    floodReady: false, coastalPkg: false,
+    climateTags: ['seismic'],
+    structural: {
+      foundation: 'Reinforced concrete mat + grade beams',
+      wallSystem: 'Modular steel frame — R-21 spray foam + rainscreen',
+      roofSystem: 'Steel frame — R-38 + TPO membrane',
+      floorSystem: 'Concrete-topped steel deck, 2-hr fire separation',
+      loadPath: 'Module-to-module stack, steel transfer beams at ground',
+      windRating: '120 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'VRF central system, per-unit cassettes (Daikin)',
+      plumbing: 'Central risers, per-unit PEX manifolds, central WH plant',
+      electrical: 'CT metering, 1200A building service, EV charger pre-wire',
+      solar: 'Roof array 20kW + battery storage ready',
+      erv: 'Per-unit ERV, corridor pressurization',
+    },
+    modules: 12, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 50, minLotDepth: 100,
+    setbacks: { front: 15, rear: 30, side: 8 },
+    permitPath: 'DOB New Building (NB) — Class 2, Elevator',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024', 'ADA (5% units + common areas)', 'NFPA 13 sprinkler', 'Elevator ASME A17.1', 'LL97 compliant'],
+    timelineWeeks: { design: 8, permit: 16, fab: 20, ship: 3, install: 4, finish: 10 },
+    costRange: [3800000, 5200000],
+    costPerSqft: [400, 480],
+    licenseFee: 18000,
+    version: '1.0', lastUpdated: '2026-02-01',
+    changeLog: ['v1.0: Initial release — 12-unit mid-rise prototype'],
+  },
+  // ──────── PASSIVE HOUSE / NET-ZERO ────────
+  {
+    id: 'PFB-ADU-2BR-SIP-PH-v1.0',
+    name: '2BR Passive House ADU',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'sip', materialName: 'SIP',
+    desc: 'Certified Passive House ADU with ultra-low energy demand (<15 kWh/m²/yr heating). Triple-pane windows, continuous air barrier, zero thermal bridging. Virtually eliminates heating/cooling bills.',
+    sqftRange: [700, 950], defaultSqft: 850,
+    stories: 1, beds: 2, baths: 1,
+    zoningCompat: ['R3','R4','R5','R6','R7'],
+    floodReady: false, coastalPkg: false,
+    climateTags: ['passive','netzero'],
+    structural: {
+      foundation: 'Insulated slab (R-20 underslab XPS)',
+      wallSystem: '10.25" SIP — R-40 continuous, zero thermal bridge details',
+      roofSystem: '14" SIP — R-60',
+      floorSystem: '10.25" SIP — R-40',
+      loadPath: 'Continuous, thermally broken connections',
+      windRating: '130 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mitsubishi Hyper-Heat mini-split (0.75-ton, SEER 33)',
+      plumbing: 'PEX manifold, heat pump WH (HPWH), drain water HR',
+      electrical: '100A panel, all-electric, no gas',
+      solar: 'Roof-integrated 5kW array + LFP battery (10kWh)',
+      erv: 'Zehnder ComfoAir Q350 (93% heat recovery)',
+    },
+    modules: 2, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 28, minLotDepth: 65,
+    setbacks: { front: 20, rear: 20, side: 5 },
+    permitPath: 'DOB Alt-1 + PHIUS certification',
+    codeCompliance: ['PHIUS+ 2024 Certified', 'NYC Energy Code 2024 (exceeds)', 'Blower door <0.6 ACH50', 'Net-zero energy capable'],
+    timelineWeeks: { design: 4, permit: 8, fab: 12, ship: 1, install: 2, finish: 4 },
+    costRange: [310000, 400000],
+    costPerSqft: [380, 420],
+    licenseFee: 6500,
+    version: '1.0', lastUpdated: '2026-04-10',
+    changeLog: ['v1.0: Initial release — Passive House certified design'],
+  },
+  {
+    id: 'PFB-INF-3BR-CLT-NZ-v1.0',
+    name: '3BR Net-Zero Infill (CLT)',
+    type: 'infill', typeName: 'Infill Housing',
+    material: 'clt', materialName: 'CLT',
+    desc: 'Carbon-negative, net-zero energy 2-story infill house in mass timber. Sequesters more carbon than construction emits. All-electric with on-site solar+battery covering 100% of annual energy.',
+    sqftRange: [1200, 1600], defaultSqft: 1400,
+    stories: 2, beds: 3, baths: 2,
+    zoningCompat: ['R5','R6','R7','R8'],
+    floodReady: false, coastalPkg: false,
+    climateTags: ['netzero','passive'],
+    structural: {
+      foundation: 'Insulated concrete form (ICF) foundation',
+      wallSystem: '5-ply CLT 6.9" + mineral wool wrap — R-32',
+      roofSystem: '5-ply CLT + mineral wool — R-50',
+      floorSystem: '5-ply CLT — R-30 (2nd floor over 1st)',
+      loadPath: 'CLT panel-to-panel with epoxied steel connectors',
+      windRating: '120 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Ground-source heat pump (COP 5.0) or air-source HP',
+      plumbing: 'PEX-A manifold, HPWH, greywater ready',
+      electrical: '200A smart panel (Span), all-electric, no gas',
+      solar: 'Roof-integrated 10kW array + 20kWh LFP battery',
+      erv: 'Zehnder ComfoAir Q600 whole-house',
+    },
+    modules: 4, transportWidth: '13ft', craneRequired: true,
+    minLotWidth: 25, minLotDepth: 80,
+    setbacks: { front: 15, rear: 30, side: 4 },
+    permitPath: 'DOB New Building (NB)',
+    codeCompliance: ['NYC Building Code 2022', 'NYC Energy Code 2024 (exceeds)', 'PHIUS+ 2024 eligible', 'FSC/PEFC certified timber', 'Net-zero annual energy', 'Carbon-negative lifecycle'],
+    timelineWeeks: { design: 5, permit: 10, fab: 14, ship: 2, install: 2, finish: 6 },
+    costRange: [520000, 680000],
+    costPerSqft: [375, 430],
+    licenseFee: 8000,
+    version: '1.0', lastUpdated: '2026-04-08',
+    changeLog: ['v1.0: Initial release — net-zero CLT prototype'],
+  },
+  // ──────── SENIOR / ACCESSIBLE ────────
+  {
+    id: 'PFB-ADU-1BR-SIP-ADA-v1.1',
+    name: '1BR Accessible ADU (Aging-in-Place)',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'sip', materialName: 'SIP',
+    desc: 'Fully ADA-compliant 1-bedroom ADU designed for aging-in-place or disability access. Zero-step entry, roll-in shower, 36" doors, reinforced walls for future grab bars. Emergency call system pre-wire.',
+    sqftRange: [500, 700], defaultSqft: 600,
+    stories: 1, beds: 1, baths: 1,
+    zoningCompat: ['R1','R2','R3','R4','R5','R6','R7'],
+    floodReady: true, coastalPkg: false,
+    climateTags: [],
+    structural: {
+      foundation: 'At-grade slab (zero-step entry) or ramp to raised',
+      wallSystem: '6.5" SIP — R-23, blocking for grab bars all wet walls',
+      roofSystem: '10.25" SIP — R-40',
+      floorSystem: '8" SIP — R-30, flush thresholds',
+      loadPath: 'Continuous load path',
+      windRating: '130 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mini-split (1-ton, quiet indoor unit <26dB)',
+      plumbing: 'PEX manifold, anti-scald mixing valves, comfort-height fixtures',
+      electrical: '100A panel, outlets at 18", switches at 42", emergency call pre-wire',
+      solar: 'Pre-wired 3kW',
+      erv: 'ERV with HEPA filtration',
+    },
+    modules: 2, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 25, minLotDepth: 60,
+    setbacks: { front: 20, rear: 20, side: 5 },
+    permitPath: 'DOB Alt-1',
+    codeCompliance: ['NYC Energy Code 2024', 'ADA/ICC A117.1 fully compliant', 'Fair Housing Act', 'Visitability standards'],
+    timelineWeeks: { design: 2, permit: 6, fab: 8, ship: 1, install: 1, finish: 3 },
+    costRange: [200000, 270000],
+    costPerSqft: [340, 385],
+    licenseFee: 5000,
+    version: '1.1', lastUpdated: '2026-03-30',
+    changeLog: ['v1.1: Emergency call system, HEPA filtration', 'v1.0: Initial release'],
+  },
+  // ──────── EMERGENCY / RAPID DEPLOY ────────
+  {
+    id: 'PFB-EM-STUDIO-STEEL-v1.0',
+    name: 'Rapid-Deploy Emergency Unit',
+    type: 'emergency', typeName: 'Emergency / Rapid',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: 'Single-module emergency housing unit deployable in 72 hours from order. Self-contained studio with kitchenette and bath. Stackable 2-high. Designed for disaster relief, temporary worker housing, or bridge housing.',
+    sqftRange: [200, 320], defaultSqft: 280,
+    stories: 1, beds: 0, baths: 1,
+    zoningCompat: ['Any (emergency permit)'],
+    floodReady: true, coastalPkg: true,
+    climateTags: ['coastal','flood','fire','seismic'],
+    structural: {
+      foundation: 'Leveling jacks on any hard surface (no foundation needed)',
+      wallSystem: 'Steel frame 3-5/8" + rigid foam — R-13',
+      roofSystem: 'Steel + rigid foam — R-19',
+      floorSystem: 'Steel chassis with insulated floor — R-11',
+      loadPath: 'Self-contained steel chassis',
+      windRating: '140 mph',
+      snowLoad: '40 psf',
+    },
+    mep: {
+      hvac: 'PTAC unit (heating + cooling)',
+      plumbing: 'Self-contained wet core, tank or hookup',
+      electrical: '30A shore power or generator hookup',
+      solar: 'Optional roof panel (400W)',
+      erv: 'Exhaust fan',
+    },
+    modules: 1, transportWidth: '12ft', craneRequired: false,
+    minLotWidth: 0, minLotDepth: 0,
+    setbacks: { front: 0, rear: 0, side: 0 },
+    permitPath: 'Emergency permit / temporary structure',
+    codeCompliance: ['HUD Code (manufactured housing)', 'FEMA temporary housing spec', 'Relocatable'],
+    timelineWeeks: { design: 0, permit: 1, fab: 2, ship: 1, install: 0, finish: 0 },
+    costRange: [42000, 62000],
+    costPerSqft: [155, 195],
+    licenseFee: 1500,
+    version: '1.0', lastUpdated: '2026-04-12',
+    changeLog: ['v1.0: Initial release — rapid deployment prototype'],
+  },
+  // ──────── CLIMATE-HARDENED COASTAL ────────
+  {
+    id: 'PFB-ADU-2BR-SIP-COAST-v1.0',
+    name: '2BR Coastal Resilience ADU',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'sip', materialName: 'SIP',
+    desc: 'Hurricane-rated ADU engineered for FEMA V-zone (coastal high hazard). Elevated on breakaway walls, impact-rated windows, stainless steel fasteners, marine-grade finishes. Designed for Rockaways, Coney Island, Staten Island shoreline.',
+    sqftRange: [650, 900], defaultSqft: 800,
+    stories: 1, beds: 2, baths: 1,
+    zoningCompat: ['R3','R4','R5','R6','R7'],
+    floodReady: true, coastalPkg: true,
+    climateTags: ['coastal','flood'],
+    structural: {
+      foundation: 'Deep-driven piles (8"+) with breakaway walls below BFE+2',
+      wallSystem: '8.25" SIP — R-30, stainless steel fasteners throughout',
+      roofSystem: '12.25" SIP — R-50, hurricane straps Simpson H10A',
+      floorSystem: '10.25" SIP — R-40, marine-grade pressure treated',
+      loadPath: 'Continuous from roof to deep piles, designed for 150mph + storm surge',
+      windRating: '150 mph (Cat 4)',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mini-split with marine-rated condenser',
+      plumbing: 'PEX manifold, elevated utilities above BFE',
+      electrical: '100A panel above BFE, whole-house surge protector',
+      solar: 'Hurricane-rated roof array 4kW (Miami-Dade NOA)',
+      erv: 'Salt-air rated ERV',
+    },
+    modules: 3, transportWidth: '14ft', craneRequired: true,
+    minLotWidth: 30, minLotDepth: 70,
+    setbacks: { front: 20, rear: 20, side: 5 },
+    permitPath: 'DOB Alt-1 + FEMA V-zone compliance',
+    codeCompliance: ['NYC Building Code 2022', 'ASCE 7-22 (150mph wind)', 'FEMA P-55 V-zone', 'FEMA elevation cert required', 'Impact-rated glazing (Miami-Dade)'],
+    timelineWeeks: { design: 3, permit: 8, fab: 10, ship: 1, install: 2, finish: 4 },
+    costRange: [290000, 380000],
+    costPerSqft: [365, 425],
+    licenseFee: 6000,
+    version: '1.0', lastUpdated: '2026-04-14',
+    changeLog: ['v1.0: Initial release — coastal resilience design'],
+  },
+  // ──────── FIRE-HARDENED (WUI) ────────
+  {
+    id: 'PFB-ADU-1BR-STEEL-WUI-v1.0',
+    name: '1BR Wildfire-Hardened ADU',
+    type: 'adu', typeName: 'Backyard ADU',
+    material: 'steel', materialName: 'Light-Gauge Steel',
+    desc: 'Ember-resistant ADU for wildland-urban interface (WUI) zones. Non-combustible steel frame, fiber cement exterior, tempered glass, ember-proof vents. Designed to survive ember storms and radiant heat.',
+    sqftRange: [450, 650], defaultSqft: 550,
+    stories: 1, beds: 1, baths: 1,
+    zoningCompat: ['R1','R2','R3','R4','R5'],
+    floodReady: false, coastalPkg: false,
+    climateTags: ['fire'],
+    structural: {
+      foundation: 'Concrete slab with non-combustible grade break',
+      wallSystem: 'Steel frame 6" + mineral wool (non-combustible) — R-23',
+      roofSystem: 'Steel + Class A metal roof, no exposed wood',
+      floorSystem: 'Steel on slab, no crawl space',
+      loadPath: 'Steel frame to slab',
+      windRating: '110 mph',
+      snowLoad: '30 psf',
+    },
+    mep: {
+      hvac: 'Mini-split with ember-proof intake screen',
+      plumbing: 'PEX (interior only), metallic exterior penetrations',
+      electrical: '100A panel, metal conduit all exterior runs',
+      solar: 'Metal-framed roof array (Class A fire rated)',
+      erv: 'MERV-16 filtered supply with ember screen',
+    },
+    modules: 2, transportWidth: '12ft', craneRequired: false,
+    minLotWidth: 25, minLotDepth: 55,
+    setbacks: { front: 20, rear: 20, side: 5 },
+    permitPath: 'DOB Alt-1 + WUI compliance',
+    codeCompliance: ['CA WUI Building Standards (Ch 7A)', 'NFPA 1144', 'Class A roof assembly', 'Ember-resistant vents (ASTM E2886)', 'Defensible space compliant'],
+    timelineWeeks: { design: 2, permit: 6, fab: 8, ship: 1, install: 1, finish: 3 },
+    costRange: [195000, 260000],
+    costPerSqft: [355, 400],
+    licenseFee: 5000,
+    version: '1.0', lastUpdated: '2026-04-15',
+    changeLog: ['v1.0: Initial release — WUI fire-hardened design'],
+  },
+];
+
+// =============================================
+// CLIMATE RESILIENCE PACKAGES (add-on layers)
+// =============================================
+
+const CLIMATE_PACKAGES = [
+  {
+    id: 'CLM-COASTAL',
+    name: 'Coastal / Hurricane Package',
+    tag: 'coastal',
+    desc: 'Upgrades structure for ASCE 7-22 wind (130-150 mph), FEMA flood compliance, impact-rated glazing, marine-grade fasteners, and elevated utilities.',
+    addCostPct: 0.12,
+    addCostMin: 15000,
+    includes: ['Hurricane straps (Simpson H10A)', 'Impact-rated windows (Miami-Dade NOA)', 'Stainless steel fasteners', 'Elevated electrical/HVAC above BFE', 'Breakaway wall design (if elevated)', 'FEMA elevation certificate coordination'],
+    certifications: ['FEMA P-55', 'ASCE 7-22 Wind', 'Miami-Dade NOA glazing'],
+    compatibleMaterials: ['sip', 'steel', 'hybrid'],
+  },
+  {
+    id: 'CLM-SEISMIC',
+    name: 'Seismic Resilience Package',
+    tag: 'seismic',
+    desc: 'Adds seismic detailing for SDC D/E: hold-downs, shear walls, flexible connections, and base isolation options for larger structures.',
+    addCostPct: 0.08,
+    addCostMin: 10000,
+    includes: ['Simpson Strong-Tie hold-downs', 'Engineered shear walls', 'Flexible MEP connections', 'Seismic bracing for equipment', 'Foundation anchor bolts at 4ft OC', 'Base isolation option (4+ stories)'],
+    certifications: ['ASCE 7-22 Seismic SDC D', 'ACI 318 foundations'],
+    compatibleMaterials: ['steel', 'hybrid', 'clt'],
+  },
+  {
+    id: 'CLM-FIRE',
+    name: 'Wildfire / WUI Package',
+    tag: 'fire',
+    desc: 'Non-combustible exterior assembly, ember-proof vents, tempered glass, Class A roof, and defensible-space design guidance.',
+    addCostPct: 0.10,
+    addCostMin: 12000,
+    includes: ['Fiber cement or metal exterior (non-combustible)', 'Ember-resistant vents (ASTM E2886)', 'Tempered glass all windows', 'Class A metal roof assembly', 'No exposed wood exterior', '5ft non-combustible zone detail'],
+    certifications: ['CA Chapter 7A (WUI)', 'NFPA 1144', 'ASTM E2886 vents'],
+    compatibleMaterials: ['steel', 'sip'],
+  },
+  {
+    id: 'CLM-PASSIVE',
+    name: 'Passive House Package',
+    tag: 'passive',
+    desc: 'Upgrades thermal envelope, windows, and ventilation to meet PHIUS+ 2024 certification. Virtually eliminates heating/cooling costs.',
+    addCostPct: 0.15,
+    addCostMin: 20000,
+    includes: ['Triple-pane windows (U-0.14)', 'Upgraded SIP/insulation to R-40+ walls, R-60 roof', 'Zehnder ERV (93%+ heat recovery)', 'Continuous air barrier (<0.6 ACH50)', 'Thermal bridge-free details', 'Blower door testing + PHIUS modeling'],
+    certifications: ['PHIUS+ 2024', 'Blower door <0.6 ACH50', 'Energy modeling (WUFI Passive)'],
+    compatibleMaterials: ['sip', 'clt', 'hybrid'],
+  },
+  {
+    id: 'CLM-NETZERO',
+    name: 'Net-Zero Energy Package',
+    tag: 'netzero',
+    desc: 'Solar array + battery storage sized to offset 100% of annual energy use. All-electric systems, smart panel for load management, EV charger ready.',
+    addCostPct: 0.18,
+    addCostMin: 25000,
+    includes: ['Right-sized rooftop solar array', 'Battery storage (LFP, 10-20kWh)', 'Span smart electrical panel', 'All-electric conversion (no gas)', 'EV charger (Level 2, 48A)', 'Energy monitoring dashboard'],
+    certifications: ['Net-zero annual energy', 'DOE Zero Energy Ready', 'ENERGY STAR Certified Homes'],
+    compatibleMaterials: ['sip', 'steel', 'clt', 'hybrid'],
+  },
+  {
+    id: 'CLM-FLOOD',
+    name: 'Flood Zone Package',
+    tag: 'flood',
+    desc: 'Elevated foundation system for FEMA A/AE zones. Helical piles or concrete piers raising structure to BFE+2ft. Flood-damage-resistant materials below elevation.',
+    addCostPct: 0.10,
+    addCostMin: 18000,
+    includes: ['Helical pile or concrete pier foundation', 'Elevation to BFE + 2ft freeboard', 'Flood-damage-resistant materials (below BFE)', 'Breakaway lattice skirting', 'Elevated HVAC and electrical', 'FEMA elevation certificate'],
+    certifications: ['FEMA NFIP compliant', 'ASCE 24 flood loads'],
+    compatibleMaterials: ['sip', 'steel', 'clt', 'hybrid'],
+  },
+];
+
+// =============================================
+// ADD-ON PACKAGES (stackable upgrades)
+// =============================================
+
+const ADDON_PACKAGES = [
+  {
+    id: 'ADD-SOLAR',
+    name: 'Solar + Battery Storage',
+    icon: '☀',
+    desc: 'Rooftop solar array with lithium iron phosphate battery backup. Sized per unit sqft.',
+    addCost: (sqft) => Math.round(8000 + sqft * 8),
+    includes: ['Solar array (3-10kW based on roof area)', 'LFP battery (5-20kWh)', 'Hybrid inverter', 'Consumption monitoring', 'Net metering coordination'],
+  },
+  {
+    id: 'ADD-EV',
+    name: 'EV Charging Infrastructure',
+    icon: '⚡',
+    desc: 'Level 2 EV charger with dedicated circuit. Panel upgrade if needed.',
+    addCost: () => 3200,
+    includes: ['Level 2 charger (48A, 11.5kW)', 'Dedicated 60A circuit', 'NEMA 14-50 outlet backup', 'Load management (if needed)'],
+  },
+  {
+    id: 'ADD-SMART',
+    name: 'Smart Home Package',
+    icon: '🏠',
+    desc: 'Smart locks, thermostat, lighting, leak sensors, and security. Thread/Matter compatible.',
+    addCost: () => 4800,
+    includes: ['Smart lock (Yale/Schlage)', 'Smart thermostat (ecobee)', 'Smart lighting (Lutron Caseta, 8 switches)', 'Water leak sensors (4)', 'Smart smoke/CO detectors', 'Security cameras (2 exterior)', 'Thread/Matter hub'],
+  },
+  {
+    id: 'ADD-GREEN-ROOF',
+    name: 'Green Roof System',
+    icon: '🌿',
+    desc: 'Extensive sedum green roof for stormwater management, insulation boost, and NYC green building incentives.',
+    addCost: (sqft) => Math.round(sqft * 18),
+    includes: ['Waterproofing membrane (root barrier)', 'Drainage mat + filter fabric', 'Engineered growing media (4")', 'Sedum plant mix', 'Structural verification for added load (25-35 psf)', 'Irrigation drip system'],
+  },
+  {
+    id: 'ADD-ADA',
+    name: 'Full Accessibility Package',
+    icon: '♿',
+    desc: 'ADA/ICC A117.1 compliance: zero-step entry, roll-in shower, 36" doors, reinforced walls, emergency call.',
+    addCost: () => 8500,
+    includes: ['Zero-step entry (at-grade or ramp)', 'Roll-in shower with fold-down seat', '36" doors throughout', 'Comfort-height fixtures', 'Blocking for grab bars (all wet walls)', 'Emergency call system pre-wire', 'Lever handles throughout'],
+  },
+  {
+    id: 'ADD-SOUND',
+    name: 'Acoustic Isolation Package',
+    icon: '🔇',
+    desc: 'STC 55+ wall and floor assemblies for urban noise reduction. Critical for multi-family and mixed-use.',
+    addCost: (sqft) => Math.round(sqft * 6),
+    includes: ['Resilient channel + double drywall walls (STC 55+)', 'Acoustic underlayment floors (IIC 55+)', 'Triple-pane windows (STC 35+)', 'Acoustic caulk all penetrations', 'Sound-rated doors (STC 33+)'],
+  },
 ];
 
 // Selected SKU for packager
@@ -2933,23 +3581,63 @@ function renderCatalog() {
   const typeFilter = document.getElementById('catFilterType').value;
   const matFilter = document.getElementById('catFilterMat').value;
   const bedsFilter = document.getElementById('catFilterBeds').value;
+  const storiesFilter = document.getElementById('catFilterStories').value;
+  const climateFilter = document.getElementById('catFilterClimate').value;
+  const priceFilter = document.getElementById('catFilterPrice').value;
 
   let skus = DESIGN_CATALOG.filter(s => {
     if (typeFilter && s.type !== typeFilter) return false;
     if (matFilter && s.material !== matFilter) return false;
-    if (bedsFilter !== '' && String(s.beds) !== bedsFilter) return false;
+    if (bedsFilter !== '' && bedsFilter) {
+      if (bedsFilter === '4') { if (s.beds < 4) return false; }
+      else if (String(s.beds) !== bedsFilter) return false;
+    }
+    if (storiesFilter) {
+      if (storiesFilter === '4') { if (s.stories < 4) return false; }
+      else if (String(s.stories) !== storiesFilter) return false;
+    }
+    if (climateFilter && s.climateTags && !s.climateTags.includes(climateFilter)) {
+      // Also check floodReady for flood filter
+      if (climateFilter === 'flood' && s.floodReady) { /* ok */ }
+      else return false;
+    }
+    if (priceFilter) {
+      const maxCost = s.costRange[1];
+      if (priceFilter === 'under150' && maxCost > 150000) return false;
+      if (priceFilter === '150to300' && (s.costRange[0] > 300000 || maxCost < 150000)) return false;
+      if (priceFilter === '300to500' && (s.costRange[0] > 500000 || maxCost < 300000)) return false;
+      if (priceFilter === '500plus' && maxCost < 500000) return false;
+    }
     return true;
   });
 
   const el = document.getElementById('catalogList');
+  const countEl = document.getElementById('catalogCount');
+  if (countEl) countEl.textContent = `${skus.length} of ${DESIGN_CATALOG.length} designs`;
+
   if (skus.length === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-3);font-size:12px;">No SKUs match your filters.</div>';
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-3);font-size:12px;">No SKUs match your filters. Try adjusting criteria.</div>';
     return;
   }
+
+  // Climate tag colors
+  const climateColors = {
+    coastal: { bg: '#dbeafe', color: '#1e40af', label: 'Coastal' },
+    flood: { bg: '#e0e7ff', color: '#4338ca', label: 'Flood-Ready' },
+    seismic: { bg: '#fef3c7', color: '#92400e', label: 'Seismic' },
+    fire: { bg: '#fecaca', color: '#991b1b', label: 'Fire-Hardened' },
+    passive: { bg: '#dcfce7', color: '#166534', label: 'Passive House' },
+    netzero: { bg: '#ccfbf1', color: '#115e59', label: 'Net-Zero' },
+  };
 
   el.innerHTML = skus.map(s => {
     const totalWeeks = Object.values(s.timelineWeeks).reduce((a,b) => a+b, 0);
     const isSelected = selectedSku && selectedSku.id === s.id;
+    const climateBadges = (s.climateTags || []).map(t => {
+      const c = climateColors[t];
+      return c ? `<span class="sku-tag" style="background:${c.bg};color:${c.color};">${c.label}</span>` : '';
+    }).join('');
+
     return `
     <div class="sku-card ${isSelected ? 'selected' : ''}" id="sku-${s.id}" onclick="toggleSkuDetail('${s.id}')">
       <div class="sku-id">${s.id}</div>
@@ -2958,8 +3646,8 @@ function renderCatalog() {
       <div class="sku-tags">
         <span class="sku-tag sku-tag-type">${s.typeName}</span>
         <span class="sku-tag sku-tag-mat">${s.materialName}</span>
-        <span class="sku-tag sku-tag-zone">${s.zoningCompat.join(' ')}</span>
-        ${s.floodReady ? '<span class="sku-tag sku-tag-flood">Flood-Ready</span>' : ''}
+        <span class="sku-tag sku-tag-zone">${s.zoningCompat.slice(0, 4).join(' ')}${s.zoningCompat.length > 4 ? '+' : ''}</span>
+        ${climateBadges}
         <span class="sku-tag sku-tag-version">v${s.version}</span>
       </div>
       <div class="sku-specs">
@@ -2998,6 +3686,27 @@ function renderCatalog() {
         <div class="sku-section">
           <div class="sku-section-title">Code Compliance</div>
           <div style="font-size:11px;">${s.codeCompliance.map(c => `<div style="padding:2px 0;">• ${c}</div>`).join('')}</div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">Compatible Climate Packages</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${CLIMATE_PACKAGES.filter(cp => cp.compatibleMaterials.includes(s.material)).map(cp => {
+              const active = (s.climateTags || []).includes(cp.tag);
+              return `<div style="padding:6px 10px;border-radius:6px;font-size:10px;border:1px solid ${active ? 'var(--green)' : 'var(--border)'};background:${active ? 'var(--green-light)' : 'var(--bg)'};">
+                <div style="font-weight:700;">${cp.name} ${active ? '✓ Included' : ''}</div>
+                <div style="color:var(--text-3);margin-top:2px;">+${Math.round(cp.addCostPct * 100)}% cost</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">Available Add-Ons</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${ADDON_PACKAGES.map(a => `<div style="padding:6px 10px;border-radius:6px;font-size:10px;border:1px solid var(--border);background:var(--bg);">
+              <div style="font-weight:700;">${a.icon} ${a.name}</div>
+              <div style="color:var(--text-3);margin-top:2px;">+$${(a.addCost(s.defaultSqft)).toLocaleString()}</div>
+            </div>`).join('')}
+          </div>
         </div>
         <div class="sku-section">
           <div class="sku-section-title">Version History</div>
