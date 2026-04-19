@@ -64,9 +64,11 @@
 
     /* Layout */
     .app { display: flex; height: calc(100vh - 57px); }
-    .map-col { flex: 1; position: relative; }
+    .map-col { flex: 1; position: relative; transition: all .3s ease; }
+    .map-col.hidden { display: none; }
     #map { height: 100%; }
-    .panel { width: 480px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; }
+    .panel { width: 480px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; transition: all .3s ease; }
+    .panel.full-width { width: 100%; border-left: none; }
 
     .map-overlay {
       position: absolute; z-index: 1000; background: var(--surface); border-radius: var(--radius);
@@ -2079,22 +2081,39 @@ function setMode(mode) {
   const packagerPanel = document.getElementById('packagerPanel');
   const portalPanel = document.getElementById('portalPanel');
   const threeDPanel = document.getElementById('threeDPanel');
+  const mapCol = document.querySelector('.map-col');
+  const panel = document.getElementById('panel');
 
-  // Hide all
+  // Hide all sub-panels
   [finderPanel, catalogPanel, packagerPanel, portalPanel, threeDPanel].forEach(p => { if(p) p.style.display = 'none'; });
+
+  // Modes that need the map
+  const mapModes = ['analyze', 'finder'];
+  const needsMap = mapModes.includes(mode);
+
+  // Show/hide map column
+  if (mapCol) {
+    mapCol.classList.toggle('hidden', !needsMap);
+  }
+  // Expand panel to full width when map is hidden
+  if (panel) {
+    panel.classList.toggle('full-width', !needsMap);
+  }
 
   if (mode === 'analyze') {
     searchWrap.style.display = 'flex';
     if (currentLat) { filledPanel.style.display = 'block'; emptyState.style.display = 'none'; }
     else { filledPanel.style.display = 'none'; emptyState.style.display = 'block'; }
     clearFinderMarkers();
+    // Invalidate map size after layout change
+    setTimeout(() => map.invalidateSize(), 50);
   } else if (mode === 'finder') {
     searchWrap.style.display = 'none';
     emptyState.style.display = 'none';
     filledPanel.style.display = 'none';
     finderPanel.style.display = 'block';
     document.getElementById('mapInstructions').style.display = 'none';
-    map.setView([40.7128, -74.006], 11);
+    setTimeout(() => { map.invalidateSize(); map.setView([40.7128, -74.006], 11); }, 50);
   } else if (mode === 'catalog') {
     searchWrap.style.display = 'none';
     emptyState.style.display = 'none';
@@ -2121,7 +2140,8 @@ function setMode(mode) {
     filledPanel.style.display = 'none';
     threeDPanel.style.display = 'block';
     document.getElementById('mapInstructions').style.display = 'none';
-    init3DViewer();
+    // Delay init so layout settles at full width first
+    setTimeout(() => { init3DViewer(); resize3D(); }, 100);
   }
 }
 
