@@ -34,7 +34,7 @@
     /* Header */
     .header {
       background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
       position: sticky; top: 0; z-index: 1050;
     }
     .logo { display:flex; align-items:center; gap:10px; }
@@ -63,12 +63,28 @@
     .search-result small { color:var(--text-3); display:block; margin-top:2px; font-size:11px; }
 
     /* Layout */
-    .app { display: flex; height: calc(100vh - 57px); }
+    .app { display: flex; height: calc(100vh - 49px); }
     .map-col { flex: 1; position: relative; transition: all .3s ease; }
     .map-col.hidden { display: none; }
     #map { height: 100%; }
-    .panel { width: 480px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; transition: all .3s ease; }
+    .panel { width: 420px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; transition: all .3s ease; flex-shrink: 0; }
     .panel.full-width { width: 100%; border-left: none; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 60px; background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px;
+      flex-shrink: 0; overflow-y: auto;
+    }
+    .sidebar-btn {
+      width: 44px; height: 44px; border-radius: 10px; border: none; background: transparent;
+      cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; font-size: 8px; font-weight: 600; color: var(--text-3); font-family: inherit;
+      transition: all .15s;
+    }
+    .sidebar-btn:hover { background: var(--accent-light); color: var(--accent); }
+    .sidebar-btn.active { background: var(--accent); color: white; }
+    .sidebar-btn svg { width: 18px; height: 18px; }
 
     .map-overlay {
       position: absolute; z-index: 1000; background: var(--surface); border-radius: var(--radius);
@@ -263,16 +279,6 @@
     @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
     .loading { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:800px 100%; animation: shimmer 1.5s infinite; border-radius:var(--radius-sm); }
 
-    /* Mode toggle in header */
-    .mode-toggle { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-    .mode-btn {
-      padding: 6px 14px; font-size: 11px; font-weight: 600; border: none; cursor: pointer;
-      font-family: inherit; background: var(--surface); color: var(--text-2); transition: all .15s;
-      display: flex; align-items: center; gap: 5px; border-right: 1px solid var(--border);
-    }
-    .mode-btn:last-child { border-right: none; }
-    .mode-btn.active { background: var(--accent); color: white; }
-    .mode-btn:hover:not(.active) { background: var(--accent-light); }
 
     /* Design Catalog */
     .catalog-panel { padding: 20px; }
@@ -562,66 +568,34 @@
     <div class="logo-mark">P</div>
     <div>
       <div class="logo-text">PrefabOS</div>
-      <div class="logo-sub">Prefab housing intelligence</div>
     </div>
   </div>
-  <div style="position:relative">
-    <div class="search-wrap" id="searchWrap">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="searchInput" type="text" placeholder="Search NYC address — e.g. 120 Broadway, Manhattan" autocomplete="off"/>
-    </div>
+  <div id="searchWrap" class="search-wrap" style="position:relative;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search NYC address — e.g. 120 Broadway, Manhattan..." oninput="debounceSearch(this.value)">
     <div class="search-results" id="searchResults"></div>
   </div>
-  <div class="mode-toggle">
-    <button class="mode-btn active" id="modeAnalyze" onclick="setMode('analyze')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      Analyze
-    </button>
-    <button class="mode-btn" id="modeFinder" onclick="setMode('finder')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-      Find
-    </button>
-    <button class="mode-btn" id="modeCatalog" onclick="setMode('catalog')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      IP Catalog
-    </button>
-    <button class="mode-btn" id="modePackager" onclick="setMode('packager')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
-      Packager
-    </button>
-    <button class="mode-btn" id="modePortal" onclick="setMode('portal')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Portal
-    </button>
-    <button class="mode-btn" id="mode3d" onclick="setMode('3d')" style="background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);color:white;font-weight:700;">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      3D View
-    </button>
-    <button class="mode-btn" id="modePlans" onclick="setMode('plans')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Plans
-    </button>
-  </div>
-  <!-- Settings -->
-  <div style="position:relative;">
-    <button onclick="document.getElementById('settingsDropdown').classList.toggle('open')" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
-    <div id="settingsDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:16px;z-index:500;">
-      <div style="font-weight:700;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Settings
-      </div>
-      <div style="margin-bottom:6px;">
-        <label style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">Claude API Key</label>
-        <div style="display:flex;gap:6px;">
-          <input type="password" id="apiKeyInput" placeholder="sk-ant-..." value="" oninput="setApiKey(this.value.trim())"
-            style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
-          <button onclick="const inp=document.getElementById('apiKeyInput');inp.type=inp.type==='password'?'text':'password';this.textContent=inp.type==='password'?'Show':'Hide'"
-            style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:10px;font-family:inherit;cursor:pointer;background:var(--bg);color:var(--text-2);">Show</button>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div style="position:relative;">
+      <button onclick="document.getElementById('settingsDropdown').classList.toggle('open')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div id="settingsDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:16px;z-index:500;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
         </div>
-        <div id="apiKeyStatus" style="font-size:10px;margin-top:4px;color:var(--text-3);">Powers AI Design Advisor, Property Finder AI, and 3D Optimizer</div>
+        <div style="margin-bottom:6px;">
+          <label style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">Claude API Key</label>
+          <div style="display:flex;gap:6px;">
+            <input type="password" id="apiKeyInput" placeholder="sk-ant-..." value="" oninput="setApiKey(this.value.trim())"
+              style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+            <button onclick="const inp=document.getElementById('apiKeyInput');inp.type=inp.type==='password'?'text':'password';this.textContent=inp.type==='password'?'Show':'Hide'"
+              style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:10px;font-family:inherit;cursor:pointer;background:var(--bg);color:var(--text-2);">Show</button>
+          </div>
+          <div id="apiKeyStatus" style="font-size:10px;margin-top:4px;color:var(--text-3);">Powers AI Design Advisor, Property Finder AI, and 3D Optimizer</div>
+        </div>
       </div>
     </div>
   </div>
@@ -632,7 +606,41 @@
 
 <!-- App -->
 <div class="app">
-  <div class="map-col">
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar">
+    <button class="sidebar-btn active" id="modeAnalyze" onclick="setMode('analyze')" title="Analyze">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Analyze</span>
+    </button>
+    <button class="sidebar-btn" id="modeFinder" onclick="setMode('finder')" title="Find">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>Find</span>
+    </button>
+    <button class="sidebar-btn" id="modeCatalog" onclick="setMode('catalog')" title="Catalog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Catalog</span>
+    </button>
+    <button class="sidebar-btn" id="modePackager" onclick="setMode('packager')" title="Package">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+      <span>Package</span>
+    </button>
+    <button class="sidebar-btn" id="modePortal" onclick="setMode('portal')" title="Portal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Portal</span>
+    </button>
+    <div style="flex:1;"></div>
+    <button class="sidebar-btn" id="mode3d" onclick="setMode('3d')" title="3D View" style="background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.1));">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <span>3D</span>
+    </button>
+    <button class="sidebar-btn" id="modePlans" onclick="setMode('plans')" title="Plans">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Plans</span>
+    </button>
+  </nav>
+
+  <!-- Main content area -->
+  <div class="map-col" id="mapCol">
     <div id="map"></div>
     <div class="map-overlay map-instructions" id="mapInstructions">
       <div class="title">Search an address or click the map</div>
