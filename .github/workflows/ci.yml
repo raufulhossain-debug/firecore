@@ -22,6 +22,10 @@ jobs:
           pip install -e packages/sku_library
           pip install -e packages/site_intel
           pip install -e packages/solver
+          pip install -e packages/materials
+          pip install -e packages/supply_chain
+          pip install -e packages/logistics
+          pip install -e packages/optimizer
           pip install -e "packages/api[dev]"
           pip install pytest httpx
       - name: Run tests

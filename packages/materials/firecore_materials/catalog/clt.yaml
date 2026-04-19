@@ -1,0 +1,75 @@
+id: clt
+name: Cross-Laminated Timber
+category: clt
+description: >
+  Engineered mass timber panels with cross-layered lumber plies.
+  High strength-to-weight, carbon-sequestering, exposed-wood aesthetic.
+  Growing domestic supply (OR, MT, WA mills).
+
+domestic_availability: 0.6
+buy_america_compliant: true
+carbon_kg_per_sqft: -1.2  # Net carbon negative (sequestered > embodied)
+
+climate_ratings:
+  - zone: wildfire
+    score: 0.6
+    notes: "Mass timber chars predictably (1.5\"/hr); 2-hr fire rating achievable. Requires non-combustible cladding in WUI."
+    required_treatments: ["non_combustible_cladding", "char_calculation"]
+  - zone: flood
+    score: 0.2
+    notes: "Wood absorbs water; NOT recommended for flood zones without full elevation + waterproof membrane"
+    required_treatments: ["full_elevation", "waterproof_membrane"]
+  - zone: desert
+    score: 0.65
+    notes: "Moderate thermal mass helps with diurnal swings; lower R-value requires added insulation"
+    required_treatments: ["exterior_insulation"]
+  - zone: arctic
+    score: 0.5
+    notes: "Good structural performance in cold; thermal bridging at panel joints; needs exterior insulation wrap"
+    required_treatments: ["exterior_insulation_wrap", "vapor_barrier"]
+  - zone: seismic
+    score: 0.85
+    notes: "Excellent seismic performance — high strength-to-weight ratio, ductile connections"
+  - zone: standard
+    score: 0.8
+    notes: "Premium material with aesthetic appeal; cost premium over SIPs"
+
+certifications:
+  - code: PRG_320
+    name: "ANSI/APA PRG 320 Standard for CLT"
+    status: certified
+  - code: IBC_2021_CH23
+    name: "IBC 2021 Chapter 23 (Mass Timber)"
+    status: certified
+  - code: CBC_Chapter_7A
+    name: "California Chapter 7A (with cladding)"
+    status: in_progress
+
+variants:
+  - id: clt_3ply_105mm
+    name: "3-Ply CLT (105mm / 4.1\")"
+    thickness_in: 4.1
+    r_value: 1.25
+    weight_psf: 12.0
+    cost_per_sqft: 14.00
+    lead_time_days: 42
+    fire_rating_hr: 1.0
+    structural_span_ft: 14
+  - id: clt_5ply_175mm
+    name: "5-Ply CLT (175mm / 6.9\")"
+    thickness_in: 6.9
+    r_value: 1.25
+    weight_psf: 20.0
+    cost_per_sqft: 22.00
+    lead_time_days: 49
+    fire_rating_hr: 2.0
+    structural_span_ft: 22
+  - id: clt_7ply_245mm
+    name: "7-Ply CLT (245mm / 9.6\")"
+    thickness_in: 9.6
+    r_value: 1.25
+    weight_psf: 28.0
+    cost_per_sqft: 30.00
+    lead_time_days: 56
+    fire_rating_hr: 2.0
+    structural_span_ft: 28

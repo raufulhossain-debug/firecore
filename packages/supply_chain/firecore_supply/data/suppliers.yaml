@@ -1,0 +1,180 @@
+suppliers:
+  # ── SIP Suppliers ──
+  - id: premier_sips_or
+    name: Premier SIPs
+    location: { lat: 45.52, lon: -122.68, city: Portland, state: OR, country: US }
+    material_ids: [sip]
+    country: US
+    lead_time_days: 21
+    min_order_sqft: 500
+    max_capacity_sqft_month: 80000
+    certifications: [ISO_9001, ICC_ESR_1539]
+    buy_america: true
+    reliability_score: 0.92
+
+  - id: extreme_panel_tx
+    name: Extreme Panel Technologies
+    location: { lat: 41.14, lon: -111.97, city: Cottonwood Heights, state: UT, country: US }
+    material_ids: [sip]
+    country: US
+    lead_time_days: 18
+    min_order_sqft: 400
+    max_capacity_sqft_month: 60000
+    certifications: [ICC_ESR_1539]
+    buy_america: true
+    reliability_score: 0.88
+
+  - id: enercept_sips_sd
+    name: Enercept SIPs
+    location: { lat: 43.55, lon: -96.73, city: Watertown, state: SD, country: US }
+    material_ids: [sip]
+    country: US
+    lead_time_days: 24
+    min_order_sqft: 600
+    max_capacity_sqft_month: 45000
+    certifications: [ICC_ESR_1539, Energy_Star]
+    buy_america: true
+    reliability_score: 0.85
+
+  # ── CLT Suppliers ──
+  - id: smartlam_mt
+    name: SmartLam North America
+    location: { lat: 46.87, lon: -114.00, city: Columbia Falls, state: MT, country: US }
+    material_ids: [clt]
+    country: US
+    lead_time_days: 42
+    min_order_sqft: 2000
+    max_capacity_sqft_month: 120000
+    certifications: [PRG_320, FSC, APA]
+    buy_america: true
+    reliability_score: 0.90
+
+  - id: structurlam_or
+    name: Structurlam Mass Timber
+    location: { lat: 42.33, lon: -122.87, city: Conway, state: AR, country: US }
+    material_ids: [clt]
+    country: US
+    lead_time_days: 45
+    min_order_sqft: 1500
+    max_capacity_sqft_month: 100000
+    certifications: [PRG_320, APA, PEFC]
+    buy_america: true
+    reliability_score: 0.88
+
+  - id: kalesnikoff_bc
+    name: Kalesnikoff Mass Timber
+    location: { lat: 49.09, lon: -117.66, city: Castlegar, state: BC, country: CA }
+    material_ids: [clt]
+    country: CA
+    lead_time_days: 49
+    min_order_sqft: 2000
+    max_capacity_sqft_month: 90000
+    certifications: [PRG_320, FSC]
+    buy_america: false
+    reliability_score: 0.91
+
+  # ── Steel Suppliers ──
+  - id: clarkdietrich_oh
+    name: ClarkDietrich Building Systems
+    location: { lat: 41.07, lon: -81.52, city: Richfield, state: OH, country: US }
+    material_ids: [steel]
+    country: US
+    lead_time_days: 10
+    min_order_sqft: 200
+    max_capacity_sqft_month: 200000
+    certifications: [AISI_S240, ASTM_C955, ISO_9001]
+    buy_america: true
+    reliability_score: 0.95
+
+  - id: steeltech_ca
+    name: Steel Technologies LLC
+    location: { lat: 33.78, lon: -118.26, city: Carson, state: CA, country: US }
+    material_ids: [steel]
+    country: US
+    lead_time_days: 12
+    min_order_sqft: 300
+    max_capacity_sqft_month: 150000
+    certifications: [AISI_S240, ASTM_C955]
+    buy_america: true
+    reliability_score: 0.90
+
+  - id: nucor_sc
+    name: Nucor Building Systems
+    location: { lat: 34.84, lon: -82.39, city: Greenville, state: SC, country: US }
+    material_ids: [steel]
+    country: US
+    lead_time_days: 14
+    min_order_sqft: 500
+    max_capacity_sqft_month: 300000
+    certifications: [AISI_S240, AISC, ISO_14001]
+    buy_america: true
+    reliability_score: 0.93
+
+  # ── International (for comparison / tariff modeling) ──
+  - id: zhonghe_steel_cn
+    name: Zhonghe Steel Structure Co.
+    location: { lat: 31.23, lon: 121.47, city: Shanghai, state: SH, country: CN }
+    material_ids: [steel]
+    country: CN
+    lead_time_days: 45
+    min_order_sqft: 5000
+    max_capacity_sqft_month: 500000
+    certifications: [ISO_9001]
+    buy_america: false
+    reliability_score: 0.70
+
+  - id: xlam_au
+    name: XLam Australia
+    location: { lat: -37.81, lon: 144.96, city: Melbourne, state: VIC, country: AU }
+    material_ids: [clt]
+    country: AU
+    lead_time_days: 60
+    min_order_sqft: 3000
+    max_capacity_sqft_month: 80000
+    certifications: [PRG_320]
+    buy_america: false
+    reliability_score: 0.82
+
+quotes:
+  - supplier_id: premier_sips_or
+    material_id: sip
+    variant_id: sip_6.5in_osb
+    unit_cost_per_sqft: 8.75
+    volume_discount_pct: 5
+    min_order_sqft: 1000
+
+  - supplier_id: extreme_panel_tx
+    material_id: sip
+    variant_id: sip_6.5in_osb
+    unit_cost_per_sqft: 9.50
+    volume_discount_pct: 3
+    min_order_sqft: 500
+
+  - supplier_id: smartlam_mt
+    material_id: clt
+    variant_id: clt_5ply_175mm
+    unit_cost_per_sqft: 21.00
+    volume_discount_pct: 8
+    min_order_sqft: 2000
+
+  - supplier_id: clarkdietrich_oh
+    material_id: steel
+    variant_id: steel_18ga_600s
+    unit_cost_per_sqft: 6.80
+    volume_discount_pct: 10
+    min_order_sqft: 1000
+
+  - supplier_id: steeltech_ca
+    material_id: steel
+    variant_id: steel_18ga_600s
+    unit_cost_per_sqft: 7.50
+    volume_discount_pct: 7
+    min_order_sqft: 500
+
+  - supplier_id: zhonghe_steel_cn
+    material_id: steel
+    variant_id: steel_18ga_600s
+    unit_cost_per_sqft: 3.25
+    volume_discount_pct: 15
+    min_order_sqft: 10000
+    notes: "FOB Shanghai; subject to Section 301 tariffs + anti-dumping duties"

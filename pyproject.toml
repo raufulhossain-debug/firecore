@@ -8,6 +8,10 @@ testpaths = [
     "packages/site_intel/tests",
     "packages/solver/tests",
     "packages/api/tests",
+    "packages/materials/tests",
+    "packages/supply_chain/tests",
+    "packages/logistics/tests",
+    "packages/optimizer/tests",
 ]
 addopts = "-q --import-mode=importlib"
 

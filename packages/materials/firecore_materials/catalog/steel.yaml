@@ -1,0 +1,87 @@
+id: steel
+name: Light-Gauge Steel Framing
+category: light_gauge_steel
+description: >
+  Cold-formed steel (CFS) studs and joists. Non-combustible, termite-proof,
+  dimensionally stable. Dominant in commercial prefab; growing in residential.
+  Strong domestic supply chain (Nucor, Steel Technologies, ClarkDietrich).
+
+domestic_availability: 0.95
+buy_america_compliant: true
+carbon_kg_per_sqft: 5.8  # Higher embodied carbon; recyclable at EOL
+
+climate_ratings:
+  - zone: wildfire
+    score: 0.95
+    notes: "Non-combustible; inherently WUI-compliant. Ideal for VHFHSZ."
+  - zone: flood
+    score: 0.85
+    notes: "Galvanized steel resists water damage; requires stainless fasteners in coastal/salt zones"
+    required_treatments: ["stainless_fasteners_coastal"]
+  - zone: desert
+    score: 0.7
+    notes: "High thermal conductivity = thermal bridging; requires thermal break clips + exterior insulation"
+    required_treatments: ["thermal_break_clips", "exterior_insulation"]
+  - zone: arctic
+    score: 0.55
+    notes: "Severe thermal bridging in cold climates; requires extensive thermal break strategy"
+    required_treatments: ["thermal_break_clips", "exterior_insulation_wrap", "vapor_barrier"]
+  - zone: seismic
+    score: 0.8
+    notes: "Good ductility with proper bracing; CFS shear walls perform well in seismic zones"
+    required_treatments: ["seismic_bracing"]
+  - zone: standard
+    score: 0.85
+    notes: "Cost-effective, fast assembly, widely available"
+
+certifications:
+  - code: AISI_S240
+    name: "AISI S240 North American Standard for CFS"
+    status: certified
+  - code: CBC_Chapter_7A
+    name: "California Chapter 7A (inherent compliance)"
+    status: certified
+  - code: IBC_2021
+    name: "IBC 2021 Type IIB Construction"
+    status: certified
+  - code: ASTM_C955
+    name: "ASTM C955 Structural Steel Studs"
+    status: certified
+
+variants:
+  - id: steel_20ga_350s
+    name: "20ga 3.5\" CFS Stud (350S)"
+    thickness_in: 3.5
+    r_value: 0
+    weight_psf: 2.1
+    cost_per_sqft: 5.50
+    lead_time_days: 14
+    fire_rating_hr: 0
+    structural_span_ft: 10
+  - id: steel_18ga_600s
+    name: "18ga 6\" CFS Stud (600S)"
+    thickness_in: 6.0
+    r_value: 0
+    weight_psf: 3.0
+    cost_per_sqft: 7.25
+    lead_time_days: 14
+    fire_rating_hr: 0
+    structural_span_ft: 16
+  - id: steel_16ga_800s
+    name: "16ga 8\" CFS Stud (800S)"
+    thickness_in: 8.0
+    r_value: 0
+    weight_psf: 4.2
+    cost_per_sqft: 9.75
+    lead_time_days: 18
+    fire_rating_hr: 0
+    structural_span_ft: 22
+  - id: steel_14ga_firewall
+    name: "14ga Fire-Rated Assembly (2-hr)"
+    thickness_in: 6.0
+    r_value: 0
+    weight_psf: 5.8
+    cost_per_sqft: 13.50
+    lead_time_days: 21
+    fire_rating_hr: 2.0
+    structural_span_ft: 18

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firecore-supply-chain"
+version = "0.1.0"
+description = "FireCore supplier database, pricing, tariffs, and procurement optimization"
+requires-python = ">=3.10"
+dependencies = [
+    "firecore-materials",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+scraping = ["httpx>=0.27", "beautifulsoup4>=4.12"]
+
+[tool.setuptools.packages.find]
+include = ["firecore_supply*"]

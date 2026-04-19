@@ -1,0 +1,106 @@
+# US import tariff schedules by country + material
+# Sources: USITC HTS, USTR Section 301 list, Commerce Dept AD/CVD orders
+# Last updated: 2025-Q4
+
+tariffs:
+  # ── China ──
+  - country: CN
+    material_category: light_gauge_steel
+    hts_code: "7216.61"
+    base_rate_pct: 0
+    section_301_pct: 25
+    anti_dumping_pct: 22.0
+    countervailing_pct: 15.0
+    uflpa_restricted: false
+    notes: "Section 301 List 1 (2018) + AD/CVD order on CFS studs"
+
+  - country: CN
+    material_category: sip
+    hts_code: "4418.99"
+    base_rate_pct: 3.2
+    section_301_pct: 25
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false
+    notes: "Section 301 List 3 (2019); wood component triggers UFLPA review"
+
+  - country: CN
+    material_category: clt
+    hts_code: "4418.20"
+    base_rate_pct: 3.2
+    section_301_pct: 25
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false
+    notes: "Section 301 List 3; mass timber rarely sourced from CN"
+
+  # ── Canada ──
+  - country: CA
+    material_category: clt
+    hts_code: "4418.20"
+    base_rate_pct: 0
+    section_301_pct: 0
+    anti_dumping_pct: 0
+    countervailing_pct: 8.05
+    uflpa_restricted: false
+    notes: "Softwood Lumber Agreement CVD; CLT sometimes exempt depending on species"
+
+  - country: CA
+    material_category: sip
+    hts_code: "4418.99"
+    base_rate_pct: 0
+    section_301_pct: 0
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false
+    notes: "USMCA duty-free"
+
+  - country: CA
+    material_category: light_gauge_steel
+    hts_code: "7216.61"
+    base_rate_pct: 0
+    section_301_pct: 0
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false
+    notes: "USMCA duty-free"
+
+  # ── Australia ──
+  - country: AU
+    material_category: clt
+    hts_code: "4418.20"
+    base_rate_pct: 0
+    section_301_pct: 0
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false
+    notes: "US-Australia FTA duty-free"
+
+  # ── Domestic (no tariffs) ──
+  - country: US
+    material_category: sip
+    hts_code: ""
+    base_rate_pct: 0
+    section_301_pct: 0
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false
+    notes: "Domestic — no tariffs"
+
+  - country: US
+    material_category: clt
+    hts_code: ""
+    base_rate_pct: 0
+    section_301_pct: 0
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false
+
+  - country: US
+    material_category: light_gauge_steel
+    hts_code: ""
+    base_rate_pct: 0
+    section_301_pct: 0
+    anti_dumping_pct: 0
+    countervailing_pct: 0
+    uflpa_restricted: false

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firecore-logistics"
+version = "0.1.0"
+description = "FireCore logistics — factory routing, freight modeling, multi-leg supply chain optimization"
+requires-python = ">=3.10"
+dependencies = [
+    "firecore-materials",
+    "firecore-supply-chain",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+include = ["firecore_logistics*"]

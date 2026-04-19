@@ -1,0 +1,56 @@
+factories:
+  # ── West Coast ──
+  - id: factory_socal
+    name: "FireCore SoCal Assembly (licensee)"
+    location: { lat: 33.92, lon: -117.89, city: Corona, state: CA, country: US }
+    material_ids: [sip, steel]
+    assembly_capabilities: [panel, wall_assembly, roof_assembly]
+    monthly_capacity_units: 15
+    current_utilization_pct: 55
+    crane_available: true
+    staging_yard: true
+
+  - id: factory_portland
+    name: "Pacific Prefab (licensee)"
+    location: { lat: 45.52, lon: -122.68, city: Portland, state: OR, country: US }
+    material_ids: [sip, clt]
+    assembly_capabilities: [panel, volumetric_mod, wall_assembly]
+    monthly_capacity_units: 20
+    current_utilization_pct: 70
+
+  # ── Southwest ──
+  - id: factory_phoenix
+    name: "Desert Modular (licensee)"
+    location: { lat: 33.45, lon: -112.07, city: Phoenix, state: AZ, country: US }
+    material_ids: [steel, sip]
+    assembly_capabilities: [panel, wall_assembly]
+    monthly_capacity_units: 12
+    current_utilization_pct: 40
+    crane_available: false
+
+  # ── Mountain ──
+  - id: factory_boise
+    name: "Mountain Prefab Co. (licensee)"
+    location: { lat: 43.62, lon: -116.21, city: Boise, state: ID, country: US }
+    material_ids: [sip, clt]
+    assembly_capabilities: [panel, wall_assembly, roof_assembly]
+    monthly_capacity_units: 10
+    current_utilization_pct: 50
+
+  # ── Texas / South ──
+  - id: factory_austin
+    name: "Lone Star Modular (licensee)"
+    location: { lat: 30.27, lon: -97.74, city: Austin, state: TX, country: US }
+    material_ids: [steel, sip]
+    assembly_capabilities: [panel, volumetric_mod, wall_assembly]
+    monthly_capacity_units: 25
+    current_utilization_pct: 75
+
+  # ── East Coast ──
+  - id: factory_charlotte
+    name: "Piedmont Prefab (licensee)"
+    location: { lat: 35.23, lon: -80.84, city: Charlotte, state: NC, country: US }
+    material_ids: [steel, clt]
+    assembly_capabilities: [panel, wall_assembly]
+    monthly_capacity_units: 18
+    current_utilization_pct: 60
