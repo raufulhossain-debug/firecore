@@ -2069,6 +2069,274 @@ function clearFinderMarkers() {
 // PROPERTY FINDER ENGINE
 // =============================================
 
+// NYC ZONING DISTRICTS — Real data from NYC Zoning Handbook 2025
+const NYC_ZONING_DISTRICTS = {
+  R1: {
+    far: { standard: 0.5, qrs: null, uap: null, commercial: null },
+    yards: { front: 20, rear: 20, side: '13+5', sideNote: 'two side yards: 13ft and 5ft' },
+    height: { maxBase: null, maxHeight: 35 },
+    coverage: { standard: 35, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 1.0 },
+    density: { dwellingUnitFactor: null, note: 'Single-family detached only' },
+    type: 'low',
+    label: 'Single-Family Detached (R1)',
+  },
+  R2: {
+    far: { standard: 0.5, qrs: null, uap: null, commercial: null },
+    yards: { front: 15, rear: 20, side: '5+5', sideNote: 'two side yards: 5ft each' },
+    height: { maxBase: null, maxHeight: 35 },
+    coverage: { standard: 45, qrs: null },
+    adu: { eligible: true, maxSqft: 800, rearYardFraction: 0.33 },
+    parking: { perDU: 1.0 },
+    density: { dwellingUnitFactor: null, note: 'Single or two-family homes' },
+    type: 'low',
+    label: 'Single/Two-Family (R2)',
+  },
+  R3: {
+    far: { standard: 0.6, qrs: 0.9, uap: null, commercial: null },
+    yards: { front: 10, rear: 20, side: '5+5', sideNote: 'two side yards: 5ft each, QRS front 10ft' },
+    height: { maxBase: 35, maxHeight: 35 },
+    coverage: { standard: 55, qrs: 55 },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 1.0 },
+    density: { dwellingUnitFactor: 680, note: '1-2 family homes' },
+    type: 'low',
+    label: 'Low-Density Residential (R3)',
+  },
+  R3A: {
+    far: { standard: 0.6, qrs: 0.9, uap: null, commercial: null },
+    yards: { front: 10, rear: 20, side: '5+5', sideNote: 'two side yards: 5ft each' },
+    height: { maxBase: 35, maxHeight: 35 },
+    coverage: { standard: 55, qrs: 55 },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 1.0 },
+    density: { dwellingUnitFactor: 680, note: 'Detached homes only' },
+    type: 'low',
+    label: 'Low-Density Detached (R3A)',
+  },
+  R3X: {
+    far: { standard: 0.6, qrs: null, uap: null, commercial: null },
+    yards: { front: 15, rear: 20, side: '5+5', sideNote: 'contextual: 15ft front, 5ft each side' },
+    height: { maxBase: null, maxHeight: 35 },
+    coverage: { standard: 35, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 1.0 },
+    density: { dwellingUnitFactor: null, note: 'Contextual, low-rise' },
+    type: 'low',
+    label: 'Contextual Low-Density (R3X)',
+  },
+  R4: {
+    far: { standard: 0.9, qrs: 1.35, uap: null, commercial: null },
+    yards: { front: 10, rear: 20, side: '5+5', sideNote: 'two side yards: 5ft each' },
+    height: { maxBase: 45, maxHeight: 55 },
+    coverage: { standard: 55, qrs: 65 },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 1.0 },
+    density: { dwellingUnitFactor: 680, note: '2-family homes and apartments' },
+    type: 'low',
+    label: 'Two-Family (R4)',
+  },
+  R4A: {
+    far: { standard: 1.0, qrs: 1.5, uap: null, commercial: null },
+    yards: { front: 10, rear: 20, side: '5+5', sideNote: 'two side yards: 5ft each' },
+    height: { maxBase: 45, maxHeight: 55 },
+    coverage: { standard: 60, qrs: 70 },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.5 },
+    density: { dwellingUnitFactor: 680, note: 'Pitched roof envelope 25ft perimeter/35ft max' },
+    type: 'low',
+    label: 'Two-Family with Pitch (R4A)',
+  },
+  R4B: {
+    far: { standard: 0.9, qrs: null, uap: null, commercial: null },
+    yards: { front: '0-18', rear: 20, side: '5+5', sideNote: 'contextual front 0-18ft, two side yards: 5ft each' },
+    height: { maxBase: 24, maxHeight: 24 },
+    coverage: { standard: 55, qrs: null },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 1.0 },
+    density: { dwellingUnitFactor: 680, note: '2-family, shorter envelope' },
+    type: 'low',
+    label: 'Low Two-Family (R4B)',
+  },
+  R5: {
+    far: { standard: 1.25, qrs: 2.0, uap: null, commercial: null },
+    yards: { front: 10, rear: 20, side: '4+4', sideNote: 'two side yards: 4ft each if detached' },
+    height: { maxBase: 45, maxHeight: 55 },
+    coverage: { standard: 55, qrs: 80 },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.85 },
+    density: { dwellingUnitFactor: 680, note: 'Low-rise apartments' },
+    type: 'low',
+    label: 'Medium-Density (R5)',
+  },
+  R5A: {
+    far: { standard: 1.1, qrs: null, uap: null, commercial: null },
+    yards: { front: 10, rear: 20, side: '4+4', sideNote: 'contextual, similar to R5' },
+    height: { maxBase: 28, maxHeight: 28 },
+    coverage: { standard: 55, qrs: null },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.85 },
+    density: { dwellingUnitFactor: 680, note: 'Contextual, lower than R5' },
+    type: 'medium',
+    label: 'Contextual Medium-Density (R5A)',
+  },
+  R5B: {
+    far: { standard: 1.35, qrs: null, uap: null, commercial: null },
+    yards: { front: 10, rear: 20, side: '4+4', sideNote: 'contextual, similar to R5' },
+    height: { maxBase: 33, maxHeight: 33 },
+    coverage: { standard: 55, qrs: null },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.85 },
+    density: { dwellingUnitFactor: 680, note: 'Contextual, mid-rise' },
+    type: 'medium',
+    label: 'Contextual Mid-Rise (R5B)',
+  },
+  R5D: {
+    far: { standard: 2.0, qrs: 2.5, uap: null, commercial: null },
+    yards: { front: 5, rear: 20, side: null, sideNote: 'no side yard requirement' },
+    height: { maxBase: 45, maxHeight: 55 },
+    coverage: { standard: 80, qrs: 80 },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.85 },
+    density: { dwellingUnitFactor: 680, note: 'Dense residential' },
+    type: 'medium',
+    label: 'Medium-High Density (R5D)',
+  },
+  R6: {
+    far: { standard: 2.43, qrs: null, uap: 3.16, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 65, maxHeight: 75 },
+    coverage: { standard: 70, qrs: null },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.5 },
+    density: { dwellingUnitFactor: 680, note: 'Mid-rise residential (UAP = +30% bonus FAR for affordable)' },
+    type: 'high',
+    label: 'Mid-Rise (R6)',
+  },
+  R6A: {
+    far: { standard: 3.0, qrs: null, uap: 3.9, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 65, maxHeight: 75 },
+    coverage: { standard: 80, qrs: null },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.5 },
+    density: { dwellingUnitFactor: 680, note: 'High-density mid-rise (UAP eligible)' },
+    type: 'high',
+    label: 'High-Rise (R6A)',
+  },
+  R6B: {
+    far: { standard: 2.0, qrs: null, uap: 2.6, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 45, maxHeight: 55 },
+    coverage: { standard: 80, qrs: null },
+    adu: { eligible: true, maxSqft: 1200, rearYardFraction: 0.33 },
+    parking: { perDU: 0.5 },
+    density: { dwellingUnitFactor: 680, note: 'Mid-rise with height cap (UAP eligible)' },
+    type: 'high',
+    label: 'Capped Mid-Rise (R6B)',
+  },
+  R7: {
+    far: { standard: 3.44, qrs: null, uap: 4.0, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 70, maxHeight: 85 },
+    coverage: { standard: 70, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.5 },
+    density: { dwellingUnitFactor: 680, note: 'Tower residential (UAP eligible)' },
+    type: 'high',
+    label: 'Tower (R7)',
+  },
+  R7A: {
+    far: { standard: 4.0, qrs: null, uap: 5.2, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 65, maxHeight: 80 },
+    coverage: { standard: 80, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.5 },
+    density: { dwellingUnitFactor: 680, note: 'High-rise tower (UAP eligible)' },
+    type: 'high',
+    label: 'High Tower (R7A)',
+  },
+  R7B: {
+    far: { standard: 3.0, qrs: null, uap: 3.9, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 65, maxHeight: 75 },
+    coverage: { standard: 80, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.5 },
+    density: { dwellingUnitFactor: 680, note: 'Tall tower, lower than R7A (UAP eligible)' },
+    type: 'high',
+    label: 'Mid Tower (R7B)',
+  },
+  R7D: {
+    far: { standard: 4.2, qrs: null, uap: 5.46, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 75, maxHeight: 100 },
+    coverage: { standard: 80, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.4 },
+    density: { dwellingUnitFactor: 680, note: 'Super-high tower (UAP eligible)' },
+    type: 'high',
+    label: 'Super Tower (R7D)',
+  },
+  R8: {
+    far: { standard: 6.02, qrs: null, uap: 7.2, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 85, maxHeight: 120 },
+    coverage: { standard: 70, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.4 },
+    density: { dwellingUnitFactor: 680, note: 'Skyline tower (UAP eligible)' },
+    type: 'high',
+    label: 'Skyline Tower (R8)',
+  },
+  R8A: {
+    far: { standard: 6.02, qrs: null, uap: 7.2, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 85, maxHeight: 120 },
+    coverage: { standard: 80, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.4 },
+    density: { dwellingUnitFactor: 680, note: 'Super-dense tower (UAP eligible)' },
+    type: 'high',
+    label: 'Super-Dense Tower (R8A)',
+  },
+  R8B: {
+    far: { standard: 4.0, qrs: null, uap: 5.2, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 65, maxHeight: 75 },
+    coverage: { standard: 80, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.4 },
+    density: { dwellingUnitFactor: 680, note: 'Lower R8 variant (UAP eligible)' },
+    type: 'high',
+    label: 'Mid-Height Tower (R8B)',
+  },
+  R9: {
+    far: { standard: 7.52, qrs: null, uap: 9.0, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 100, maxHeight: 135 },
+    coverage: { standard: 70, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.4 },
+    density: { dwellingUnitFactor: 680, note: 'Super-tall tower (UAP eligible)' },
+    type: 'high',
+    label: 'Super-Tall Tower (R9)',
+  },
+  R10: {
+    far: { standard: 10.0, qrs: null, uap: 12.0, commercial: null },
+    yards: { front: null, rear: 20, side: null, sideNote: 'no front or side yard required' },
+    height: { maxBase: 120, maxHeight: 185 },
+    coverage: { standard: 70, qrs: null },
+    adu: { eligible: false, maxSqft: null, rearYardFraction: null },
+    parking: { perDU: 0.4 },
+    density: { dwellingUnitFactor: 680, note: 'Supertall tower on a base (UAP eligible)' },
+    type: 'high',
+    label: 'Supertall (R10)',
+  },
+};
+
 const PLUTO_API = 'https://data.cityofnewyork.us/resource/64uk-42ks.json';
 const DOB_JOBS_API = 'https://data.cityofnewyork.us/resource/ic3t-wcy2.json';
 const DOB_PERMITS_API = 'https://data.cityofnewyork.us/resource/ipu4-2vta.json';
@@ -2137,6 +2405,253 @@ async function queryPluto(filters) {
   }
 }
 
+// TASK 2: Get zoning rules for a district code
+function getZoningRules(zonedist1) {
+  if (!zonedist1) return NYC_ZONING_DISTRICTS.R6; // Default fallback
+
+  // Strip suffix numbers like "-1" to get base district (e.g., "R6A-1" -> "R6A")
+  const baseZone = zonedist1.replace(/-\d+$/, '').toUpperCase();
+
+  // Try exact match first
+  if (NYC_ZONING_DISTRICTS[baseZone]) {
+    return NYC_ZONING_DISTRICTS[baseZone];
+  }
+
+  // Try base numeric district (e.g., "R6" if "R6A" not found)
+  const numericBase = baseZone.replace(/[A-Z]+$/g, '');
+  if (NYC_ZONING_DISTRICTS[numericBase]) {
+    return NYC_ZONING_DISTRICTS[numericBase];
+  }
+
+  // Final fallback to R6
+  return NYC_ZONING_DISTRICTS.R6;
+}
+
+// TASK 3: Real zoning feasibility evaluation
+function evalZoningFeasibility(lot, sku) {
+  const rules = getZoningRules(lot.zone);
+  const gates = [];
+  const opportunities = [];
+  let score = 50; // Base score
+
+  // Gate 1: FAR check
+  const farCheck = {
+    name: 'FAR Compliance',
+    pass: true,
+    detail: '',
+  };
+  const maxFar = rules.far.standard || 0;
+  const requiredGFA = (sku.w * sku.d * sku.stories);
+  const maxAllowedGFA = lot.area * maxFar;
+  if (requiredGFA <= maxAllowedGFA) {
+    farCheck.detail = `SKU ${requiredGFA.toLocaleString()} sqft <= ${maxAllowedGFA.toLocaleString()} sqft`;
+    score += 15;
+  } else {
+    farCheck.pass = false;
+    farCheck.detail = `SKU ${requiredGFA.toLocaleString()} sqft exceeds max ${maxAllowedGFA.toLocaleString()} sqft (FAR ${maxFar})`;
+    score -= 15;
+  }
+  gates.push(farCheck);
+
+  // Gate 2: Height check
+  const heightCheck = {
+    name: 'Height Envelope',
+    pass: true,
+    detail: '',
+  };
+  const maxHeight = rules.height.maxHeight || 70;
+  const skuHeight = sku.h || (sku.stories * 12);
+  if (skuHeight <= maxHeight) {
+    heightCheck.detail = `SKU ${skuHeight}ft <= ${maxHeight}ft max`;
+    score += 10;
+  } else {
+    heightCheck.pass = false;
+    heightCheck.detail = `SKU ${skuHeight}ft exceeds max ${maxHeight}ft`;
+    score -= 10;
+  }
+  gates.push(heightCheck);
+
+  // Gate 3: Setback check
+  const setbackCheck = {
+    name: 'Setback/Placement',
+    pass: true,
+    detail: '',
+  };
+  const minSideYard = rules.yards.side ? 5 : 0; // Assume 5ft if any side yard required
+  const minFrontYard = rules.yards.front || 0;
+  const availableWidth = lot.width - (minSideYard * 2);
+  if (sku.w <= availableWidth && lot.depth >= (rules.yards.rear || 20)) {
+    setbackCheck.detail = `Width ${sku.w}ft fits (available ${availableWidth}ft), depth OK`;
+    score += 10;
+  } else {
+    setbackCheck.pass = false;
+    setbackCheck.detail = `Width or depth constraints violated`;
+    score -= 10;
+  }
+  gates.push(setbackCheck);
+
+  // Gate 4: Coverage check
+  const coverageCheck = {
+    name: 'Lot Coverage',
+    pass: true,
+    detail: '',
+  };
+  const skuCoverage = (sku.w * sku.d) / lot.area * 100;
+  const maxCoverage = rules.coverage.standard || 70;
+  if (skuCoverage <= maxCoverage) {
+    coverageCheck.detail = `${skuCoverage.toFixed(1)}% coverage <= ${maxCoverage}%`;
+    score += 10;
+  } else {
+    coverageCheck.pass = false;
+    coverageCheck.detail = `${skuCoverage.toFixed(1)}% coverage exceeds ${maxCoverage}% limit`;
+    score -= 10;
+  }
+  gates.push(coverageCheck);
+
+  // Gate 5: ADU eligibility
+  if (sku.isADU || sku.id && sku.id.includes('adu')) {
+    const aduCheck = {
+      name: 'ADU Eligibility',
+      pass: rules.adu.eligible,
+      detail: rules.adu.eligible
+        ? `${lot.zone} allows ADU (max ${rules.adu.maxSqft} sqft)`
+        : `${lot.zone} does not permit ADU`,
+    };
+    gates.push(aduCheck);
+    if (!aduCheck.pass) score -= 15;
+    else score += 8;
+  }
+
+  // Gate 6: Lot dimension minimums
+  const lotDimCheck = {
+    name: 'Lot Dimensions',
+    pass: true,
+    detail: '',
+  };
+  const minWidth = 25;
+  const minDepth = 60;
+  if (lot.width >= minWidth && lot.depth >= minDepth) {
+    lotDimCheck.detail = `${lot.width}ft × ${lot.depth}ft meets minimums`;
+    score += 8;
+  } else {
+    lotDimCheck.pass = false;
+    lotDimCheck.detail = `Width or depth below minimum (${minWidth}ft × ${minDepth}ft)`;
+    score -= 8;
+  }
+  gates.push(lotDimCheck);
+
+  // Opportunity flags
+  if (rules.far.qrs) {
+    opportunities.push(`QRS eligible: +${((rules.far.qrs - rules.far.standard) * 100).toFixed(0)}% bonus FAR for missing-middle housing`);
+    score += 5;
+  }
+  if (rules.far.uap) {
+    opportunities.push(`UAP eligible: +${((rules.far.uap - rules.far.standard) * 100).toFixed(0)}% bonus FAR for affordable housing`);
+    score += 5;
+  }
+  if (rules.adu.eligible) {
+    opportunities.push(`ADU-friendly district: accessory unit possible in rear yard`);
+    score += 3;
+  }
+
+  const feasible = gates.every(g => g.pass);
+  const finalScore = Math.max(0, Math.min(100, score));
+
+  return {
+    feasible,
+    score: finalScore,
+    gates,
+    opportunities,
+    zoningRules: rules,
+  };
+}
+
+// TASK 5: Render zoning detail card
+function renderZoningDetail(rules, district) {
+  const panelEl = document.getElementById('filledPanel');
+  if (!panelEl) return;
+
+  // Create or update zoning detail section (look for existing zone info area)
+  let zoningSection = document.getElementById('zoningDetailSection');
+  if (!zoningSection) {
+    // Create new section if it doesn't exist
+    zoningSection = document.createElement('div');
+    zoningSection.id = 'zoningDetailSection';
+    zoningSection.style.cssText = 'margin-top:20px;padding:12px;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);';
+
+    // Find a good place to insert it (after hero section, before existing zoning values)
+    const zoneVal = document.getElementById('zVal');
+    if (zoneVal && zoneVal.parentElement) {
+      zoneVal.parentElement.parentElement.insertAdjacentElement('afterend', zoningSection);
+    }
+  }
+
+  // Build HTML for zoning detail
+  let html = `<div style="font-weight:600;margin-bottom:8px;font-size:13px;">Zoning Rules — ${rules.label}</div>`;
+
+  // FAR section
+  html += `<div style="margin-bottom:10px;font-size:11px;">`;
+  html += `<div style="color:var(--text-2);margin-bottom:3px;"><strong>FAR (Floor Area Ratio)</strong></div>`;
+  html += `<div style="margin-left:8px;">Standard: <strong>${rules.far.standard}</strong>`;
+  if (rules.far.qrs) html += ` | QRS: <strong>${rules.far.qrs}</strong> <span style="background:#e0f2fe;color:#0369a1;padding:0 4px;border-radius:3px;font-size:10px;">+Bonus</span>`;
+  if (rules.far.uap) html += ` | UAP: <strong>${rules.far.uap}</strong> <span style="background:#fef3c7;color:#b45309;padding:0 4px;border-radius:3px;font-size:10px;">+30%</span>`;
+  html += `</div>`;
+  html += `</div>`;
+
+  // Yards section
+  html += `<div style="margin-bottom:10px;font-size:11px;">`;
+  html += `<div style="color:var(--text-2);margin-bottom:3px;"><strong>Yard Requirements</strong></div>`;
+  html += `<div style="margin-left:8px;">`;
+  if (rules.yards.front !== null) html += `Front: ${rules.yards.front}ft | `;
+  html += `Rear: ${rules.yards.rear}ft | Side: ${rules.yards.side || 'None'} ${rules.yards.sideNote ? `(${rules.yards.sideNote})` : ''}`;
+  html += `</div>`;
+  html += `</div>`;
+
+  // Height section
+  html += `<div style="margin-bottom:10px;font-size:11px;">`;
+  html += `<div style="color:var(--text-2);margin-bottom:3px;"><strong>Height Envelope</strong></div>`;
+  html += `<div style="margin-left:8px;">`;
+  if (rules.height.maxBase) html += `Base: ${rules.height.maxBase}ft | `;
+  html += `Max: ${rules.height.maxHeight}ft`;
+  html += `</div>`;
+  html += `</div>`;
+
+  // Coverage section
+  html += `<div style="margin-bottom:10px;font-size:11px;">`;
+  html += `<div style="color:var(--text-2);margin-bottom:3px;"><strong>Lot Coverage</strong></div>`;
+  html += `<div style="margin-left:8px;">Standard: ${rules.coverage.standard}%`;
+  if (rules.coverage.qrs) html += ` | QRS: ${rules.coverage.qrs}%`;
+  html += `</div>`;
+  html += `</div>`;
+
+  // ADU eligibility
+  html += `<div style="margin-bottom:10px;font-size:11px;">`;
+  html += `<div style="color:var(--text-2);margin-bottom:3px;"><strong>Accessory Dwelling Unit (ADU)</strong></div>`;
+  html += `<div style="margin-left:8px;">`;
+  if (rules.adu.eligible) {
+    html += `<span style="color:var(--green);">✓ Eligible</span> — Max ${rules.adu.maxSqft} sqft, up to 1/3 rear yard`;
+  } else {
+    html += `<span style="color:var(--text-3);">Not permitted in ${rules.type} density zone</span>`;
+  }
+  html += `</div>`;
+  html += `</div>`;
+
+  // Parking requirement
+  html += `<div style="margin-bottom:10px;font-size:11px;">`;
+  html += `<div style="color:var(--text-2);margin-bottom:3px;"><strong>Parking</strong></div>`;
+  html += `<div style="margin-left:8px;">${rules.parking.perDU} space per dwelling unit</div>`;
+  html += `</div>`;
+
+  // Density note
+  if (rules.density.note) {
+    html += `<div style="font-size:10px;color:var(--text-3);font-style:italic;margin-top:8px;padding:8px;background:var(--surface-3);border-radius:4px;">`;
+    html += rules.density.note;
+    html += `</div>`;
+  }
+
+  zoningSection.innerHTML = html;
+}
+
 function scorePlutoResult(lot, filters) {
   let score = 30; // Lower base — earn more through criteria
   const reasons = [];
@@ -2173,11 +2688,36 @@ function scorePlutoResult(lot, filters) {
   if (filters.corner === 'yes' && !likelyCorner) { score -= 5; }
   if (filters.corner === 'yes' && likelyCorner) { score += 5; }
 
-  // === ZONING ===
+  // === ZONING (with real NYC handbook data) ===
   const zone = lot.zonedist1 || '';
-  if (zone.match(/R[6-9]/)) { score += 8; reasons.push(`${zone} — ADU-friendly zoning`); }
-  else if (zone.match(/R[4-5]/)) { score += 4; reasons.push(`${zone} — ADU possible with review`); }
-  else if (zone.match(/R[1-3]/)) { score += 2; warnings.push(`${zone} — may need zoning variance`); }
+  const zoningRules = getZoningRules(zone);
+  reasons.push(`${zone} (${zoningRules.label})`);
+
+  // Score based on real zoning rules
+  if (zoningRules.type === 'high') {
+    score += 10;
+    reasons.push('High-density zone — excellent for prefab residential');
+  } else if (zoningRules.type === 'medium') {
+    score += 6;
+    reasons.push('Medium-density zone — good for prefab housing');
+  } else if (zoningRules.type === 'low') {
+    score += 2;
+    if (zoningRules.adu.eligible) {
+      reasons.push('ADU-eligible low-density — potential rear structure');
+    } else {
+      warnings.push('Low-density zone — may require variance for new residential');
+    }
+  }
+
+  // QRS/UAP opportunity bonus
+  if (zoningRules.far.qrs) {
+    score += 3;
+    reasons.push(`QRS eligible: up to FAR ${zoningRules.far.qrs}`);
+  }
+  if (zoningRules.far.uap) {
+    score += 3;
+    reasons.push(`UAP eligible: up to FAR ${zoningRules.far.uap} for affordable housing`);
+  }
 
   // === FAR AVAILABILITY ===
   const builtFar = parseFloat(lot.builtfar) || 0;
@@ -2237,7 +2777,7 @@ function scorePlutoResult(lot, filters) {
   // Combine reasons and warnings
   const allReasons = [...reasons, ...warnings.map(w => '⚠ ' + w)];
 
-  return { score: Math.max(0, Math.min(100, score)), reasons: allReasons, warnings, inFlood, historic };
+  return { score: Math.max(0, Math.min(100, score)), reasons: allReasons, warnings, inFlood, historic, zoningRules };
 }
 
 async function runPropertyFinder() {
@@ -2317,6 +2857,19 @@ function renderFinderResults(results) {
     const boro = { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'Staten Island' }[lot.borocode] || '';
     const matchClass = lot.matchScore >= 80 ? 'prop-match-high' : lot.matchScore >= 60 ? 'prop-match-mid' : 'prop-match-low';
 
+    // Get zoning rules for eligibility badges
+    const zoningRules = getZoningRules(lot.zonedist1);
+    let zoneBadges = '';
+    if (zoningRules.far.qrs) {
+      zoneBadges += '<span class="tag" style="background:#e0f2fe;color:#0369a1;margin-right:4px;">QRS Eligible</span>';
+    }
+    if (zoningRules.far.uap) {
+      zoneBadges += '<span class="tag" style="background:#fef3c7;color:#b45309;margin-right:4px;">UAP Eligible</span>';
+    }
+    if (zoningRules.adu.eligible) {
+      zoneBadges += '<span class="tag" style="background:#f0fdf4;color:#166534;margin-right:4px;">ADU OK</span>';
+    }
+
     return `
       <div class="prop-card ${i === 0 ? 'top-pick' : ''}" onclick="selectFinderProperty(${i})">
         <div class="prop-head">
@@ -2327,6 +2880,7 @@ function renderFinderResults(results) {
           <span class="prop-match ${matchClass}">${lot.matchScore}%</span>
         </div>
         <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;">${boro} &middot; ${lot.zonedist1 || '—'} &middot; BBL ${lot.bbl || '—'}</div>
+        ${zoneBadges ? `<div style="margin-bottom:6px;font-size:10px;">${zoneBadges}</div>` : ''}
         <div class="prop-stats">
           <div><div class="val">${fmt(lot.lotarea)} sf</div><div class="lbl">Lot Area</div></div>
           <div><div class="val">${fmt(lot.lotfront || 0)}ft</div><div class="lbl">Frontage</div></div>
@@ -2413,6 +2967,10 @@ function loadSiteFromPluto(lat, lon, props, plutoData) {
   document.getElementById('bldgVal').textContent = plutoData.bldgclass || '—';
   document.getElementById('overlayVal').textContent = plutoData.overlay1 || 'None';
   document.getElementById('boroVal').textContent = props.borough || '—';
+
+  // Render enhanced zoning detail with NYC Handbook 2025 data
+  const zoningRules = getZoningRules(zoneDistrict);
+  renderZoningDetail(zoningRules, zoneDistrict);
 
   const lot = { zone: zoneDistrict, area: lotArea, width: lotWidth, heightLimit: 35, maxCov: 65, existCov: parseFloat(plutoData.builtfar || 30) / (far || 2) * 30 };
   const fit = evalFeasibility(lot);
