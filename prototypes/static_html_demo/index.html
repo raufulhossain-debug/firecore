@@ -6964,11 +6964,17 @@ function drawFloorPlan(sku, tb, bldgW, bldgD, floorNum, totalStories) {
 
   svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
 
-  const s = 8;
-  const ox = 80;
-  const oy = 60;
+  // Auto-scale: compute scale to fit 70% of available drawing area
+  const drawW = VW - 160;  // Account for margins and space
+  const drawH = VH - 250;  // Account for title block and top margins
+  const s = Math.min((drawW * 0.7) / bldgW, (drawH * 0.7) / bldgD);
+
   const bw = bldgW * s;
   const bd = bldgD * s;
+
+  // Center the building on the sheet
+  const ox = (VW - bw) / 2;
+  const oy = (drawH - bd) / 2 + 40;
 
   const isUpperFloor = floorNum > 1;
   const rooms = layoutFloorPlan(bldgW, bldgD, sku.beds, sku.baths, isUpperFloor);
@@ -7001,8 +7007,28 @@ function drawFloorPlan(sku, tb, bldgW, bldgD, floorNum, totalStories) {
       }
     }
 
+    // Add door swings at room entries and closets in bedrooms
+    const roomName = room.name.toUpperCase();
+    if (roomName.includes('BEDROOM')) {
+      svg += svgCloset(rx + rw * 0.15, ry + rh * 0.75, rw * 0.2, rh * 0.15);
+    }
+    if (roomName.includes('ENTRY') || roomName.includes('LIVING')) {
+      svg += svgDoorSwing(rx + rw * 0.05, ry + rh * 0.1, rw * 0.1);
+    }
+
+    // Add smoke detector in hallway/entry
+    if (roomName.includes('HALLWAY') || roomName.includes('ENTRY')) {
+      svg += svgSmokeDet(rx + rw * 0.8, ry + rh * 0.5);
+    }
+
+    // Compute room area in square feet
+    const areaW = room.w * (VW / (VW - 30)) / 2;  // Scale-adjust approximate area
+    const areaD = room.h * (VH / (VH - 165)) / 2;
+    const areaSf = Math.round(areaW * areaD);
+
     const labelSize = rw > 40 ? 9 : 7;
     svg += svgText(rx + rw / 2, ry + rh / 2 + 20, room.name, { size: labelSize, weight: '600', anchor: 'middle', color: '#333' });
+    svg += svgText(rx + rw / 2, ry + rh - 6, `${areaSf} SF`, { size: 6, anchor: 'middle', color: '#999' });
   }
 
   svg += svgDimension(ox, oy + bd + 20, ox + bw, oy + bd + 20, `${bldgW.toFixed(1)}'-0"`, 'below', 25);
@@ -7030,11 +7056,18 @@ function drawElevations(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) 
 
   svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
 
-  const s = 5;
-  const ox = 100;
-  const oy = 100;
+  // Auto-scale based on total height including cellar
+  const drawW = VW - 160;
+  const drawH = VH - 250;
+  const totalH = stories * floorH + cellarH;
+  const s = Math.min((drawW * 0.6) / bldgW, (drawH * 0.55) / totalH);
+
   const bw = bldgW * s;
-  const bh = (stories * floorH + cellarH) * s;
+  const bh = totalH * s;
+
+  // Center on sheet
+  const ox = (VW - bw) / 2;
+  const oy = (drawH - bh) / 2 + 40;
 
   svg += svgText(VW / 2, 50, 'FRONT ELEVATION', { size: 14, weight: '700', anchor: 'middle' });
   svg += svgText(VW / 2, 75, `Scale: 1/4" = 1'-0"`, { size: 9, anchor: 'middle', color: '#666' });
@@ -7044,7 +7077,12 @@ function drawElevations(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) 
   svg += svgLine(ox - 40, gradeY, ox + bw + 40, gradeY, { sw: 2, color: '#2d6a4f' });
   svg += svgText(ox - 35, gradeY - 5, 'GRADE', { size: 7, weight: '600', color: '#2d6a4f' });
 
+  // Cellar with foundation hatching
   svg += svgRect(ox, gradeY, bw, cellarH * s, { fill: '#f5f5f0', stroke: '#000', sw: 2 });
+  // Add foundation hatching pattern
+  for (let hx = ox + 5; hx < ox + bw; hx += 8) {
+    svg += svgLine(hx, gradeY, hx + 4, gradeY + cellarH * s, { sw: 0.5, color: '#999', dash: '1,1' });
+  }
   svg += svgText(ox + bw / 2, gradeY + cellarH * s / 2, 'CELLAR', { size: 8, weight: '600', color: '#666' });
 
   let elev = 61.34;
@@ -7052,13 +7090,36 @@ function drawElevations(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) 
     const fy = gradeY - (f + 1) * floorH * s;
     svg += svgRect(ox, fy, bw, floorH * s, { fill: f % 2 === 0 ? '#fff' : '#fafafa', stroke: '#000', sw: 2 });
 
-    const winW = bw / 3;
+    // Add floor slab lines
+    svg += svgLine(ox, fy, ox + bw, fy, { sw: 1, color: '#000' });
+
+    // Add ceiling line
+    if (f < stories - 1) {
+      svg += svgLine(ox, fy + floorH * s * 0.85, ox + bw, fy + floorH * s * 0.85, { sw: 0.75, color: '#666', dash: '2,2' });
+    }
+
+    // Windows on facade
+    const winW = 20;
+    const winH = Math.max(10, floorH * s * 0.4);
     for (let w = 0; w < 2; w++) {
       const wx = ox + 15 + w * (bw - 30) / 2;
-      const wy = fy + 10;
-      svg += svgRect(wx, wy, 20, 18, { fill: '#cce5ff', stroke: '#000', sw: 1 });
-      svg += svgLine(wx + 10, wy, wx + 10, wy + 18, { sw: 0.5, color: '#666' });
-      svg += svgLine(wx, wy + 9, wx + 20, wy + 9, { sw: 0.5, color: '#666' });
+      const wy = fy + floorH * s * 0.2;
+      svg += svgRect(wx, wy, winW, winH, { fill: '#cce5ff', stroke: '#000', sw: 1 });
+      // Window sill and header lines
+      svg += svgLine(wx, wy - 2, wx + winW, wy - 2, { sw: 0.75, color: '#666' });
+      svg += svgLine(wx, wy + winH + 2, wx + winW, wy + winH + 2, { sw: 0.75, color: '#666' });
+      svg += svgLine(wx + winW / 2, wy, wx + winW / 2, wy + winH, { sw: 0.5, color: '#666' });
+      svg += svgLine(wx, wy + winH / 2, wx + winW, wy + winH / 2, { sw: 0.5, color: '#666' });
+    }
+
+    // Entry door on ground floor
+    if (f === 0) {
+      const doorW = 18;
+      const doorH = floorH * s * 0.7;
+      const doorX = ox + bw / 2 - doorW / 2;
+      const doorY = gradeY - doorH;
+      svg += svgRect(doorX, doorY, doorW, doorH, { fill: '#fff9e6', stroke: '#000', sw: 1 });
+      svg += svgLine(doorX + doorW / 2, doorY, doorX + doorW / 2, doorY + doorH, { sw: 0.5, color: '#666' });
     }
 
     const floorLabel = f === 0 ? 'FIRST' : f === 1 ? 'SECOND' : 'THIRD';
@@ -7068,6 +7129,11 @@ function drawElevations(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) 
     svg += svgText(ox + bw + 30, fy + floorH * s / 2, `EL: ${elev.toFixed(2)}'`, { size: 7, color: '#333', anchor: 'start' });
     elev += floorH;
   }
+
+  // Parapet/cornice line at roof
+  const roofY = gradeY - stories * floorH * s;
+  svg += svgLine(ox - 5, roofY - 3, ox + bw + 5, roofY - 3, { sw: 1.5, color: '#000' });
+  svg += svgText(ox - 30, roofY - 3, 'ROOF', { size: 8, weight: '600', color: '#666', anchor: 'end' });
 
   svg += svgText(VW / 2, VH - 130, 'BUILDING ELEVATION', { size: 14, weight: '700', anchor: 'middle' });
   svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'ELEVATION', 'A-201');
@@ -7089,17 +7155,29 @@ function drawSection(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) {
   svg += svgText(VW / 2, 50, 'BUILDING SECTION 1-1', { size: 14, weight: '700', anchor: 'middle' });
   svg += svgText(VW / 2, 75, `Scale: 1/4" = 1'-0"`, { size: 9, anchor: 'middle', color: '#666' });
 
-  const s = 5;
-  const ox = 150;
-  const oy = 120;
+  // Auto-scale based on building depth and total height
+  const drawW = VW - 160;
+  const drawH = VH - 250;
+  const totalH = stories * floorH + cellarH;
+  const s = Math.min((drawW * 0.6) / bldgD, (drawH * 0.55) / totalH);
+
   const sd = bldgD * s;
+  const sh = totalH * s;
+
+  // Center on sheet
+  const ox = (VW - sd) / 2;
+  const oy = (drawH - sh) / 2 + 40;
 
   const gradeY = oy + cellarH * s;
 
   svg += svgLine(ox - 50, gradeY, ox + sd + 50, gradeY, { sw: 2.5, color: '#2d6a4f' });
   svg += svgText(ox - 45, gradeY - 5, 'GRADE', { size: 8, weight: '600', color: '#2d6a4f' });
 
+  // Cellar with foundation wall hatching
   svg += svgRect(ox, gradeY, sd, cellarH * s, { fill: '#f5f5f0', stroke: '#000', sw: 2 });
+  for (let hx = ox + 5; hx < ox + sd; hx += 8) {
+    svg += svgLine(hx, gradeY, hx + 4, gradeY + cellarH * s, { sw: 0.5, color: '#999', dash: '1,1' });
+  }
   svg += svgText(ox + sd / 2, gradeY + cellarH * s / 2, 'CELLAR', { size: 8, weight: '600', color: '#666' });
 
   for (let f = 0; f < stories; f++) {
@@ -7107,19 +7185,40 @@ function drawSection(sku, tb, bldgW, bldgD, bldgH, stories, floorH, cellarH) {
     const floorFill = f % 2 === 0 ? '#fafafa' : '#fff';
     svg += svgRect(ox, fy, sd, floorH * s, { fill: floorFill, stroke: '#000', sw: 2 });
 
+    // Floor slab thickness line
+    svg += svgLine(ox, fy, ox + sd, fy, { sw: 1, color: '#000' });
+
+    // Ceiling line
+    if (f < stories - 1) {
+      svg += svgLine(ox, fy + floorH * s * 0.85, ox + sd, fy + floorH * s * 0.85, { sw: 0.75, color: '#666', dash: '2,2' });
+    }
+
+    // Add insulation indication (zigzag) in walls
+    const zigW = 3;
+    for (let zx = ox + 2; zx < ox + sd; zx += zigW * 3) {
+      const zy = fy + 5;
+      svg += svgLine(zx, zy, zx + zigW, zy - zigW, { sw: 0.5, color: '#999' });
+      svg += svgLine(zx + zigW, zy - zigW, zx + zigW * 2, zy, { sw: 0.5, color: '#999' });
+    }
+
     const stairW = sd * 0.25;
     const stairH = floorH * s * 0.8;
     svg += svgStairPlan(ox + sd * 0.1, fy + 5, stairW, stairH, 3, f < stories - 1 ? 'UP' : '');
 
+    // Floor-to-ceiling height dimension for each story
     const floorLabel = f === 0 ? 'FIRST' : f === 1 ? 'SECOND' : 'THIRD';
     svg += svgText(ox - 30, fy + floorH * s / 2, floorLabel, { size: 8, weight: '600', color: '#666', anchor: 'end' });
+    svg += svgDimension(ox - 15, fy, ox - 15, fy + floorH * s, `${floorH}'-0"`, 'left', 10);
   }
 
-  svg += svgLine(ox, gradeY - stories * floorH * s, ox + sd, gradeY - stories * floorH * s, { sw: 1.5, color: '#000' });
-  svg += svgText(ox - 30, gradeY - stories * floorH * s, 'ROOF', { size: 8, weight: '600', color: '#666', anchor: 'end' });
+  // Roof line with parapet
+  const roofY = gradeY - stories * floorH * s;
+  svg += svgLine(ox - 5, roofY, ox + sd + 5, roofY, { sw: 1.5, color: '#000' });
+  svg += svgText(ox - 30, roofY, 'ROOF', { size: 8, weight: '600', color: '#666', anchor: 'end' });
 
+  // Overall height dimensions
   svg += svgDimension(ox - 15, oy, ox - 15, gradeY, `${cellarH}'-0"`, 'left', 15);
-  svg += svgDimension(ox - 15, gradeY, ox - 15, gradeY - stories * floorH * s, `${(stories * floorH).toFixed(0)}'-0"`, 'left', 15);
+  svg += svgDimension(ox - 15, gradeY, ox - 15, roofY, `${(stories * floorH).toFixed(0)}'-0"`, 'left', 15);
 
   svg += svgText(VW / 2, VH - 130, 'SECTION THROUGH BUILDING', { size: 14, weight: '700', anchor: 'middle' });
   svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'SECTION', 'A-301');
@@ -7141,17 +7240,72 @@ function drawSitePlan(sku, tb, lotW, lotD, bldgW, bldgD, front, rear, sideVal, r
   svg += svgText(VW / 2, 50, 'SITE PLAN', { size: 14, weight: '700', anchor: 'middle' });
   svg += svgText(VW / 2, 75, `Scale: 1/4" = 1'-0"`, { size: 9, anchor: 'middle', color: '#666' });
 
-  const s = 3;
-  const ox = 150;
-  const oy = 100;
+  // Auto-scale lot to fill 60% of available area
+  const drawW = VW - 160;
+  const drawH = VH - 250;
+  const s = Math.min((drawW * 0.6) / lotW, (drawH * 0.6) / lotD);
+
   const lw = lotW * s;
   const ld = lotD * s;
 
+  // Center lot on sheet
+  const ox = (VW - lw) / 2;
+  const oy = (drawH - ld) / 2 + 40;
+
+  // Lot rectangle
   svg += svgRect(ox, oy, lw, ld, { fill: '#f0f9ff', stroke: '#2d6a4f', sw: 2 });
 
-  svg += svgLine(ox + 5, oy + 5, ox + 15, oy + 5, { sw: 0.5, color: '#999', dash: '3,2' });
-  svg += svgText(ox + 20, oy + 8, 'Street', { size: 7, color: '#666' });
+  // Street line and label at top (before lot)
+  const streetY = oy - 10;
+  svg += svgLine(ox - 20, streetY, ox + lw + 20, streetY, { sw: 1.5, color: '#666', dash: '4,2' });
+  svg += svgText(ox + lw / 2, streetY - 8, 'STREET', { size: 8, weight: '600', color: '#666', anchor: 'middle' });
 
+  // Sidewalk line
+  const sidewalkY = oy + 5;
+  svg += svgLine(ox, sidewalkY, ox + lw, sidewalkY, { sw: 2, color: '#999' });
+
+  // Property line labels at corners
+  svg += svgText(ox - 8, oy - 5, 'P/L', { size: 6, weight: '600', color: '#333', anchor: 'end' });
+  svg += svgText(ox + lw + 8, oy - 5, 'P/L', { size: 6, weight: '600', color: '#333', anchor: 'start' });
+  svg += svgText(ox - 8, oy + ld + 5, 'P/L', { size: 6, weight: '600', color: '#333', anchor: 'end' });
+  svg += svgText(ox + lw + 8, oy + ld + 5, 'P/L', { size: 6, weight: '600', color: '#333', anchor: 'start' });
+
+  // Setback dashed lines (front, rear, sides)
+  const frontSetbackY = oy + front * s;
+  svg += svgLine(ox, frontSetbackY, ox + lw, frontSetbackY, { sw: 0.75, color: '#c084fc', dash: '3,2' });
+  svg += svgText(ox - 15, frontSetbackY, `Front: ${front}'`, { size: 6, color: '#c084fc', anchor: 'end' });
+
+  const rearSetbackY = oy + ld - rear * s;
+  svg += svgLine(ox, rearSetbackY, ox + lw, rearSetbackY, { sw: 0.75, color: '#c084fc', dash: '3,2' });
+  svg += svgText(ox - 15, rearSetbackY, `Rear: ${rear}'`, { size: 6, color: '#c084fc', anchor: 'end' });
+
+  const sideSetbackX1 = ox + sideVal * s;
+  const sideSetbackX2 = ox + lw - sideVal * s;
+  svg += svgLine(sideSetbackX1, oy, sideSetbackX1, oy + ld, { sw: 0.75, color: '#c084fc', dash: '3,2' });
+  svg += svgLine(sideSetbackX2, oy, sideSetbackX2, oy + ld, { sw: 0.75, color: '#c084fc', dash: '3,2' });
+
+  // Hatched yard areas (exterior to setbacks)
+  // Front yard hatching
+  for (let hx = ox + 3; hx < ox + lw; hx += 6) {
+    svg += svgLine(hx, oy + 5, hx + 3, frontSetbackY - 3, { sw: 0.4, color: '#d1d5db', dash: '2,1' });
+  }
+
+  // Rear yard hatching
+  for (let hx = ox + 3; hx < ox + lw; hx += 6) {
+    svg += svgLine(hx, rearSetbackY + 3, hx + 3, oy + ld - 5, { sw: 0.4, color: '#d1d5db', dash: '2,1' });
+  }
+
+  // Side yard hatching (left side)
+  for (let hy = oy + 3; hy < oy + ld; hy += 6) {
+    svg += svgLine(ox + 3, hy, sideSetbackX1 - 3, hy + 3, { sw: 0.4, color: '#d1d5db', dash: '2,1' });
+  }
+
+  // Side yard hatching (right side)
+  for (let hy = oy + 3; hy < oy + ld; hy += 6) {
+    svg += svgLine(sideSetbackX2 + 3, hy, ox + lw - 3, hy + 3, { sw: 0.4, color: '#d1d5db', dash: '2,1' });
+  }
+
+  // Building footprint
   const bw = bldgW * s;
   const bd = bldgD * s;
   const bx = ox + sideVal * s;
@@ -7160,6 +7314,7 @@ function drawSitePlan(sku, tb, lotW, lotD, bldgW, bldgD, front, rear, sideVal, r
   svg += svgRect(bx, by, bw, bd, { fill: '#fff4e6', stroke: '#4f46e5', sw: 2 });
   svg += svgText(bx + bw / 2, by + bd / 2, sku.name, { size: 10, weight: '700', color: '#4f46e5' });
 
+  // Dimensions
   svg += svgDimension(ox, oy + ld + 15, ox + lw, oy + ld + 15, `${lotW}'-0"`, 'below', 10);
   svg += svgDimension(ox - 15, oy, ox - 15, oy + ld, `${lotD}'-0"`, 'left', 10);
 
@@ -7209,13 +7364,53 @@ function drawCoverSheet(sku, tb, lotW, lotD, bldgW, bldgD, bldgH, stories, floor
 
   cy += 15;
   svg += svgText(60, cy, 'ARCHITECTURAL SYMBOLS', { size: 11, weight: '700', anchor: 'start', color: '#000' });
-  cy += 18;
+  cy += 16;
   const sx = 60, sy = cy;
-  svg += svgToilet(sx + 20, sy); svg += svgText(sx + 35, sy + 2, 'Toilet', { size: 8, anchor: 'start', color: '#333' });
-  svg += svgSink(sx + 100, sy); svg += svgText(sx + 115, sy + 2, 'Sink', { size: 8, anchor: 'start', color: '#333' });
+
+  // Enhanced symbol legend
+  svg += svgDoorSwing(sx + 15, sy, 8); svg += svgText(sx + 30, sy, 'Door Swing', { size: 8, anchor: 'start', color: '#333' });
+  svg += svgWindow(sx + 120, sy, 12); svg += svgText(sx + 140, sy, 'Window', { size: 8, anchor: 'start', color: '#333' });
+
   cy += 18;
-  svg += svgBathtub(sx, sy + 20, 16, 14); svg += svgText(sx + 35, sy + 27, 'Bathtub', { size: 8, anchor: 'start', color: '#333' });
-  svg += svgStove(sx + 100, sy + 27); svg += svgText(sx + 115, sy + 27, 'Stove', { size: 8, anchor: 'start', color: '#333' });
+  svg += svgCloset(sx, sy + 18, 12, 10); svg += svgText(sx + 20, sy + 23, 'Closet', { size: 8, anchor: 'start', color: '#333' });
+  svg += svgSmokeDet(sx + 110, sy + 23); svg += svgText(sx + 125, sy + 23, 'Smoke Detector', { size: 8, anchor: 'start', color: '#333' });
+
+  cy += 18;
+  svg += svgToilet(sx + 20, sy + 36); svg += svgText(sx + 35, sy + 38, 'Toilet', { size: 8, anchor: 'start', color: '#333' });
+  svg += svgSink(sx + 100, sy + 36); svg += svgText(sx + 115, sy + 38, 'Sink', { size: 8, anchor: 'start', color: '#333' });
+
+  cy += 18;
+  svg += svgBathtub(sx, sy + 54, 16, 14); svg += svgText(sx + 35, sy + 61, 'Bathtub', { size: 8, anchor: 'start', color: '#333' });
+  svg += svgStove(sx + 100, sy + 61); svg += svgText(sx + 115, sy + 61, 'Stove', { size: 8, anchor: 'start', color: '#333' });
+
+  // Sheet Index Table
+  cy += 50;
+  svg += svgText(60, cy, 'SHEET INDEX', { size: 11, weight: '700', anchor: 'start', color: '#000' });
+  cy += 18;
+
+  // Sheet index table header
+  svg += svgRect(60, cy - 10, VW - 120, 16, { fill: '#e5e7eb', stroke: '#9ca3af', sw: 0.75 });
+  svg += svgText(70, cy, 'Sheet No.', { size: 8, weight: '600', anchor: 'start', color: '#000' });
+  svg += svgText(150, cy, 'Description', { size: 8, weight: '600', anchor: 'start', color: '#000' });
+  svg += svgText(VW - 80, cy, 'Status', { size: 8, weight: '600', anchor: 'start', color: '#000' });
+
+  const sheets = [
+    ['G-100', 'Cover Sheet', 'Complete'],
+    ['Z-100', 'Site Plan', 'Complete'],
+    ['A-101', 'First Floor Plan', 'Complete'],
+    stories >= 2 ? ['A-102', 'Second Floor Plan', 'Complete'] : null,
+    stories >= 3 ? ['A-103', 'Third Floor Plan', 'Complete'] : null,
+    ['A-201', 'Elevations', 'Complete'],
+    ['A-301', 'Section', 'Complete'],
+    ['A-501', 'Door & Window Schedule', 'Complete']
+  ].filter(Boolean);
+
+  sheets.forEach((sheet, idx) => {
+    cy += 14;
+    svg += svgText(70, cy, sheet[0], { size: 8, anchor: 'start', color: '#333', weight: '600' });
+    svg += svgText(150, cy, sheet[1], { size: 8, anchor: 'start', color: '#333' });
+    svg += svgText(VW - 80, cy, sheet[2], { size: 8, anchor: 'start', color: '#059669' });
+  });
 
   svg += svgText(VW / 2, VH - 130, 'COVER SHEET', { size: 14, weight: '700', anchor: 'middle' });
   svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, 'COVER', 'G-100');
@@ -7236,15 +7431,18 @@ function drawSchedule(sku, tb, stories) {
 
   svg += svgText(60, 50, 'DOOR & WINDOW SCHEDULE', { size: 14, weight: '700', anchor: 'start', color: '#000' });
 
-  let cy = 90;
+  let cy = 85;
 
-  svg += svgText(60, cy, 'DOORS', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 20;
-  svg += svgRect(60, cy, VW - 120, 120, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
+  // DOORS section
+  svg += svgText(60, cy, 'DOORS', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 16;
+  svg += svgRect(60, cy, VW - 120, 80, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
 
   const doorRows = [
     ['D1', '36"×80"', 'Entry Door', 'Steel', 'Grade 1', 'Entry'],
-    ['D2', '32"×80"', 'Interior', 'Wood', 'Grade 2', 'Bedroom'],
-    ['D3', '30"×80"', 'Interior', 'Wood', 'Grade 2', 'Bathroom'],
+    ['D2', '32"×80"', 'Swing Interior', 'Wood', 'Grade 2', 'Bedroom'],
+    ['D3', '30"×80"', 'Swing Interior', 'Wood', 'Grade 2', 'Bathroom'],
+    ['D4', '36"×80"', 'Pocket Door', 'Wood', 'Grade 2', 'Closet'],
+    ['D5', '32"×80"', 'Bifold Closet', 'Wood', 'Grade 2', 'Closet'],
   ];
 
   const colW = [(VW - 120) / 6, (VW - 120) / 6, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5];
@@ -7257,7 +7455,7 @@ function drawSchedule(sku, tb, stories) {
   });
 
   doorRows.forEach((row, ri) => {
-    cy += 15;
+    cy += 13;
     cx = 65;
     row.forEach((cell, ci) => {
       svg += svgText(cx, cy + 8, cell, { size: 8, anchor: 'start', color: '#333' });
@@ -7265,13 +7463,15 @@ function drawSchedule(sku, tb, stories) {
     });
   });
 
-  cy += 40;
-  svg += svgText(60, cy, 'WINDOWS', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 20;
-  svg += svgRect(60, cy, VW - 120, 100, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
+  cy += 25;
+  // WINDOWS section
+  svg += svgText(60, cy, 'WINDOWS', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 16;
+  svg += svgRect(60, cy, VW - 120, 65, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
 
   const winRows = [
     ['W1', '36"×56"', 'Double Hung', 'Vinyl', 'Double Low-E', 'Front/Rear'],
     ['W2', '32"×50"', 'Double Hung', 'Vinyl', 'Double Low-E', 'Side'],
+    ['W3', '28"×48"', 'Fixed', 'Vinyl', 'Double Low-E', 'Bathroom'],
   ];
 
   cx = 65;
@@ -7281,11 +7481,69 @@ function drawSchedule(sku, tb, stories) {
   });
 
   winRows.forEach((row, ri) => {
-    cy += 15;
+    cy += 13;
     cx = 65;
     row.forEach((cell, ci) => {
       svg += svgText(cx, cy + 8, cell, { size: 8, anchor: 'start', color: '#333' });
       cx += colW[ci];
+    });
+  });
+
+  cy += 25;
+  // PLUMBING FIXTURES section
+  svg += svgText(60, cy, 'PLUMBING FIXTURES', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 16;
+  svg += svgRect(60, cy, VW - 120, 52, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
+
+  const plumeHeaders = ['Mark', 'Type', 'Manufacturer', 'Fixture', 'Notes'];
+  const plumeCols = [(VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5];
+
+  cx = 65;
+  plumeHeaders.forEach((h, i) => {
+    svg += svgText(cx, cy + 8, h, { size: 8, weight: '600', anchor: 'start', color: '#333' });
+    cx += plumeCols[i];
+  });
+
+  const plumeRows = [
+    ['P1', 'Toilet', 'Standard Mfg.', 'Dual Flush', 'Master Bath'],
+    ['P2', 'Sink', 'Standard Mfg.', 'Pedestal', 'Bathrooms'],
+    ['P3', 'Tub/Shower', 'Standard Mfg.', 'Alcove', 'Master Bath'],
+  ];
+
+  plumeRows.forEach((row, ri) => {
+    cy += 13;
+    cx = 65;
+    row.forEach((cell, ci) => {
+      svg += svgText(cx, cy + 8, cell, { size: 8, anchor: 'start', color: '#333' });
+      cx += plumeCols[ci];
+    });
+  });
+
+  cy += 25;
+  // ROOM FINISHES section
+  svg += svgText(60, cy, 'ROOM FINISHES', { size: 11, weight: '700', anchor: 'start', color: '#000' }); cy += 16;
+  svg += svgRect(60, cy, VW - 120, 52, { fill: '#f9fafb', stroke: '#d1d5db', sw: 1 });
+
+  const finishHeaders = ['Room', 'Floor', 'Wall', 'Ceiling', 'Base'];
+  const finishCols = [(VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5, (VW - 120) / 5];
+
+  cx = 65;
+  finishHeaders.forEach((h, i) => {
+    svg += svgText(cx, cy + 8, h, { size: 8, weight: '600', anchor: 'start', color: '#333' });
+    cx += finishCols[i];
+  });
+
+  const finishRows = [
+    ['Entry', 'Tile', 'Paint', 'Drywall', 'Wood'],
+    ['Living', 'Laminate', 'Paint', 'Drywall', 'Wood'],
+    ['Kitchen', 'Tile', 'Paint', 'Drywall', 'Wood'],
+  ];
+
+  finishRows.forEach((row, ri) => {
+    cy += 13;
+    cx = 65;
+    row.forEach((cell, ci) => {
+      svg += svgText(cx, cy + 8, cell, { size: 8, anchor: 'start', color: '#333' });
+      cx += finishCols[ci];
     });
   });
 
