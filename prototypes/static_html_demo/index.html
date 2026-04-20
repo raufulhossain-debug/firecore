@@ -1527,6 +1527,7 @@
           <select id="plansSkuSelect" onchange="renderPlans()" style="padding:6px 10px;border:1px solid #e8e8e8;border-radius:8px;font-size:11px;font-family:inherit;background:white;">
             <option value="">— Select Design —</option>
           </select>
+          <button id="aiPlanBtn" onclick="generateAIPlan()" style="padding:6px 14px;border:none;border-radius:8px;font-size:11px;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#059669,#10b981);color:white;font-weight:600;">AI Generate Plan</button>
           <button onclick="exportPlansPDF()" style="padding:6px 14px;border:none;border-radius:8px;font-size:11px;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-weight:600;">Export PDF</button>
         </div>
       </div>
@@ -7025,7 +7026,184 @@ function layoutFloorPlan(bldgW, bldgD, bedrooms, bathrooms, isUpperFloor = false
 }
 
 // ===================================
-// FLOOR PLAN RENDERING
+// AI-POWERED FLOOR PLAN GENERATION
+// ===================================
+
+var _aiPlanCache = {};  // Cache: key = "skuId_floorNum_bldgW_bldgD" → rooms array
+var _aiPlanPending = {}; // Track in-flight requests
+
+async function aiLayoutFloorPlan(bldgW, bldgD, bedrooms, bathrooms, floorNum, totalStories, skuName) {
+  var cacheKey = skuName + '_' + floorNum + '_' + bldgW.toFixed(1) + '_' + bldgD.toFixed(1);
+  if (_aiPlanCache[cacheKey]) return _aiPlanCache[cacheKey];
+  if (_aiPlanPending[cacheKey]) return null; // Already requesting
+
+  if (!CLAUDE_API_KEY) throw new Error('API key required');
+
+  _aiPlanPending[cacheKey] = true;
+
+  var isUpperFloor = floorNum > 1;
+  var isTopFloor = floorNum === totalStories;
+  var floorType = floorNum === 1 ? 'ground floor (main entry, living spaces, kitchen)' :
+                  isTopFloor ? 'top floor (bedrooms, bathrooms, possible roof access)' :
+                  'upper floor (bedrooms, bathrooms, hallway)';
+
+  var prompt = `You are a licensed NYC architect generating a floor plan layout. Return ONLY valid JSON, no markdown, no explanation.
+
+Building footprint: ${bldgW.toFixed(1)}ft wide × ${bldgD.toFixed(1)}ft deep
+Floor: ${floorNum} of ${totalStories} (${floorType})
+Program: ${bedrooms} bedrooms, ${bathrooms} bathrooms
+Design: ${skuName}
+Coordinate system: x=0 is left wall, y=0 is front wall (street side). All dimensions in FEET.
+Wall thickness: 0.33ft (exterior) — rooms sit inside the exterior walls.
+
+NYC Building Code requirements:
+- Minimum room sizes: bedroom 80sf (min 8ft dimension), bathroom 35sf, kitchen 60sf, living room 120sf
+- Every habitable room needs a window (place on exterior walls)
+- Bedrooms need closets (min 2ft deep × 4ft wide)
+- Bathrooms need exhaust fans
+- Entry must have a door
+- Smoke detectors in hallways and near bedrooms
+- At least one egress window per bedroom
+- Kitchen requires 36" aisle clearance
+
+Generate a JSON array of room objects. Each room has:
+{
+  "name": "ROOM NAME",
+  "x": <left edge in feet from left wall>,
+  "y": <top edge in feet from front wall>,
+  "w": <width in feet>,
+  "h": <depth in feet>,
+  "fixtures": ["list of fixture ids"],
+  "doors": [{"x": <ft from room left>, "y": <ft from room top>, "wall": "north|south|east|west", "width": 2.67}],
+  "windows": [{"x": <ft from room left>, "wall": "north|south|east|west", "width": 3}],
+  "closets": [{"x": <ft from room left>, "y": <ft from room top>, "w": <ft>, "h": <ft>}]
+}
+
+Fixture IDs: "toilet", "sink", "bathtub", "shower", "stove", "fridge", "bed", "counter", "smoke_det", "exhaust_fan"
+
+Rules:
+- Rooms must not overlap
+- All rooms must fit within 0.33 to ${(bldgW - 0.33).toFixed(1)} (x) and 0.33 to ${(bldgD - 0.33).toFixed(1)} (y)
+- Kitchen should be adjacent to living/dining
+- Bathroom plumbing walls should be shared where possible (stack plumbing)
+- ${floorNum === 1 ? 'Entry/foyer at y=0.33 (front of building, street side). Include main entry door.' : 'Include stairwell/landing at same location as floor below for circulation.'}
+- Bedrooms should be away from the street (higher y values) for noise reduction
+- Living areas should get the most natural light (wider window walls)
+
+Return ONLY the JSON array. No other text.`;
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      var errData = await res.json().catch(function() { return {}; });
+      throw new Error(errData.error?.message || 'API error ' + res.status);
+    }
+
+    var data = await res.json();
+    var text = data.content[0].text.trim();
+
+    // Extract JSON — handle possible markdown wrapping
+    var jsonStr = text;
+    if (jsonStr.startsWith('```')) {
+      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    }
+
+    var rooms = JSON.parse(jsonStr);
+
+    // Validate and clamp rooms to building bounds
+    var maxX = bldgW - 0.33;
+    var maxY = bldgD - 0.33;
+    rooms = rooms.map(function(r) {
+      r.x = Math.max(0.33, Math.min(r.x || 0.33, maxX - 3));
+      r.y = Math.max(0.33, Math.min(r.y || 0.33, maxY - 3));
+      r.w = Math.max(3, Math.min(r.w || 8, maxX - r.x));
+      r.h = Math.max(3, Math.min(r.h || 8, maxY - r.y));
+      r.name = r.name || 'ROOM';
+      r.fixtures = r.fixtures || [];
+      r.doors = r.doors || [];
+      r.windows = r.windows || [];
+      r.closets = r.closets || [];
+      return r;
+    });
+
+    _aiPlanCache[cacheKey] = rooms;
+    delete _aiPlanPending[cacheKey];
+    return rooms;
+  } catch (e) {
+    delete _aiPlanPending[cacheKey];
+    console.error('AI Plan generation failed:', e);
+    throw e;
+  }
+}
+
+var _useAIPlan = false; // Toggle: use AI or fallback layout
+
+async function generateAIPlan() {
+  var btn = document.getElementById('aiPlanBtn');
+  var skuId = document.getElementById('plansSkuSelect').value;
+  var sku = DESIGN_CATALOG.find(function(s) { return s.id === skuId; });
+  if (!sku) { alert('Select a design SKU first'); return; }
+  if (!CLAUDE_API_KEY) { alert('Set your Claude API key in Settings (gear icon) first'); return; }
+
+  var pluto = window._currentPlutoData || {};
+  var zone = pluto.zonedist1 || 'R6';
+  var rules = getZoningRules(zone);
+  var lotW = parseFloat(pluto.lotfront) || 25;
+  var lotD = parseFloat(pluto.lotdepth) || 100;
+  var stories = sku.stories || 1;
+  var sqft = sku.defaultSqft || 800;
+  var footprint = sqft / stories;
+  var bldgW = Math.min(lotW - (parseInt(rules.yards.side) || 0) * 2, Math.sqrt(footprint) * 1.2);
+  var bldgD = footprint / bldgW;
+
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+
+  _useAIPlan = true;
+
+  // Clear cache for this SKU to force regeneration
+  Object.keys(_aiPlanCache).forEach(function(k) {
+    if (k.startsWith(sku.name)) delete _aiPlanCache[k];
+  });
+
+  try {
+    // Generate all floors
+    for (var f = 1; f <= stories; f++) {
+      await aiLayoutFloorPlan(bldgW, bldgD, sku.beds, sku.baths, f, stories, sku.name);
+    }
+
+    btn.textContent = 'AI Plan Ready';
+    btn.style.background = 'linear-gradient(135deg,#059669,#10b981)';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+
+    // Re-render current sheet
+    renderPlans();
+  } catch (e) {
+    btn.textContent = 'AI Generate Plan';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    alert('AI plan generation failed: ' + e.message);
+  }
+}
+
+// ===================================
+// FLOOR PLAN RENDERING (AI-enhanced)
 // ===================================
 
 function drawFloorPlan(sku, tb, bldgW, bldgD, floorNum, totalStories) {
@@ -7035,8 +7213,8 @@ function drawFloorPlan(sku, tb, bldgW, bldgD, floorNum, totalStories) {
   svg += svgRect(15, 15, VW - 30, VH - 165, { fill: 'white', stroke: '#000', sw: 2 });
 
   // Auto-scale: compute scale to fit 70% of available drawing area
-  const drawW = VW - 160;  // Account for margins and space
-  const drawH = VH - 250;  // Account for title block and top margins
+  const drawW = VW - 160;
+  const drawH = VH - 250;
   const s = Math.min((drawW * 0.7) / bldgW, (drawH * 0.7) / bldgD);
 
   const bw = bldgW * s;
@@ -7046,10 +7224,21 @@ function drawFloorPlan(sku, tb, bldgW, bldgD, floorNum, totalStories) {
   const ox = (VW - bw) / 2;
   const oy = (drawH - bd) / 2 + 40;
 
+  // Choose AI or fallback layout
+  var cacheKey = sku.name + '_' + floorNum + '_' + bldgW.toFixed(1) + '_' + bldgD.toFixed(1);
+  var aiRooms = _useAIPlan ? _aiPlanCache[cacheKey] : null;
   const isUpperFloor = floorNum > 1;
-  const rooms = layoutFloorPlan(bldgW, bldgD, sku.beds, sku.baths, isUpperFloor);
+  const rooms = aiRooms || layoutFloorPlan(bldgW, bldgD, sku.beds, sku.baths, isUpperFloor);
+  const isAI = !!aiRooms;
 
+  // Exterior walls
   svg += svgRect(ox, oy, bw, bd, { fill: '#fff', stroke: '#000', sw: 3 });
+
+  // AI badge
+  if (isAI) {
+    svg += svgRect(ox + bw - 80, oy - 18, 75, 14, { fill: '#059669', stroke: 'none' });
+    svg += svgText(ox + bw - 42, oy - 11, 'AI GENERATED', { size: 6, weight: '700', anchor: 'middle', color: '#fff' });
+  }
 
   for (const room of rooms) {
     const rx = ox + room.x * s;
@@ -7057,57 +7246,118 @@ function drawFloorPlan(sku, tb, bldgW, bldgD, floorNum, totalStories) {
     const rw = room.w * s;
     const rh = room.h * s;
 
+    // Room outline
     svg += svgRect(rx, ry, rw, rh, { fill: 'none', stroke: '#000', sw: 1.5 });
 
+    // Render fixtures
     for (const fix of room.fixtures) {
       if (fix === 'bed') {
-        const bx = rx + rw / 2 - 12;
-        const by = ry + rh / 2 - 8;
-        svg += svgRect(bx, by, 24, 16, { fill: '#f5f5f5', stroke: '#000', sw: 0.75 });
+        const bx = rx + rw / 2 - Math.min(12, rw * 0.2);
+        const by = ry + rh / 2 - Math.min(8, rh * 0.15);
+        const bedW = Math.min(24, rw * 0.4);
+        const bedH = Math.min(16, rh * 0.3);
+        svg += svgRect(bx, by, bedW, bedH, { fill: '#f5f5f5', stroke: '#000', sw: 0.75 });
+        // Pillow
+        svg += svgRect(bx + 2, by + 1, bedW - 4, 3, { fill: '#e8e8e8', stroke: '#000', sw: 0.5 });
       } else if (fix === 'toilet') {
-        svg += svgToilet(rx + rw * 0.2, ry + rh * 0.3);
+        svg += svgToilet(rx + rw * 0.2, ry + rh * 0.35);
       } else if (fix === 'sink') {
-        svg += svgSink(rx + rw * 0.5, ry + rh * 0.2);
+        svg += svgSink(rx + rw * 0.5, ry + rh * 0.15);
       } else if (fix === 'bathtub') {
-        svg += svgBathtub(rx + rw * 0.2, ry + rh * 0.5, 16, 20);
+        svg += svgBathtub(rx + rw * 0.55, ry + rh * 0.4, Math.min(20, rw * 0.35), Math.min(30, rh * 0.5));
+      } else if (fix === 'shower') {
+        svg += svgShower(rx + rw * 0.55, ry + rh * 0.4, Math.min(20, rw * 0.35), Math.min(25, rh * 0.4));
       } else if (fix === 'stove') {
         svg += svgStove(rx + rw * 0.3, ry + rh * 0.5);
       } else if (fix === 'fridge') {
-        svg += svgFridge(rx + rw * 0.7, ry + rh * 0.4);
+        svg += svgFridge(rx + rw * 0.75, ry + rh * 0.3);
+      } else if (fix === 'counter') {
+        svg += svgCounter(rx + rw * 0.05, ry + rh * 0.1, rw * 0.9, Math.min(12, rh * 0.15));
+      } else if (fix === 'smoke_det') {
+        svg += svgSmokeDet(rx + rw * 0.85, ry + rh * 0.15);
+      } else if (fix === 'exhaust_fan') {
+        svg += svgExhaustFan(rx + rw * 0.85, ry + rh * 0.85);
       }
     }
 
-    // Add door swings at room entries and closets in bedrooms
-    const roomName = room.name.toUpperCase();
-    if (roomName.includes('BEDROOM')) {
-      svg += svgCloset(rx + rw * 0.15, ry + rh * 0.75, rw * 0.2, rh * 0.15);
-    }
-    if (roomName.includes('ENTRY') || roomName.includes('LIVING')) {
-      svg += svgDoorSwing(rx + rw * 0.05, ry + rh * 0.1, rw * 0.1);
+    // Render AI doors (with swing arcs)
+    if (room.doors && room.doors.length > 0) {
+      for (const door of room.doors) {
+        const dw = (door.width || 2.67) * s;
+        const wall = door.wall || 'south';
+        let dx, dy;
+        if (wall === 'north') { dx = rx + (door.x || 0) * s; dy = ry; }
+        else if (wall === 'south') { dx = rx + (door.x || 0) * s; dy = ry + rh; }
+        else if (wall === 'west') { dx = rx; dy = ry + (door.y || 0) * s; }
+        else { dx = rx + rw; dy = ry + (door.y || 0) * s; }
+        svg += svgDoorSwing(dx, dy, dw);
+      }
+    } else {
+      // Fallback: auto-place doors for non-AI layouts
+      const roomName = room.name.toUpperCase();
+      if (roomName.includes('ENTRY') || roomName.includes('LIVING')) {
+        svg += svgDoorSwing(rx + rw * 0.05, ry + rh * 0.1, Math.min(20, rw * 0.12));
+      }
     }
 
-    // Add smoke detector in hallway/entry
-    if (roomName.includes('HALLWAY') || roomName.includes('ENTRY')) {
-      svg += svgSmokeDet(rx + rw * 0.8, ry + rh * 0.5);
+    // Render AI windows
+    if (room.windows && room.windows.length > 0) {
+      for (const win of room.windows) {
+        const wLen = (win.width || 3) * s;
+        const wall = win.wall || 'south';
+        let wx, wy;
+        if (wall === 'north') { wx = rx + (win.x || rw * 0.3 / s) * s; wy = ry; }
+        else if (wall === 'south') { wx = rx + (win.x || rw * 0.3 / s) * s; wy = ry + rh; }
+        else if (wall === 'west') { wx = rx; wy = ry + (win.x || rh * 0.3 / s) * s; }
+        else { wx = rx + rw - 2; wy = ry + (win.x || rh * 0.3 / s) * s; }
+        svg += svgWindow(wx, wy, wLen);
+      }
     }
 
-    // Compute room area in square feet
-    const areaW = room.w * (VW / (VW - 30)) / 2;  // Scale-adjust approximate area
-    const areaD = room.h * (VH / (VH - 165)) / 2;
-    const areaSf = Math.round(areaW * areaD);
+    // Render AI closets
+    if (room.closets && room.closets.length > 0) {
+      for (const cl of room.closets) {
+        svg += svgCloset(rx + cl.x * s, ry + cl.y * s, cl.w * s, cl.h * s);
+      }
+    } else {
+      // Fallback: auto-place closets in bedrooms
+      const roomName = room.name.toUpperCase();
+      if (roomName.includes('BEDROOM')) {
+        svg += svgCloset(rx + rw * 0.15, ry + rh * 0.75, rw * 0.2, rh * 0.15);
+      }
+    }
 
-    const labelSize = rw > 40 ? 9 : 7;
-    svg += svgText(rx + rw / 2, ry + rh / 2 + 20, room.name, { size: labelSize, weight: '600', anchor: 'middle', color: '#333' });
-    svg += svgText(rx + rw / 2, ry + rh - 6, `${areaSf} SF`, { size: 6, anchor: 'middle', color: '#999' });
+    // Fallback smoke detectors for non-AI layouts
+    if (!isAI) {
+      const roomName = room.name.toUpperCase();
+      if (roomName.includes('HALLWAY') || roomName.includes('ENTRY')) {
+        svg += svgSmokeDet(rx + rw * 0.8, ry + rh * 0.5);
+      }
+    }
+
+    // Room area (actual square feet)
+    const areaSf = Math.round(room.w * room.h);
+
+    const labelSize = rw > 60 ? 9 : rw > 35 ? 7 : 6;
+    svg += svgText(rx + rw / 2, ry + rh / 2 + (rh > 40 ? 20 : 10), room.name, { size: labelSize, weight: '600', anchor: 'middle', color: '#333' });
+    svg += svgText(rx + rw / 2, ry + rh / 2 + (rh > 40 ? 32 : 18), areaSf + ' SF', { size: 6, anchor: 'middle', color: '#999' });
+
+    // Room dimensions
+    if (rw > 40 && rh > 30) {
+      svg += svgText(rx + rw / 2, ry + 8, room.w.toFixed(1) + "'", { size: 6, anchor: 'middle', color: '#aaa' });
+      svg += svgText(rx + 8, ry + rh / 2, room.h.toFixed(1) + "'", { size: 6, anchor: 'start', color: '#aaa', rotate: -90 });
+    }
   }
 
+  // Overall dimensions
   svg += svgDimension(ox, oy + bd + 20, ox + bw, oy + bd + 20, `${bldgW.toFixed(1)}'-0"`, 'below', 25);
   svg += svgDimension(ox - 20, oy, ox - 20, oy + bd, `${bldgD.toFixed(1)}'-0"`, 'left', 20);
 
   svg += svgNorthArrow(ox + bw + 30, oy + 30);
 
   const floorNames = { 1: 'FIRST', 2: 'SECOND', 3: 'THIRD' };
-  svg += svgText(VW / 2, VH - 130, `${floorNames[floorNum] || floorNum + 'TH'} FLOOR PLAN`, { size: 14, weight: '700', anchor: 'middle' });
+  const aiLabel = isAI ? ' (AI-Generated)' : '';
+  svg += svgText(VW / 2, VH - 130, `${floorNames[floorNum] || floorNum + 'TH'} FLOOR PLAN${aiLabel}`, { size: 14, weight: '700', anchor: 'middle' });
   svg += svgText(VW / 2, VH - 105, `Scale: 1/4" = 1'-0" | ${sku.beds} Bedroom / ${sku.baths} Bathroom`, { size: 9, anchor: 'middle', color: '#666' });
 
   svg += svgTitleBlock(15, VH - 150, VW - 30, 135, tb, `${floorNames[floorNum] || floorNum + 'TH'} FLOOR`, `A-10${floorNum}`);
